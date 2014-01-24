@@ -1,0 +1,10 @@
+syntax:glob
+*.so
+dist
+docs/_build
+build
+MANIFEST
+*.pyc
+cover
+.coverage
+bw2regional.egg-info
