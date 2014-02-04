@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*
 from __future__ import division
-from bw2calc.matrices import MatrixBuilder
+from .errors import UnprocessedDatabase, SiteGenericMethod, MissingIntersection
+from .intersection import Intersection
+from .loading import Loading
+from .meta import loadings, intersections
 from bw2calc.lca import LCA
+from bw2calc.matrices import MatrixBuilder
+from bw2data import databases, methods
 import itertools
-from .errors import UnprocessedDatabase
-from bw2data import databases
 
 
 class TwoSpatialScalesWithLoadingLCA(LCA):
@@ -24,8 +27,12 @@ class TwoSpatialScalesWithLoadingLCA(LCA):
             * Make sure that each inventory database has a set of ``geocollections`` in its metadata.
 
         """
+        if 'loading' not in kwargs or kwargs['loading'] not in loadings:
+            raise ValueError("Must pass valid `loading` name")
         super(TwoSpatialScalesWithLoadingLCA, self).__init__(*args, **kwargs)
+        self.loading = Loading(kwargs['loading'])
         self.inventory_geocollections = self.get_inventory_geocollections()
+        self.ia_geocollections = self.get_ia_geocollections()
 
     def get_inventory_geocollections(self):
         """Get the set of all needed inventory geocollections.
@@ -43,6 +50,13 @@ class TwoSpatialScalesWithLoadingLCA(LCA):
                 missing)
             )
         return present
+
+    def get_ia_geocollections(self):
+        """Retrieve the geocollections linked to the impact assessment method"""
+        try:
+            return set(methods[self.method]['geocollections'])
+        except:
+            raise SiteGenericMethod
 
     def get_inventory_mapping_matrix(self, builder=MatrixBuilder):
         """Get inventory mapping matrix, **M**, which maps inventory activities to inventory locations. Rows are inventory activities and columns are inventory spatial units.
@@ -66,7 +80,21 @@ class TwoSpatialScalesWithLoadingLCA(LCA):
                 col_index_label="col",
                 row_dict=self.technosphere_dict,
             )
-        return (inv_mapping, inv_spatial_dict, inv_mapping_matrix)
+        return (inv_mapping_params, inv_spatial_dict, inv_mapping_matrix)
+
+    def needed_intersections(self):
+        """Figure out which ``Intersection`` objects are needed bsed on ``self.inventory_geocollections`` and ``self.ia_geocollections``.
+
+        Raise ``MissingIntersection`` if an intersection is required, but not available."""
+        required = list(itertools.product(
+            self.inventory_geocollections,
+            self.ia_geocollections
+        ))
+        for obj in required:
+            if obj not in intersections:
+                raise MissingIntersection(
+                    u"Intersection {} needed but not found".format(obj))
+        return required
 
     def get_geo_transform_matrix(self, builder=MatrixBuilder):
         """Get geographic transform matrix **G**, which gives the intersecting areas of inventory and impact assessment spatial units. Rows are inventory spatial units, and columns are impact assessment spatial units.
@@ -81,7 +109,10 @@ class TwoSpatialScalesWithLoadingLCA(LCA):
         self.geo_transform_params, d, d, self.geo_transform_matrix = \
             builder.build(
                 dirpath=self.dirpath,
-                names=None,  # FIXME
+                names=[
+                    Intersection(name).filename
+                    for name in self.needed_intersections()
+                ],
                 data_label="amount",
                 row_id_label="geo_inv",
                 row_index_label="row",
@@ -128,7 +159,7 @@ class TwoSpatialScalesWithLoadingLCA(LCA):
         loading_params, _, _, loading_matrix = \
             builder.build(
                 dirpath=self.dirpath,
-                names=None,  # FIXME
+                names=self.loading.filename,
                 data_label="amount",
                 row_id_label="geo_inv",
                 row_index_label="row",
@@ -151,10 +182,10 @@ class TwoSpatialScalesWithLoadingLCA(LCA):
         self.normalization_matrix = self.build_normalization_matrix()
 
     def build_normalization_matrix(self):
-        r"""Get normalization matrix. Values in row *i* and column *j* are defined by:
+        r"""Get normalization matrix. Values in row *i* and column *e* are defined by:
 
         .. math::
-            L_{i,j} = \sum f(x())
+            L_{i,e} = \left[ GL \right]_{i,e}
 
         """
         nm = self.geo_transform_matrix * self.loading_matrix
