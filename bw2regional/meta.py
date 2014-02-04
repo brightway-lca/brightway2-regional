@@ -11,7 +11,7 @@ class Loadings(SerializedDict):
         *
 
     """
-    _filename = "loadings.json"
+    filename = "loadings.json"
 
     def __unicode__(self):
         return u"Brightway2 regionalized LCIA loading metadata: %i data sets" % len(self)
@@ -19,7 +19,7 @@ class Loadings(SerializedDict):
 
 class Intersections(CompoundJSONDict):
     """"""
-    _filename = "intersections.json"
+    filename = "intersections.json"
 
     def __unicode__(self):
         return u"Brightway2 LCI/LCIA areal intersection metadata: %s data sets" % len(self)
@@ -27,7 +27,7 @@ class Intersections(CompoundJSONDict):
 
 class Geocollections(SerializedDict):
     """Metadata for spatial data sets."""
-    _filename = "geocollections.json"
+    filename = "geocollections.json"
 
     def __unicode__(self):
         return u"Brightway2 geocollections metadata: %i data sets" % len(self)

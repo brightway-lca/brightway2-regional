@@ -5,7 +5,6 @@ from bw2data.utils import MAX_INT_32
 from .validate import intersection_validator
 from .meta import intersections
 import numpy as np
-import bz2
 
 
 class Intersection(ImpactAssessmentDataStore):
@@ -36,10 +35,9 @@ class Intersection(ImpactAssessmentDataStore):
             self.register()
         assert isinstance(self.name, tuple) and len(self.name) == 2
         try:
-            data = JsonWrapper.load(filepath)
+            data = JsonWrapper.load_bz2(filepath)
         except:
-            with bz2.BZ2File(filepath) as f:
-                data = JsonWrapper.loads(f.read())
+            data = JsonWrapper.load(filepath)
 
         data = [((self.name[0], row[0]), (self.name[1], row[1]), row[2])
             for row in data]

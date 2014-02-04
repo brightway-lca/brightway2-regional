@@ -5,7 +5,6 @@ from bw2data import config, JsonWrapper, mapping, geomapping
 from bw2data.errors import UnknownObject
 from bw2data.method import Method
 from bw2data.utils import MAX_INT_32
-import bz2
 import numpy as np
 import os
 try:

@@ -26,5 +26,5 @@ def import_regionalized_cfs(geocollection, method, flow):
     method.write(data)
     method.process()
 
-
-
+    methods[method.name]['geocollections'] = [geocollection]
+    methods.flush()
