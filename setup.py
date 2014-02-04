@@ -12,7 +12,10 @@ setup(
         "brightway2",
         "bw2calc",
         "bw2data",
-        "pandarus"
+        "pandarus",
+        "progressbar",
+        "stats_arrays",
+        "voluptuous",
     ],
     long_description=open('README.rst').read(),
     classifiers=[
