@@ -10,7 +10,7 @@ from bw2data import databases, methods
 import itertools
 
 
-class TwoSpatialScalesWithLoadingLCA(LCA):
+class TwoSpatialScalesWithGenericLoadingLCA(LCA):
     def __init__(self, *args, **kwargs):
         r"""Perform regionalized LCA calculation, matching the spatial scales of inventory and impact assessment, including emission-specific loading factors.
 
@@ -18,7 +18,7 @@ class TwoSpatialScalesWithLoadingLCA(LCA):
 
         .. math::
 
-            h_{r} = \left[ \textbf{M }\left(\textbf{N} \circ \left[\textbf{G} \left( \textbf{L} \circ \textbf{R} \right) \right] \right) \right]^{T} \circ [ \textbf{B} \cdot (\textbf{A}^{-1}f) ]
+            h_{r} = \left[ \textbf{M}\left(\textbf{N} \circ \left[\textbf{GLR} \right] \right) \right]^{T} \circ [ \textbf{B} \cdot (\textbf{A}^{-1}f) ]
 
         Uses sparse matrix `elementwise multiplication <http://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.multiply.html>`_.
 
@@ -29,7 +29,7 @@ class TwoSpatialScalesWithLoadingLCA(LCA):
         """
         if 'loading' not in kwargs or kwargs['loading'] not in loadings:
             raise ValueError("Must pass valid `loading` name")
-        super(TwoSpatialScalesWithLoadingLCA, self).__init__(*args, **kwargs)
+        super(TwoSpatialScalesWithGenericLoadingLCA, self).__init__(*args, **kwargs)
         self.loading = Loading(kwargs['loading'])
         self.inventory_geocollections = self.get_inventory_geocollections()
         self.ia_geocollections = self.get_ia_geocollections()
@@ -147,7 +147,7 @@ class TwoSpatialScalesWithLoadingLCA(LCA):
         return (reg_cf_params, ia_spatial_dict, reg_cf_matrix)
 
     def get_loading_matrix(self, builder=MatrixBuilder):
-        """Get regionalized loading matrix, **L**, which gives location- and biosphere flow-specific background loading factors. Rows are impact assessment spatial units, and columns are biosphere flows.
+        """Get regionalized loading matrix, **L**, which gives location-specific background loading factors. Rows are impact assessment spatial units, and columns are biosphere flows.
 
         Uses ``self.inv_spatial_dict`` and ``self.ia_spatial_dict``.
 
@@ -161,12 +161,10 @@ class TwoSpatialScalesWithLoadingLCA(LCA):
                 dirpath=self.dirpath,
                 names=self.loading.filename,
                 data_label="amount",
-                row_id_label="geo_inv",
+                row_id_label="geo",
                 row_index_label="row",
-                col_id_label="geo_ia",
-                col_index_label="col",
-                row_dict=self.inv_spatial_dict,
-                col_dict=self.ia_spatial_dict
+                row_dict=self.ia_spatial_dict,
+                one_d=True
             )
         return (loading_params, loading_matrix)
 
@@ -185,7 +183,7 @@ class TwoSpatialScalesWithLoadingLCA(LCA):
         r"""Get normalization matrix. Values in row *i* and column *e* are defined by:
 
         .. math::
-            L_{i,e} = \left[ GL \right]_{i,e}
+            L_{i,e} = \left[ GL \right]_{i,e}^{-1}
 
         """
         nm = self.geo_transform_matrix * self.loading_matrix
@@ -200,7 +198,10 @@ class TwoSpatialScalesWithLoadingLCA(LCA):
 
         """
         self.characterized_inventory = (self.inv_mapping_matrix * (
-            self.normalization_matrix.multiply(self.geo_transform_matrix * (
-            self.loading_matrix.multiply(self.reg_cf_matrix)
-            )))).T * self.inventory
-
+            self.normalization_matrix.multiply(
+                self.geo_transform_matrix * \
+                self.loading_matrix * \
+                self.reg_cf_matrix
+                )
+            )
+        ).T * self.inventory
