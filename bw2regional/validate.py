@@ -1,7 +1,9 @@
-from bw2data.validate import Schema, valid_tuple, maybe_uncertainty
+from bw2data.validate import valid_tuple, maybe_uncertainty
+from voluptuous import Any, Schema
+
 
 loading_validator = Schema([
-    [object, maybe_uncertainty]
+    [maybe_uncertainty, Any(basestring, valid_tuple)]
 ])
 
 intersection_validator = Schema([
