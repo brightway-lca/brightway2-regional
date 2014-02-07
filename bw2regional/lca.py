@@ -12,7 +12,7 @@ import itertools
 
 class TwoSpatialScalesWithGenericLoadingLCA(LCA):
     def __init__(self, *args, **kwargs):
-        r"""Perform regionalized LCA calculation, matching the spatial scales of inventory and impact assessment, including emission-specific loading factors.
+        r"""Perform regionalized LCA calculation, matching the spatial scales of inventory and impact assessment, including generic loading factors applied to all flows.
 
         The calculation formula is:
 
