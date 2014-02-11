@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='bw2regional',
     version="0.1",
-    packages=["bw2regional", "bw2regional.tests"],
+    packages=["bw2regional", "bw2regional.tests", "bw2regional.lca"],
     author="Chris Mutel",
     author_email="cmutel@gmail.com",
     license=open('LICENSE.txt').read(),

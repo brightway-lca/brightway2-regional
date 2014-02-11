@@ -1,4 +1,2 @@
 include *.txt
 include README.rst
-include bw2regional/*.py
-include bw2regional/tests/*.py

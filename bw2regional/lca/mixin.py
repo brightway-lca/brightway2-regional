@@ -1,39 +1,14 @@
 # -*- coding: utf-8 -*
 from __future__ import division
-from .errors import UnprocessedDatabase, SiteGenericMethod, MissingIntersection
-from .intersection import Intersection
-from .loading import Loading
-from .meta import loadings, intersections
-from bw2calc.lca import LCA
+from ..errors import UnprocessedDatabase, SiteGenericMethod, MissingIntersection
+from ..intersection import Intersection
+from ..meta import intersections
 from bw2calc.matrices import MatrixBuilder
-from bw2data import databases, methods
+from bw2data import databases, methods, geomapping
 import itertools
 
 
-class TwoSpatialScalesWithGenericLoadingLCA(LCA):
-    def __init__(self, *args, **kwargs):
-        r"""Perform regionalized LCA calculation, matching the spatial scales of inventory and impact assessment, including generic loading factors applied to all flows.
-
-        The calculation formula is:
-
-        .. math::
-
-            h_{r} = \left[ \textbf{M}\left(\textbf{N} \circ \left[\textbf{GLR} \right] \right) \right]^{T} \circ [ \textbf{B} \cdot (\textbf{A}^{-1}f) ]
-
-        Uses sparse matrix `elementwise multiplication <http://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.multiply.html>`_.
-
-        In addition to the normal LCA initialization steps, this class does the following:
-
-            * Make sure that each inventory database has a set of ``geocollections`` in its metadata.
-
-        """
-        if 'loading' not in kwargs or kwargs['loading'] not in loadings:
-            raise ValueError("Must pass valid `loading` name")
-        super(TwoSpatialScalesWithGenericLoadingLCA, self).__init__(*args, **kwargs)
-        self.loading = Loading(kwargs['loading'])
-        self.inventory_geocollections = self.get_inventory_geocollections()
-        self.ia_geocollections = self.get_ia_geocollections()
-
+class RegionalizationMixin(object):
     def get_inventory_geocollections(self):
         """Get the set of all needed inventory geocollections.
 
@@ -72,7 +47,7 @@ class TwoSpatialScalesWithGenericLoadingLCA(LCA):
         inv_mapping_params, _, inv_spatial_dict, inv_mapping_matrix = \
             builder.build(
                 dirpath=self.dirpath,
-                names=self.databases,
+                names=[x + u".geomapping" for x in self.databases],
                 data_label="amount",
                 row_id_label="activity",
                 row_index_label="row",
@@ -106,7 +81,7 @@ class TwoSpatialScalesWithGenericLoadingLCA(LCA):
             * ``geo_transform_matrix``: The matrix **G**
 
         """
-        self.geo_transform_params, d, d, self.geo_transform_matrix = \
+        geo_transform_params, _, _, geo_transform_matrix = \
             builder.build(
                 dirpath=self.dirpath,
                 names=[
@@ -121,6 +96,7 @@ class TwoSpatialScalesWithGenericLoadingLCA(LCA):
                 row_dict=self.inv_spatial_dict,
                 col_dict=self.ia_spatial_dict
             )
+        return geo_transform_params, geo_transform_matrix
 
     def get_regionalized_characterization_matrix(self, builder=MatrixBuilder):
         """Get regionalized characterization matrix, **R**, which gives location- and biosphere flow-specific characterization factors. Rows are impact assessment spatial units, and columns are biosphere flows.
@@ -159,7 +135,7 @@ class TwoSpatialScalesWithGenericLoadingLCA(LCA):
         loading_params, _, _, loading_matrix = \
             builder.build(
                 dirpath=self.dirpath,
-                names=self.loading.filename,
+                names=[self.loading.filename],
                 data_label="amount",
                 row_id_label="geo",
                 row_index_label="row",
@@ -168,40 +144,14 @@ class TwoSpatialScalesWithGenericLoadingLCA(LCA):
             )
         return (loading_params, loading_matrix)
 
-    def load_lcia_data(self, builder=MatrixBuilder):
-        self.inv_mapping_params, self.inv_spatial_dict, self.inv_mapping_matrix = \
-            self.get_inventory_mapping_matrix(builder)
-        self.reg_cf_params, self.ia_spatial_dict, self.reg_cf_matrix = \
-            self.get_regionalized_characterization_matrix(builder)
-        self.geo_transform_params, self.geo_transform_matrix = \
-            self.get_geo_transform_matrix(builder)
-        self.loading_params, self.loading_matrix = \
-            self.get_loading_matrix(builder)
-        self.normalization_matrix = self.build_normalization_matrix()
-
-    def build_normalization_matrix(self):
-        r"""Get normalization matrix. Values in row *i* and column *e* are defined by:
-
-        .. math::
-            L_{i,e} = \left[ GL \right]_{i,e}^{-1}
-
-        """
-        nm = self.geo_transform_matrix * self.loading_matrix
-        mask = nm.data != 0
-        nm.data[mask] = 1 / nm.data[mask]
-        return nm
-
-    def lcia_calculation(self):
-        """Do regionalized LCA calculation.
-
-        Creates ``self.characterized_inventory``.
-
-        """
-        self.characterized_inventory = (self.inv_mapping_matrix * (
-            self.normalization_matrix.multiply(
-                self.geo_transform_matrix * \
-                self.loading_matrix * \
-                self.reg_cf_matrix
-                )
-            )
-        ).T * self.inventory
+    def fix_spatial_dictionaries(self):
+        """Fix inventory and IA spatial dictionaries."""
+        if not hasattr(self, "inv_spatial_dict"):
+            # No LCIA performed yet
+            return
+        if not isinstance(self.inv_spatial_dict.keys()[0], int):
+            # Already reversed
+            return
+        rev_geomapping = {v: k for k, v in geomapping.iteritems()}
+        self.inv_spatial_dict = {rev_geomapping[k]: v for k, v in self.inv_spatial_dict.iteritems()}
+        self.ia_spatial_dict = {rev_geomapping[k]: v for k, v in self.ia_spatial_dict.iteritems()}

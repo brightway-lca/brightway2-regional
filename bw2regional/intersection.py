@@ -12,8 +12,8 @@ class Intersection(ImpactAssessmentDataStore):
     metadata = intersections
     validator = intersection_validator
     dtype_fields = [
-            ('geo_ia', np.uint32),
             ('geo_inv', np.uint32),
+            ('geo_ia', np.uint32),
             ('row', np.uint32),
             ('col', np.uint32),
     ]
