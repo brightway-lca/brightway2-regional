@@ -10,8 +10,8 @@ setup(
     url="https://bitbucket.org/cmutel/brightway2-regional",
     install_requires=[
         "brightway2",
-        "bw2calc",
-        "bw2data",
+        "bw2calc>=0.11",
+        "bw2data>=0.12",
         "pandarus",
         "progressbar",
         "stats_arrays",

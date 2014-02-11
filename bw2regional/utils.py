@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*
 from bw2data import Method, methods
 from pandarus import Map
 from .meta import geocollections

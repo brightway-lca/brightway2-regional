@@ -18,7 +18,7 @@ class Loading(DataStore):
 
     def add_mappings(self, data):
         """In theory, this shouldn't do anything, as all spatial units should be in defined by the method."""
-        geomapping.add({obj[0] for obj in data})
+        geomapping.add({obj[1] for obj in data})
 
     def process_data(self, row):
         return (

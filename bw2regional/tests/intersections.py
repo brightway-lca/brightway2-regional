@@ -1,39 +1,31 @@
-from ..loading import Loading
-from ..meta import intersections
+# -*- coding: utf-8 -*
+from ..intersection import Intersection
 from .base import BW2RegionalTest
 from bw2data import geomapping
 from voluptuous import Invalid
 
 
-class IntersectionsTestCase(BW2RegionalTest):
-    def test_filename(self):
-        self.assertEqual(intersections.filename, "intersections.json")
-
-    def test_unicode(self):
-        self.assertTrue(isinstance(intersections.__unicode__(), unicode))
-        self.assertEqual(
-            unicode(intersections),
-            u"Brightway2 LCI/LCIA areal intersection metadata: 0 data sets"
-        )
-
-
 class IntersectionTestCase(BW2RegionalTest):
     def test_add_mappings(self):
-        return
-        lg = Loading("some loadings")
+        inter = Intersection(("foo", "bar"))
+        inter.register()
         self.assertFalse(("foo", "bar") in geomapping)
-        # lg.write([])
+        self.assertFalse("baz" in geomapping)
+        inter.write([
+            [("foo", "bar"), "baz", 42]
+        ])
+        self.assertTrue(("foo", "bar") in geomapping)
+        self.assertTrue("baz" in geomapping)
 
     def test_validation(self):
-        return
-        lg = Loading("some loadings")
-        self.assertTrue(lg.validate([]))
-        self.assertTrue(lg.validate([[1, "f"]]))
-        self.assertTrue(lg.validate([[{'amount': 1}, "f"]]))
-        self.assertTrue(lg.validate([[1, ("f", "b")]]))
-        self.assertTrue(lg.validate([[{'amount': 1}, ("f", "b")]]))
+        inter = Intersection(("foo", "bar"))
+        self.assertTrue(inter.validate([]))
+        self.assertTrue(inter.validate([[1, 2, 3]]))
+        self.assertTrue(inter.validate([["foo", "bar", 3.]]))
         with self.assertRaises(Invalid):
-            lg.validate(())
-        # with self.assertRaises(Invalid):
-        #     lg.validate([["f", 1]])
+            inter.validate(())
+        with self.assertRaises(Invalid):
+            inter.validate([[1, 2]])
+        with self.assertRaises(Invalid):
+            inter.validate([[1, 2, {'amount': 3.}]])
 

@@ -136,7 +136,7 @@ Data format
         [maybe_uncertainty, location_id],
     ]
 
-.. warning:: Industry sector-specific loadings are not yet supported in bw2regional.
+.. warning:: Industry sector-specific loadings and emission-specific loadings are not yet supported in bw2regional.
 
 Intersections
 =============
