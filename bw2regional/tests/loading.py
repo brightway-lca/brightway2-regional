@@ -32,3 +32,7 @@ class LoadingTestCase(BW2RegionalTest):
         lg = Loading("some loading with a crazy name")
         print lg.filename
         self.assertEqual(lg.filename, r)
+
+    def test_allow_zero_loadings(self):
+        lg = Loading("some loadings")
+        self.assertTrue(lg.validate([[0.0, "f"]]))

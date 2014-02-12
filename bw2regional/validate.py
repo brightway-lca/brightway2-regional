@@ -10,8 +10,8 @@ def uncertainty_list(obj):
     try:
         assert len(obj) == 2
         assert isinstance(obj, list)
-        assert _maybe_uncertainty(obj[0])
-        assert _loading_value(obj[1])
+        _maybe_uncertainty(obj[0])
+        _loading_value(obj[1])
     except:
         raise Invalid(u"%s is not a valid loading value" % obj)
     return obj
