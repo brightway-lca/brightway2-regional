@@ -30,6 +30,7 @@ Contents:
    formats
    lca
    common
+   technical
 
 Development
 ===========
