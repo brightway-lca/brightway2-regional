@@ -4,6 +4,8 @@ from .mixin import RegionalizationMixin
 from bw2calc.lca import LCA
 from bw2calc.matrices import MatrixBuilder
 from bw2data import methods
+from scipy.sparse import diags
+import numpy as np
 
 
 class TwoSpatialScalesLCA(LCA, RegionalizationMixin):
@@ -14,7 +16,7 @@ class TwoSpatialScalesLCA(LCA, RegionalizationMixin):
 
         .. math::
 
-            h_{r} = \left[ \textbf{M}\left(\textbf{N} \circ \left[\textbf{GR} \right] \right) \right]^{T} \circ [ \textbf{B} \cdot (\textbf{A}^{-1}f) ]
+            h_{r} = \left[ \textbf{MNGR} \right]^{T} \circ [ \textbf{B} \cdot (\textbf{A}^{-1}f) ]
 
         Uses sparse matrix `elementwise multiplication <http://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.multiply.html>`_.
 
@@ -39,16 +41,16 @@ class TwoSpatialScalesLCA(LCA, RegionalizationMixin):
         self.normalization_matrix = self.build_normalization_matrix()
 
     def build_normalization_matrix(self):
-        r"""Get normalization matrix. Values in row *i* and column *e* are defined by:
+        r"""Get normalization matrix, a diagonal matrix.
 
         .. math::
-            L_{i,e} = \left[ GL \right]_{i,e}^{-1}
+            \textbf{N}_{i,i} = \left[ \sum_{j} \left( \textbf{G} \right)_{i,j} \right]^{-1}
 
         """
-        nm = self.geo_transform_matrix * self.loading_matrix
-        mask = nm.data != 0
-        nm.data[mask] = 1 / nm.data[mask]
-        return nm
+        vector = np.array(self.geo_transform_matrix.sum(axis=1)).T
+        mask = vector > 0
+        vector[mask] = 1 / vector[mask]
+        return diags(vector, [0], format='csr', dtype=np.float32)
 
     def lcia_calculation(self):
         """Do regionalized LCA calculation.
@@ -56,10 +58,9 @@ class TwoSpatialScalesLCA(LCA, RegionalizationMixin):
         Creates ``self.characterized_inventory``.
 
         """
-        self.characterized_inventory = (self.inv_mapping_matrix * (
-            self.normalization_matrix.multiply(
-                self.geo_transform_matrix * \
-                self.reg_cf_matrix
-                )
-            )
-        ).T * self.inventory
+        self.characterized_inventory = (
+            self.inv_mapping_matrix *   \
+            self.normalization_matrix * \
+            self.geo_transform_matrix * \
+            self.reg_cf_matrix
+            ).T.multiply(self.inventory)

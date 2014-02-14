@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*
-from .lca import TwoSpatialScalesWithGenericLoadingLCATestCase
-from .loading import LoadingTestCase
 from .intersections import IntersectionTestCase
+from .lca_mixin import RegionalizedLCAMixinTestCase
+from .loading import LoadingTestCase
 from .meta import IntersectionsTestCase, LoadingsTestCase, GeocollectionsTestCase
+from .two_spatial_scales import TwoSpatialScalesLCATestCase
+from .two_spatial_scales_weighting import TwoSpatialScalesWithGenericLoadingLCATestCase

@@ -109,16 +109,16 @@ class RegionalizationMixin(object):
             * ``reg_cf_matrix``: The matrix **R**
 
         """
-        reg_cf_params, _, ia_spatial_dict, reg_cf_matrix = \
+        reg_cf_params, ia_spatial_dict, _, reg_cf_matrix = \
             builder.build(
                 dirpath=self.dirpath,
                 names=[methods[self.method]['abbreviation']],
                 data_label="amount",
-                row_id_label="flow",
+                row_id_label="geo",
                 row_index_label="row",
-                col_id_label="geo",
+                col_id_label="flow",
                 col_index_label="col",
-                row_dict=self.biosphere_dict,
+                col_dict=self.biosphere_dict,
             )
         return (reg_cf_params, ia_spatial_dict, reg_cf_matrix)
 

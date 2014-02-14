@@ -1,28 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
-from ..errors import MissingIntersection, SiteGenericMethod, UnprocessedDatabase
 from ..intersection import Intersection
 from ..lca import TwoSpatialScalesWithGenericLoadingLCA as LCA
 from ..loading import Loading
 from ..meta import intersections, loadings
 from .base import BW2RegionalTest
-from brightway2 import Database, Method, databases, methods
+from bw2data import Database, Method, databases, methods
 import numpy as np
 
+
 class TwoSpatialScalesWithGenericLoadingLCATestCase(BW2RegionalTest):
-    def test_unprocessed_database_error(self):
-        empty = Database("empty")
-        empty.register(depends=[])
-
-        loading = Loading("something")
-        loading.register()
-
-        method = Method(("a", "name"))
-        method.register()
-
-        with self.assertRaises(UnprocessedDatabase):
-            LCA({("empty", "nothing"): 1}, method=("a", "name"), loading="something")
-
     def test_value_error_no_loadings(self):
         with self.assertRaises(ValueError):
             LCA({"foo": 1}, method='foo')
@@ -37,40 +24,13 @@ class TwoSpatialScalesWithGenericLoadingLCATestCase(BW2RegionalTest):
         with self.assertRaises(ValueError):
             LCA({("empty", "nothing"): 1}, loading='something')
 
-    def test_site_generic_method_error(self):
-        empty = Database("empty")
-        empty.register(depends=[], geocollections=[])
-
-        loading = Loading("something")
-        loading.register()
-
-        method = Method(("a", "name"))
-        method.register()
-
-        with self.assertRaises(SiteGenericMethod):
-            LCA({("empty", "nothing"): 1}, method=("a", "name"), loading="something")
-
-    def test_missing_intersection_error(self):
-        empty = Database("empty")
-        empty.register(depends=[], geocollections=["foo"])
-
-        loading = Loading("something")
-        loading.register()
-
-        method = Method(("a", "name"))
-        method.register(geocollections=["bar"])
-
-        with self.assertRaises(MissingIntersection):
-            lca = LCA({("empty", "nothing"): 1}, method=("a", "name"), loading="something")
-            lca.needed_intersections()
-
     def import_data(self):
         biosphere_data = {
-            ('biosphere', 'carbon'): {
+            ('biosphere', 'F'): {
                 'type': 'emission',
                 'exchanges': [],
             },
-            ('biosphere', 'water'): {
+            ('biosphere', 'G'): {
                 'type': 'emission',
                 'exchanges': [],
             }
@@ -81,58 +41,65 @@ class TwoSpatialScalesWithGenericLoadingLCATestCase(BW2RegionalTest):
         biosphere.process()
 
         inventory_data = {
-            ('yum', 'bread'): {
+            ('inventory', 'U'): {
                 'type': 'process',
-                'location': u"хлеб",
+                'location': "L",
                 'exchanges': [
                     {
-                    'input': ('biosphere', 'carbon'),
+                    'input': ('biosphere', 'F'),
                     'type': 'biosphere',
                     'amount': 1
                     },
                     {
-                    'input': ('yum', 'milk'),
-                    'type': 'technosphere',
-                    'amount': 0.5
+                    'input': ('biosphere', 'G'),
+                    'type': 'biosphere',
+                    'amount': 1
                     },
                 ]
             },
-            ('yum', 'milk'): {
+            ('inventory', 'V'): {
                 'type': 'process',
-                'location': u"молоко",
-                'exchanges': [
-                    {
-                    'input': ('biosphere', 'carbon'),
-                    'type': 'biosphere',
-                    'amount': 2
-                    },
-                    {
-                    'input': ('biosphere', 'water'),
-                    'type': 'biosphere',
-                    'amount': 5
-                    },
-                ]
+                'location': "M",
+                'exchanges': []
             },
+            ('inventory', 'X'): {
+                'type': 'process',
+                'location': "N",
+                'exchanges': []
+            },
+            ('inventory', 'Y'): {
+                'type': 'process',
+                'location': "O",
+                'exchanges': []
+            },
+            ('inventory', 'Z'): {
+                'type': 'process',
+                'location': "O",
+                'exchanges': []
+            }
         }
-        inventory = Database("yum")
-        inventory.register(depends=["biosphere"], geocollections=["food"])
+        inventory = Database("inventory")
+        inventory.register(depends=["biosphere"], geocollections=["places"])
         inventory.write(inventory_data)
         inventory.process()
 
         intersection_data = [
-            [u"хлеб", u"Ω", 2],
-            [u"хлеб", u"ß", 4],
-            [u"молоко", u"Ω", 8],
-            [u"молоко", u"ß", 16],
+            ["L", "A", 1],
+            ["M", "A", 2],
+            ["M", "B", 3],
+            ["N", "B", 5],
+            ["N", "C", 8],
+            ["O", "C", 13],
         ]
-        inter = Intersection(("food", "greek"))
+        inter = Intersection(("places", "regions"))
         inter.register()
         inter.write(intersection_data)
         inter.process()
 
         loading_data = [
-            [1, u"Ω"],
-            [2, u"ß"]
+            [2, "A"],
+            [4, "B"],
+            [8, "C"],
         ]
         loading = Loading("loading")
         loading.register()
@@ -140,13 +107,15 @@ class TwoSpatialScalesWithGenericLoadingLCATestCase(BW2RegionalTest):
         loading.process()
 
         method_data = [
-            [('biosphere', 'carbon'), 1, u"Ω"],
-            [('biosphere', 'carbon'), 3, u"ß"],
-            [('biosphere', 'water'), 5, u"Ω"],
-            [('biosphere', 'water'), 7, u"ß"]
+            [('biosphere', 'F'), 1, "A"],
+            [('biosphere', 'G'), 2, "A"],
+            [('biosphere', 'F'), 3, "B"],
+            [('biosphere', 'G'), 4, "B"],
+            [('biosphere', 'F'), 5, "C"],
+            [('biosphere', 'G'), 6, "C"],
         ]
         method = Method(("a", "method"))
-        method.register(geocollections=['greek'])
+        method.register(geocollections=['regions'])
         method.write(method_data)
         method.process()
 
@@ -160,7 +129,7 @@ class TwoSpatialScalesWithGenericLoadingLCATestCase(BW2RegionalTest):
     def get_lca(self):
         self.import_data()
         return LCA(
-            {('yum', 'bread'): 1},
+            {('inventory', 'U'): 1},
             method=("a", "method"),
             loading="loading"
         )
@@ -170,29 +139,36 @@ class TwoSpatialScalesWithGenericLoadingLCATestCase(BW2RegionalTest):
         lca.lci()
         self.assertTrue(np.allclose(
             lca.technosphere_matrix.todense(),
-            np.array(((1, -0.5), (0, 1)))
+            np.eye(5)
         ))
+        lca.fix_dictionaries()
         self.assertTrue(np.allclose(
             lca.biosphere_matrix.todense(),
-            np.array(((2, 1), (5, 0)))
+            np.array(((0, 1, 0, 0, 0), (0, 1, 0, 0, 0)))
         ))
         lca.fix_dictionaries()
         self.assertEqual(
             lca.technosphere_dict,
-            {('yum', 'milk'): 0, ('yum', 'bread'): 1}
+            {
+                ('inventory', 'X'): 0,
+                ('inventory', 'U'): 1,
+                ('inventory', 'V'): 2,
+                ('inventory', 'Y'): 3,
+                ('inventory', 'Z'): 4
+            }
         )
         self.assertEqual(
             lca.biosphere_dict,
-            {('biosphere', 'carbon'): 0, ('biosphere', 'water'): 1}
+            {('biosphere', 'G'): 0, ('biosphere', 'F'): 1}
         )
         self.assertTrue(np.allclose(
             lca.supply_array,
-            np.array((0.5, 1))
+            np.array((0, 1, 0, 0, 0))
         ))
         print lca.inventory.todense()
         self.assertTrue(np.allclose(
             lca.inventory.todense(),
-            np.array(((1, 1), (2.5, 0)))
+            lca.biosphere_matrix.todense()
         ))
 
     def test_geo_transform_matrix(self):
@@ -200,17 +176,19 @@ class TwoSpatialScalesWithGenericLoadingLCATestCase(BW2RegionalTest):
         lca.lci()
         lca.lcia()
         lca.fix_spatial_dictionaries()
+        print lca.inv_spatial_dict
+        print lca.ia_spatial_dict
         self.assertEqual(
             lca.inv_spatial_dict,
-            {u"молоко": 0, u"хлеб": 1}
+            {'M': 0, 'L': 1, 'O': 2, 'N': 3}
         )
         self.assertEqual(
             lca.ia_spatial_dict,
-            {u"Ω": 0, u"ß": 1}
+            {'A': 0, 'B': 2, 'C': 1}
         )
         self.assertTrue(np.allclose(
             lca.geo_transform_matrix.todense(),
-            np.array(((8, 16), (2, 4)))
+            np.array(((2, 0, 3), (1, 0, 0), (0, 13, 0), (0, 8, 5)))
         ))
 
     def test_loading_matrix(self):
@@ -219,7 +197,7 @@ class TwoSpatialScalesWithGenericLoadingLCATestCase(BW2RegionalTest):
         lca.lcia()
         self.assertTrue(np.allclose(
             lca.loading_matrix.todense(),
-            np.array(((1, 0), (0, 2)))
+            np.array(((2, 0, 0), (0, 8, 0), (0, 0, 4)))
         ))
 
     def test_characterization_matrix(self):
@@ -229,7 +207,7 @@ class TwoSpatialScalesWithGenericLoadingLCATestCase(BW2RegionalTest):
         print lca.reg_cf_matrix.todense()
         self.assertTrue(np.allclose(
             lca.reg_cf_matrix.todense(),
-            np.array(((1, 3), (5, 7)))
+            np.array(((2, 1), (6, 5), (4, 3)))
         ))
 
     def test_inv_mapping_matrix(self):
@@ -238,16 +216,21 @@ class TwoSpatialScalesWithGenericLoadingLCATestCase(BW2RegionalTest):
         lca.lcia()
         self.assertTrue(np.allclose(
             lca.inv_mapping_matrix.todense(),
-            np.array(((1, 0), (0, 1)))
+            np.array(((0, 0, 0, 1), (0, 1, 0, 0), (1, 0, 0, 0), (0, 0, 1, 0), (0, 0, 1, 0)))
         ))
 
     def test_normalization_matrix(self):
         lca = self.get_lca()
         lca.lci()
         lca.lcia()
+        normalization = np.eye(4)
+        normalization[1,1] = 1/2
+        normalization[0,0] = 1/16
+        normalization[3,3] = 1/84
+        normalization[2,2] = 1/104
         self.assertTrue(np.allclose(
             lca.normalization_matrix.todense(),
-            np.array(((1/8, 1/32), (1/2, 1/8)))
+            normalization
         ))
 
     def test_lca_score(self):
@@ -256,6 +239,6 @@ class TwoSpatialScalesWithGenericLoadingLCATestCase(BW2RegionalTest):
         lca.lcia()
         self.assertEqual(
             lca.score,
-            (21 + 31/4 * 2.5 + 21 + 31/4 + 21 * 2.5 + 31/4)
+            3
         )
 
