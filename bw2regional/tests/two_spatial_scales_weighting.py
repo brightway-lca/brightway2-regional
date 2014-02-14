@@ -165,7 +165,6 @@ class TwoSpatialScalesWithGenericLoadingLCATestCase(BW2RegionalTest):
             lca.supply_array,
             np.array((0, 1, 0, 0, 0))
         ))
-        print lca.inventory.todense()
         self.assertTrue(np.allclose(
             lca.inventory.todense(),
             lca.biosphere_matrix.todense()
@@ -176,8 +175,6 @@ class TwoSpatialScalesWithGenericLoadingLCATestCase(BW2RegionalTest):
         lca.lci()
         lca.lcia()
         lca.fix_spatial_dictionaries()
-        print lca.inv_spatial_dict
-        print lca.ia_spatial_dict
         self.assertEqual(
             lca.inv_spatial_dict,
             {'M': 0, 'L': 1, 'O': 2, 'N': 3}
@@ -204,7 +201,6 @@ class TwoSpatialScalesWithGenericLoadingLCATestCase(BW2RegionalTest):
         lca = self.get_lca()
         lca.lci()
         lca.lcia()
-        print lca.reg_cf_matrix.todense()
         self.assertTrue(np.allclose(
             lca.reg_cf_matrix.todense(),
             np.array(((2, 1), (6, 5), (4, 3)))
