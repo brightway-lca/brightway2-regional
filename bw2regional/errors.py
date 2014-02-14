@@ -13,3 +13,7 @@ class SiteGenericMethod(StandardError):
 class MissingIntersection(StandardError):
     """Missing an ``Intersection`` object and its data needed for regionalized LCA"""
     pass
+
+
+class GeocollectionsMismatch(StandardError):
+    pass

@@ -30,7 +30,6 @@ class LoadingTestCase(BW2RegionalTest):
         s = "some loading with a crazy name"
         r = s.replace(" ", "-") + "." + hashlib.md5(s).hexdigest() + ".loading"
         lg = Loading("some loading with a crazy name")
-        print lg.filename
         self.assertEqual(lg.filename, r)
 
     def test_allow_zero_loadings(self):
