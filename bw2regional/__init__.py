@@ -5,4 +5,4 @@ from .meta import loadings, intersections, geocollections
 from .loading import Loading
 from .intersection import Intersection
 from .utils import import_regionalized_cfs
-from .lca import TwoSpatialScalesWithGenericLoadingLCA
+from .lca import TwoSpatialScalesWithGenericLoadingLCA, TwoSpatialScalesLCA, OneSpatialScaleLCA

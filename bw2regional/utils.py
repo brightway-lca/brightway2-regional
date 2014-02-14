@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*
 from bw2data import Method, methods
-from pandarus import Map
 from .meta import geocollections
 import copy
 
 
 def import_regionalized_cfs(geocollection, method, flow):
+    try:
+        from pandarus import Map
+    except:
+        raise ImportError("`pandarus` is required for this function")
     metadata = copy.copy(methods[method.name])
     metadata.update(**geocollections[geocollection])
     assert geocollection in geocollections
