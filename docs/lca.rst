@@ -44,8 +44,7 @@ Our example **G** is:
 
 In this example matrix, ...
 
-It now gets a bit tricky to think about, because we are going to use environmental data to estimate industrial activity, and we mostly go the other direction in LCA. We want to know how likely it is that industrial activity, or more generally, activity which emits or consumes resources, occurs in each impact assessment region. It is easy to understand that
-
+It now gets a bit tricky to think about, because we are going to use environmental data to estimate industrial activity, and we mostly go the other direction in LCA. We want to know how likely it is that industrial activity, or more generally, activity which emits or consumes resources, occurs in each impact assessment region. We can't just use the area of the impact assessment region, because the world's economic activity is not uniformly distributed in space. There are more activities in the Rhein watershed than the Lena river watershed, for example. We can use databases of existing environmental loadings to estimate where activities and their emissions are taking place.
 
 The background loading matrix **L** represents our best knowledge about where inventory activities happen, based on where these activities are happening now and the amount that is currently emitted to the environment. **L** is diagonal - it has values on the diagonal and zeros elsewhere.
 
