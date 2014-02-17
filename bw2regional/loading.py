@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*
 from .meta import loadings
 from .validate import loading_validator
-from bw2data import geomapping
+from .utils import get_pandarus_map
+from bw2data import geomapping, config
 from bw2data.data_store import DataStore
 from bw2data.utils import MAX_INT_32
 import numpy as np
+import os
 
 
 class Loading(DataStore):
@@ -29,3 +31,31 @@ class Loading(DataStore):
     @property
     def filename(self):
         return super(Loading, self).filename + u".loading"
+
+    def write_to_map(self, method, flow, geocollection=None):
+        map_obj = get_pandarus_map(method, geocollection)
+        data = {x[1][1]: x[0] for x in self.load()}
+        if map_obj.raster:
+            self._write_raster_loadings_to_map(map_obj, data)
+        else:
+            self._write_vector_loadings_to_map(map_obj, data)
+
+    def _write_raster_loadings_to_map(self, map_obj, data):
+        NODATA = -9999.
+        filepath = os.path.join(
+            config.request_dir(u"output"),
+            self.filename + u".tiff"
+        )
+
+        array = np.zeros(map_obj.file.array().shape) + NODATA
+        for obj in map_obj:
+            if obj['label'] in data:
+                array[obj['row'], obj['col']] = data[obj['label']]
+
+        map_obj.file.write_modified_array(filepath, array, nodata=NODATA)
+        return filepath
+
+    def _write_vector_loadings_to_map(self, map_obj, data):
+        raise NotImplementedError
+
+

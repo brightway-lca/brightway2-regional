@@ -17,3 +17,7 @@ class MissingIntersection(StandardError):
 
 class GeocollectionsMismatch(StandardError):
     pass
+
+
+class MissingSpatialSourceData(StandardError):
+    pass
