@@ -1,11 +1,15 @@
 brightway2
+bw2analyzer
 bw2calc>=0.11
 bw2data>=0.12
+colorama
 docopt
+lxml
 nose
-numpy
+numpy>=1.6
 pandarus
 progressbar
+requests>=1.1.0
 scipy
-stats_arrays
+stats_arrays>=0.2.2
 voluptuous
