@@ -1,18 +1,16 @@
-.. bw2-regional documentation master file, created by
-   sphinx-quickstart on Fri Jan 17 17:10:55 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Regionalization in Brightway2
 =============================
+
+.. image:: http://mutel.org/glarus.png
+    :align: center
 
 It is easy to do regionalized LCA incorrectly. This package tries to make it at least a bit easier to do regionalization correctly, for at least some definition of correctly.
 
 bw2regional supports the following regionalization calculations:
 
-    #. Inventory database and impact assessment method share the same spatial scale <LCA class>
-    #. Inventory and impact assessment have different spatial scales <LCA class>
-    #. Inventory and impact assessment have different spatial scales, with background loading used for spatial allocation <LCA class>
+    #. Inventory database and impact assessment method share the same spatial scale (:ref:`one-scale`)
+    #. Inventory and impact assessment have different spatial scales (:ref:`two-scales`)
+    #. Inventory and impact assessment have different spatial scales, with background loading used for spatial allocation (:ref:`two-scales-with-loading`)
 
 In addition to making regionalized LCA calculations, maps of regionalized impact can be exported from methods 2 and 3.
 
