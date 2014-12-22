@@ -1,7 +1,7 @@
 Regionalization in Brightway2
 =============================
 
-.. image:: http://mutel.org/glarus.png
+.. image:: images/mnglr.png
     :align: center
 
 It is easy to do regionalized LCA incorrectly. This package tries to make it at least a bit easier to do regionalization correctly, for at least some definition of correctly.
