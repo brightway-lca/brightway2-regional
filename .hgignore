@@ -1,4 +1,5 @@
 syntax:glob
+*.egg
 *.so
 dist
 docs/_build
@@ -8,3 +9,4 @@ MANIFEST
 cover
 .coverage
 bw2regional.egg-info
+dev
