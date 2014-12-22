@@ -14,16 +14,6 @@ class TwoSpatialScalesWithGenericLoadingLCATestCase(BW2RegionalTest):
         with self.assertRaises(ValueError):
             LCA({"foo": 1}, method='foo')
 
-    def test_value_error_no_method(self):
-        empty = Database("empty")
-        empty.register(depends=[])
-
-        loading = Loading("something")
-        loading.register()
-
-        with self.assertRaises(ValueError):
-            LCA({("empty", "nothing"): 1}, loading='something')
-
     def import_data(self):
         biosphere_data = {
             ('biosphere', 'F'): {

@@ -5,7 +5,6 @@ from ..meta import loadings
 from .mixin import RegionalizationMixin
 from bw2calc.lca import LCA
 from bw2calc.matrices import MatrixBuilder
-from bw2data import methods
 from scipy.sparse import diags
 import numpy as np
 
@@ -33,8 +32,6 @@ class TwoSpatialScalesWithGenericLoadingLCA(LCA, RegionalizationMixin):
         except:
             raise ValueError("Must pass valid `loading` name")
         super(TwoSpatialScalesWithGenericLoadingLCA, self).__init__(*args, **kwargs)
-        if self.method not in methods:
-            raise ValueError("Must pass valid `method` name")
         self.loading = Loading(loading_name)
         self.inventory_geocollections = self.get_inventory_geocollections()
         self.ia_geocollections = self.get_ia_geocollections()
@@ -69,34 +66,30 @@ class TwoSpatialScalesWithGenericLoadingLCA(LCA, RegionalizationMixin):
 
         """
         self.characterized_inventory = (
-            self.inv_mapping_matrix *   \
-            self.normalization_matrix * \
-            self.geo_transform_matrix * \
-            self.loading_matrix *       \
+            self.inv_mapping_matrix   *
+            self.normalization_matrix *
+            self.geo_transform_matrix *
+            self.loading_matrix       *
             self.reg_cf_matrix
             ).T.multiply(self.inventory)
 
-    def write_results_to_map(self, flow, filename, geocollection=None, normalize=False, log_transform=False):
-        """Write regionalized LCA results using impact assessment spatial scale.
-
-        Requires matplotlib for color calculations.
-
-        """
-        from ..graphics import RegionalizedGrapher
+    def results_ia_spatial_scale(self):
         if not hasattr(self, "characterized_inventory"):
             raise ValueError("Must do lcia calculation first")
-        self.fix_dictionaries()
-        self.fix_spatial_dictionaries()
-        try:
-            row_index = self.biosphere_dict[flow]
-        except KeyError:
-            raise ValueError("Flow {} not in biosphere dict".format(flow))
-        mat = (self.characterized_inventory *\
-            self.inv_mapping_matrix *    \
-            self.normalization_matrix *  \
-            self.geo_transform_matrix *  \
-            self.loading_matrix)[row_index, :]
-        grapher = RegionalizedGrapher(self.method, geocollection, self.ia_spatial_dict, mat, normalize, log_transform)
-        return grapher.write(filename)
+        return self.reg_cf_matrix.T.multiply(
+            self.inventory            *
+            self.inv_mapping_matrix   *
+            self.normalization_matrix *
+            self.geo_transform_matrix *
+            self.loading_matrix)
 
-
+    def results_inv_spatial_scale(self):
+        if not hasattr(self, "characterized_inventory"):
+            raise ValueError("Must do lcia calculation first")
+        return (
+            self.normalization_matrix *
+            self.geo_transform_matrix *
+            self.loading_matrix       *
+            self.reg_cf_matrix).T.multiply(
+            self.inventory            *
+            self.inv_mapping_matrix)

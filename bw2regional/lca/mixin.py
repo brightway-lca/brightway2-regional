@@ -3,9 +3,12 @@ from __future__ import division
 from ..errors import UnprocessedDatabase, SiteGenericMethod, MissingIntersection
 from ..intersection import Intersection
 from ..meta import intersections
+from ..utils import get_pandarus_map, get_pandarus_map_for_method
 from bw2calc.matrices import MatrixBuilder
-from bw2data import databases, methods, geomapping
+from bw2data import databases, methods, geomapping, Method, Database
+from scipy.sparse import csr_matrix
 import itertools
+import numpy as np
 
 
 class RegionalizationMixin(object):
@@ -47,7 +50,9 @@ class RegionalizationMixin(object):
         inv_mapping_params, _, inv_spatial_dict, inv_mapping_matrix = \
             builder.build(
                 dirpath=self.dirpath,
-                names=[x + u".geomapping" for x in self.databases],
+                names=[Database(x).filename + u".geomapping"
+                    for x in self.databases
+                ],
                 data_label="amount",
                 row_id_label="activity",
                 row_index_label="row",
@@ -112,7 +117,7 @@ class RegionalizationMixin(object):
         reg_cf_params, ia_spatial_dict, _, reg_cf_matrix = \
             builder.build(
                 dirpath=self.dirpath,
-                names=[methods[self.method]['abbreviation']],
+                names=[Method(self.method).filename],
                 data_label="amount",
                 row_id_label="geo",
                 row_index_label="row",
@@ -149,9 +154,62 @@ class RegionalizationMixin(object):
         if not hasattr(self, "inv_spatial_dict"):
             # No LCIA performed yet
             return
-        if not isinstance(self.inv_spatial_dict.keys()[0], int):
-            # Already reversed
-            return
+        if getattr(self, "_mapped_spatial_dict", False):
+            # Already reversed - should be idempotent
+            return False
         rev_geomapping = {v: k for k, v in geomapping.iteritems()}
-        self.inv_spatial_dict = {rev_geomapping[k]: v for k, v in self.inv_spatial_dict.iteritems()}
-        self.ia_spatial_dict = {rev_geomapping[k]: v for k, v in self.ia_spatial_dict.iteritems()}
+        self.inv_spatial_dict = {rev_geomapping[k]: v for k, v
+            in self.inv_spatial_dict.iteritems()}
+        if hasattr(self, "ia_spatial_dict"):
+            self.ia_spatial_dict = {rev_geomapping[k]: v for k, v
+                in self.ia_spatial_dict.iteritems()}
+        if hasattr(self, "xtable_spatial_dict"):
+            self.xtable_spatial_dict = {rev_geomapping[k]: v for k, v
+                in self.xtable_spatial_dict.iteritems()}
+        self._mapped_spatial_dict = True
+
+    def _results_new_scale(self, matrix, flow):
+        self.fix_spatial_dictionaries()
+        if flow is not None:
+            self.fix_dictionaries()
+            try:
+                row_index = self.biosphere_dict[flow]
+                matrix = matrix[row_index, :]
+            except KeyError:
+                raise ValueError("Flow {} not in biosphere dict".format(flow))
+        else:
+            # using matrix.sum() converts to dense numpy matrix
+            nc = matrix.shape[0]
+            summer = csr_matrix((
+                np.ones(nc),
+                np.arange(nc),
+                np.array((0, nc), dtype=int)
+            ))
+            matrix = summer * matrix
+        return matrix
+
+    def results_ia_spatial_scale(self):
+        raise NotImplementedError("Must be defined in subclasses")
+
+    def results_inv_spatial_scale(self):
+        raise NotImplementedError("Must be defined in subclasses")
+
+    def write_results_to_ia_map(self, filename, flow=None, geocollection=None,
+            normalize=False, log_transform=False):
+        """Write regionalized LCA results using impact assessment spatial scale."""
+        from ..graphics import RegionalizedGrapher
+        matrix = self._results_new_scale(self.results_ia_spatial_scale(), flow)
+        map_obj = get_pandarus_map_for_method(self.method, geocollection)
+        grapher = RegionalizedGrapher(map_obj,
+            self.ia_spatial_dict, matrix, normalize, log_transform)
+        return grapher.write(filename)
+
+    def write_results_to_inv_map(self, filename, geocollection, flow=None,
+            normalize=False, log_transform=False):
+        """Write regionalized LCA results using inventory spatial scale."""
+        from ..graphics import RegionalizedGrapher
+        matrix = self._results_new_scale(self.results_inv_spatial_scale(), flow)
+        map_obj = get_pandarus_map(geocollection)
+        grapher = RegionalizedGrapher(map_obj,
+            self.inv_spatial_dict, matrix, normalize, log_transform)
+        return grapher.write(filename)
