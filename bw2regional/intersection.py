@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*
+from .meta import intersections
+from .validate import intersection_validator
 from bw2data import geomapping, JsonWrapper
 from bw2data.ia_data_store import ImpactAssessmentDataStore
 from bw2data.utils import MAX_INT_32
-from .validate import intersection_validator
-from .meta import intersections
+import copy
 import numpy as np
+import warnings
 
 
 class Intersection(ImpactAssessmentDataStore):
@@ -42,7 +44,25 @@ class Intersection(ImpactAssessmentDataStore):
         data = [((self.name[0], row[0]), (self.name[1], row[1]), row[2])
             for row in data]
 
-        self.write(data)
-        self.process()
-        self.metadata[self.name]['filepath'] =  filepath
-        self.metadata.flush()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self.write(data)
+            self.process()
+            self.metadata[self.name]['filepath'] =  filepath
+            self.metadata.flush()
+
+        self.create_reversed_intersection()
+
+    def create_reversed_intersection(self):
+        """Create (B, A) intersection from (A, B)."""
+        new_name = (self.name[1], self.name[0])
+        new_data = [(line[1], line[0], line[2]) for line in self.load()]
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            new_obj = Intersection(new_name)
+            new_obj.register(**copy.deepcopy(self.metadata[self.name]))
+            new_obj.write(new_data)
+            new_obj.process()
+
+        return new_obj
