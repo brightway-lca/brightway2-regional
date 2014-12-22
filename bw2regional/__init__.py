@@ -3,7 +3,8 @@ __version__ = (0, 1)
 
 from .graphics import RegionalizedGrapher
 from .intersection import Intersection
-from .lca import TwoSpatialScalesWithGenericLoadingLCA, TwoSpatialScalesLCA, OneSpatialScaleLCA
+from .lca import TwoSpatialScalesWithGenericLoadingLCA, TwoSpatialScalesLCA, OneSpatialScaleLCA, ExtensionTablesLCA
 from .loading import Loading
-from .meta import loadings, intersections, geocollections
-from .utils import import_regionalized_cfs
+from .meta import loadings, intersections, geocollections, extension_tables
+from .utils import import_regionalized_cfs, create_empty_intersection, reset_geo_meta
+from .xtables import ExtensionTable

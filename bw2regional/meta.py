@@ -33,6 +33,15 @@ class Geocollections(SerializedDict):
         return u"Brightway2 geocollections metadata: %i data sets" % len(self)
 
 
+class ExtensionTables(SerializedDict):
+    """Metadata for extension tables."""
+    filename = "extension-tables.json"
+
+    def __unicode__(self):
+        return u"Brightway extension tables metadata: %i tables" % len(self)
+
+
 loadings = Loadings()
 intersections = Intersections()
 geocollections = Geocollections()
+extension_tables = ExtensionTables()

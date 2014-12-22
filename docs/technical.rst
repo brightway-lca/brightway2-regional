@@ -32,3 +32,11 @@ Shared spatial scale
 
 .. autoclass:: bw2regional.lca.OneSpatialScaleLCA
     :members:
+
+.. _xtables:
+
+Extension tables
+================
+
+.. autoclass:: bw2regional.lca.ExtensionTablesLCA
+    :members:

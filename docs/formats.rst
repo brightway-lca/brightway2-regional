@@ -78,7 +78,7 @@ In addition to the standard metadata for IA methods, such as ``unit`` and ``desc
 
     * **geocollections**: List of one or more strings identifying the geocollections. Normally only one geocollection is associated with a regionalized IA method. See :ref:`geocollections`.
     * **band**: Band number in original raster data set. Needed to import characterization factors.
-    * **fieldname**: Field name in original vector data set. Needed to import characterization factors.
+    * **cf_field**: Field name of characterization factor value. Needed to import characterization factors.
 
 Data format
 -----------
@@ -161,4 +161,25 @@ We assume that data is written automatically after conversion from pandarus, so 
 
     [
         [spatial object 1, spatial object 2, intersection area],
+    ]
+
+Extension tables
+================
+
+Metadata
+--------
+
+In addition to the standard metadata for IA methods, such as ``unit`` and ``description``, regionalized IA methods should include the following for complete functionality:
+
+    * **geocollection**: String identifying a geocollection. See :ref:`geocollections`.
+    * **xt_field**: Field name used for extension table values. Only needed for vector spatial data.
+    * **band**: Raster band index for extension table values.
+
+Data format
+-----------
+
+.. code-block:: python
+
+    [
+        [float, spatial object 1]
     ]
