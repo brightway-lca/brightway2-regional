@@ -157,15 +157,15 @@ class RegionalizationMixin(object):
         if getattr(self, "_mapped_spatial_dict", False):
             # Already reversed - should be idempotent
             return False
-        rev_geomapping = {v: k for k, v in geomapping.iteritems()}
+        rev_geomapping = {v: k for k, v in geomapping.items()}
         self.inv_spatial_dict = {rev_geomapping[k]: v for k, v
-            in self.inv_spatial_dict.iteritems()}
+            in self.inv_spatial_dict.items()}
         if hasattr(self, "ia_spatial_dict"):
             self.ia_spatial_dict = {rev_geomapping[k]: v for k, v
-                in self.ia_spatial_dict.iteritems()}
+                in self.ia_spatial_dict.items()}
         if hasattr(self, "xtable_spatial_dict"):
             self.xtable_spatial_dict = {rev_geomapping[k]: v for k, v
-                in self.xtable_spatial_dict.iteritems()}
+                in self.xtable_spatial_dict.items()}
         self._mapped_spatial_dict = True
 
     def _results_new_scale(self, matrix, flow):

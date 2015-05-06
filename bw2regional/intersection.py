@@ -1,9 +1,12 @@
-# -*- coding: utf-8 -*
+# -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals
+from eight import *
+
 from .meta import intersections
 from .validate import intersection_validator
 from bw2data import geomapping, JsonWrapper
 from bw2data.ia_data_store import ImpactAssessmentDataStore
-from bw2data.utils import MAX_INT_32
+from bw2data.utils import MAX_INT_32, numpy_string
 import copy
 import numpy as np
 import warnings
@@ -14,10 +17,10 @@ class Intersection(ImpactAssessmentDataStore):
     metadata = intersections
     validator = intersection_validator
     dtype_fields = [
-            ('geo_inv', np.uint32),
-            ('geo_ia', np.uint32),
-            ('row', np.uint32),
-            ('col', np.uint32),
+            (numpy_string('geo_inv'), np.uint32),
+            (numpy_string('geo_ia'), np.uint32),
+            (numpy_string('row'), np.uint32),
+            (numpy_string('col'), np.uint32),
     ]
 
     def add_mappings(self, data):

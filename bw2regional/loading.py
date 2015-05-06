@@ -1,21 +1,24 @@
-# -*- coding: utf-8 -*
+# -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals
+from eight import *
+
 from .meta import loadings
 from .validate import loading_validator
 from .utils import get_pandarus_map
 from bw2data import geomapping, config
-from bw2data.data_store import DataStore
-from bw2data.utils import MAX_INT_32
+from bw2data.data_store import ProcessedDataStore
+from bw2data.utils import MAX_INT_32, numpy_string
 import numpy as np
 import os
 
 
-class Loading(DataStore):
+class Loading(ProcessedDataStore):
     """"""
     metadata = loadings
     validator = loading_validator
     dtype_fields = [
-            ('geo', np.uint32),
-            ('row', np.uint32),
+            (numpy_string('geo'), np.uint32),
+            (numpy_string('row'), np.uint32),
     ]
 
     def add_mappings(self, data):

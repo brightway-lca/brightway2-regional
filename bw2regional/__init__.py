@@ -8,3 +8,11 @@ from .loading import Loading
 from .meta import loadings, intersections, geocollections, extension_tables
 from .utils import import_regionalized_cfs, create_empty_intersection, reset_geo_meta
 from .xtables import ExtensionTable
+
+from bw2data import config
+config.metadata.extend([
+    extension_tables,
+    geocollections,
+    intersections,
+    loadings,
+])

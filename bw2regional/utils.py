@@ -64,7 +64,7 @@ def get_pandarus_map(geocollection):
     if not geocollection.get(u'filepath'):
         raise MissingSpatialSourceData("No filepath given for geocollection")
     metadata = {
-        k:v for k, v in geocollection.iteritems()
+        k:v for k, v in geocollection.items()
         if v is not None
         and k != u'filepath'
     }
@@ -94,7 +94,7 @@ def get_pandarus_map_for_method(method, geocollection=None):
         'vfs': geocollection.get('vfs'),
         'encoding': geocollection.get('encoding'),
     }
-    metadata = {k:v for k, v in metadata.iteritems() if v is not None}
+    metadata = {k:v for k, v in metadata.items() if v is not None}
     return Map(geocollection['filepath'], **metadata)
 
 

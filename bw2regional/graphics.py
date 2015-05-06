@@ -36,7 +36,7 @@ class RegionalizedGrapher(object):
         return matrix
 
     def matrix_to_dict(self, matrix, spatial_dict):
-        rev_ia = {v: k for k, v in spatial_dict.iteritems()}
+        rev_ia = {v: k for k, v in spatial_dict.items()}
         return {rev_ia[col][1]: val for col, val in zip(matrix.col, matrix.data)}
 
     def write(self, filename, fieldname="lcaresult"):
