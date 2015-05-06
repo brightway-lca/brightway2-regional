@@ -66,6 +66,17 @@ class OneSpatialScaleLCA(LCA, RegionalizationMixin):
 
         """
         self.characterized_inventory = (
-            self.inv_mapping_matrix *   \
+            self.inv_mapping_matrix *
             self.reg_cf_matrix
             ).T.multiply(self.inventory)
+
+    def results_ia_spatial_scale(self):
+        raise NotImplementedError("No separate IA spatial scale")
+
+    def results_inv_spatial_scale(self):
+        if not hasattr(self, "characterized_inventory"):
+            raise ValueError("Must do lcia calculation first")
+        return self.reg_cf_matrix.T.multiply(
+            self.inventory * self.inv_mapping_matrix
+            )
+

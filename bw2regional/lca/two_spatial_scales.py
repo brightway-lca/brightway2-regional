@@ -59,8 +59,27 @@ class TwoSpatialScalesLCA(LCA, RegionalizationMixin):
 
         """
         self.characterized_inventory = (
-            self.inv_mapping_matrix *   \
-            self.normalization_matrix * \
-            self.geo_transform_matrix * \
+            self.inv_mapping_matrix   *
+            self.normalization_matrix *
+            self.geo_transform_matrix *
             self.reg_cf_matrix
             ).T.multiply(self.inventory)
+
+    def results_ia_spatial_scale(self):
+        if not hasattr(self, "characterized_inventory"):
+            raise ValueError("Must do lcia calculation first")
+        return self.reg_cf_matrix.T.multiply(
+            self.inventory            *
+            self.inv_mapping_matrix   *
+            self.normalization_matrix *
+            self.geo_transform_matrix)
+
+    def results_inv_spatial_scale(self):
+        if not hasattr(self, "characterized_inventory"):
+            raise ValueError("Must do lcia calculation first")
+        return (
+            self.normalization_matrix *
+            self.geo_transform_matrix *
+            self.reg_cf_matrix).T.multiply(
+            self.inventory            *
+            self.inv_mapping_matrix)

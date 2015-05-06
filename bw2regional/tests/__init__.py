@@ -6,3 +6,4 @@ from .meta import IntersectionsTestCase, LoadingsTestCase, GeocollectionsTestCas
 from .one_spatial_scale import OneSpatialScaleLCATestCase
 from .two_spatial_scales import TwoSpatialScalesLCATestCase
 from .two_spatial_scales_weighting import TwoSpatialScalesWithGenericLoadingLCATestCase
+from .xtables import XtablesTestCase

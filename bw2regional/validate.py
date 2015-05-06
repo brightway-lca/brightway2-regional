@@ -18,7 +18,6 @@ def uncertainty_list(obj):
 
 
 def float_as_last(obj):
-    print obj
     try:
         assert isinstance(obj, list)
         assert len(obj) == 3
@@ -28,6 +27,17 @@ def float_as_last(obj):
     return obj
 
 
-loading_validator = Schema([uncertainty_list])
+def xtable_data(obj):
+    try:
+        assert isinstance(obj, (tuple, list))
+        assert isinstance(obj[0], float)
+        assert isinstance(obj[1][0], basestring)
+        assert isinstance(obj[1][1], (basestring, int))
+    except:
+        raise Invalid(u"%s is not a valid xtable value" % obj)
+    return obj
 
+
+loading_validator = Schema([uncertainty_list])
 intersection_validator = Schema([float_as_last])
+xtable_validator = Schema([xtable_data])
