@@ -17,7 +17,7 @@ def import_regionalized_cfs(geocollection, method, flow, cf_field=None,
     assert geocollection in geocollections
 
     metadata = copy.copy(methods[method.name])
-    metadata.update(**geocollections[geocollection])
+    metadata.update(geocollections[geocollection])
 
     if overwrite:
         data = []
