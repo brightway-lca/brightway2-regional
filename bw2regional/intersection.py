@@ -14,7 +14,7 @@ import warnings
 
 class Intersection(ImpactAssessmentDataStore):
     """"""
-    metadata = intersections
+    _metadata = intersections
     validator = intersection_validator
     dtype_fields = [
             (numpy_string('geo_inv'), np.uint32),
@@ -36,7 +36,7 @@ class Intersection(ImpactAssessmentDataStore):
             ), row[2]
 
     def import_from_pandarus(self, filepath):
-        if self.name not in self.metadata:
+        if self.name not in self._metadata:
             self.register()
         assert isinstance(self.name, tuple) and len(self.name) == 2
         try:
@@ -51,8 +51,8 @@ class Intersection(ImpactAssessmentDataStore):
             warnings.simplefilter("ignore")
             self.write(data)
             self.process()
-            self.metadata[self.name]['filepath'] =  filepath
-            self.metadata.flush()
+            self.metadata['filepath'] =  filepath
+            self._metadata.flush()
 
         self.create_reversed_intersection()
 
@@ -64,7 +64,7 @@ class Intersection(ImpactAssessmentDataStore):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             new_obj = Intersection(new_name)
-            new_obj.register(**copy.deepcopy(self.metadata[self.name]))
+            new_obj.register(**copy.deepcopy(self.metadata))
             new_obj.write(new_data)
             new_obj.process()
 

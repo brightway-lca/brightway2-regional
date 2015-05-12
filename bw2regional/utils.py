@@ -16,7 +16,7 @@ def import_regionalized_cfs(geocollection, method, flow, cf_field=None,
         raise TypeError("Must pass bw2data Method instance (got %s: %s" % (type(method), method))
     assert geocollection in geocollections
 
-    metadata = copy.copy(methods[method.name])
+    metadata = copy.deepcopy(method.metadata)
     metadata.update(geocollections[geocollection])
 
     if overwrite:

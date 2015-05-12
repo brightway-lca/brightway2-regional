@@ -14,7 +14,7 @@ import os
 
 class Loading(ProcessedDataStore):
     """"""
-    metadata = loadings
+    _metadata = loadings
     validator = loading_validator
     dtype_fields = [
             (numpy_string('geo'), np.uint32),

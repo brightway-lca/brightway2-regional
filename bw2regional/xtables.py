@@ -6,7 +6,7 @@ from .utils import get_pandarus_map
 
 
 class ExtensionTable(Loading):
-    metadata = extension_tables
+    _metadata = extension_tables
     validator = xtable_validator
 
     @property
