@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*
 
-class UnprocessedDatabase(StandardError):
+class UnprocessedDatabase(Exception):
     """A ``Database`` object doesn't have a list of reference geocollections."""
     pass
 
 
-class SiteGenericMethod(StandardError):
+class SiteGenericMethod(Exception):
     """This ``Method`` doesn't have links to ``geocollections``, making it site-generic."""
     pass
 
 
-class MissingIntersection(StandardError):
+class MissingIntersection(Exception):
     """Missing an ``Intersection`` object and its data needed for regionalized LCA"""
     pass
 
 
-class GeocollectionsMismatch(StandardError):
+class GeocollectionsMismatch(Exception):
     pass
 
 
-class MissingSpatialSourceData(StandardError):
+class MissingSpatialSourceData(Exception):
     pass
