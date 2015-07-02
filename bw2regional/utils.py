@@ -1,4 +1,7 @@
-# -*- coding: utf-8 -*
+# -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals
+from eight import *
+
 from .errors import SiteGenericMethod, MissingSpatialSourceData
 from .meta import geocollections, intersections, loadings, extension_tables
 from .intersection import Intersection

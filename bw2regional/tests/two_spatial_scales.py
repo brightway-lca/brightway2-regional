@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-from __future__ import division
+from __future__ import print_function, unicode_literals, division
+from eight import *
+
 from ..intersection import Intersection
 from ..lca import TwoSpatialScalesLCA as LCA
 from ..meta import intersections, loadings

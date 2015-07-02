@@ -1,4 +1,7 @@
-# -*- coding: utf-8 -*
+# -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals
+from eight import *
+
 from ..intersection import Intersection
 from .base import BW2RegionalTest
 from bw2data import geomapping

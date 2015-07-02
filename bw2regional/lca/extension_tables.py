@@ -1,11 +1,13 @@
-# -*- coding: utf-8 -*
-from __future__ import division
+# -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals, division
+from eight import *
+
 from ..errors import MissingIntersection
 from ..intersection import Intersection
 from ..meta import extension_tables, intersections
 from ..utils import get_pandarus_map
 from ..xtables import ExtensionTable
-from .mixin import RegionalizationMixin
+from .base_class import RegionalizationBase
 from bw2calc.lca import LCA
 from bw2calc.matrices import MatrixBuilder
 from scipy.sparse import diags
@@ -13,7 +15,7 @@ import itertools
 import numpy as np
 
 
-class ExtensionTablesLCA(LCA, RegionalizationMixin):
+class ExtensionTablesLCA(RegionalizationBase):
     def __init__(self, *args, **kwargs):
         r"""Perform regionalized LCA calculation, using biosphere flow- and activity-specific extension tables.
 

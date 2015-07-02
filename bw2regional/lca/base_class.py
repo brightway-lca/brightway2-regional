@@ -1,17 +1,29 @@
-# -*- coding: utf-8 -*
-from __future__ import division
-from ..errors import UnprocessedDatabase, SiteGenericMethod, MissingIntersection
+# -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals, division
+from eight import *
+
+from ..errors import (
+    MissingIntersection,
+    SiteGenericMethod,
+    TopologyError,
+    UnprocessedDatabase,
+)
 from ..intersection import Intersection
 from ..meta import intersections
 from ..utils import get_pandarus_map, get_pandarus_map_for_method
 from bw2calc.matrices import MatrixBuilder
+from bw2calc.lca import LCA
 from bw2data import databases, methods, geomapping, Method, Database
 from scipy.sparse import csr_matrix
 import itertools
 import numpy as np
 
 
-class RegionalizationMixin(object):
+class RegionalizationBase(LCA):
+    def __init__(self, *args, **kwargs):
+        self.topology = kwargs.get('topology', False)
+        super(RegionalizationBase, self).__init__(*args, **kwargs)
+
     def get_inventory_geocollections(self):
         """Get the set of all needed inventory geocollections.
 

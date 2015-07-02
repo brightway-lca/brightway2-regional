@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*
+from __future__ import print_function, unicode_literals
+from eight import *
+
 from .meta import extension_tables, geocollections
 from .validate import xtable_validator
 from .loading import Loading

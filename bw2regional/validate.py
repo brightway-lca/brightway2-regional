@@ -1,4 +1,7 @@
-# -*- coding: utf-8 -*
+# -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals
+from eight import *
+
 from bw2data.validate import valid_tuple, maybe_uncertainty
 from voluptuous import Any, Schema, Invalid
 
