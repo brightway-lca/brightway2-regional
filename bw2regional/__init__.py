@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*
 __version__ = (0, 2)
 
+from .base_data import import_base_reg_data, import_lc_impact_lcia_method
 from .graphics import RegionalizedGrapher
 from .intersection import Intersection
 from .lca import TwoSpatialScalesWithGenericLoadingLCA, TwoSpatialScalesLCA, OneSpatialScaleLCA, ExtensionTablesLCA

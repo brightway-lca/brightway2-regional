@@ -6,7 +6,7 @@ from bw2data.validate import valid_tuple, maybe_uncertainty
 from voluptuous import Any, Schema, Invalid
 
 _maybe_uncertainty = Schema(maybe_uncertainty)
-_loading_value = Schema(Any(basestring, valid_tuple))
+_loading_value = Schema(Any(str, valid_tuple))
 
 
 def uncertainty_list(obj):
@@ -34,8 +34,8 @@ def xtable_data(obj):
     try:
         assert isinstance(obj, (tuple, list))
         assert isinstance(obj[0], float)
-        assert isinstance(obj[1][0], basestring)
-        assert isinstance(obj[1][1], (basestring, int))
+        assert isinstance(obj[1][0], str)
+        assert isinstance(obj[1][1], (str, int))
     except:
         raise Invalid(u"%s is not a valid xtable value" % obj)
     return obj
