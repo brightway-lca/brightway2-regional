@@ -59,6 +59,50 @@ class RegionalizationBase(LCA):
             * ``inv_mapping_matrix``: The matrix **M**
 
         """
+        if self.topology:
+            pass
+
+        else:
+            names=[Database(x).filename + u".geomapping"
+                for x in self.databases
+            ],
+
+        inv_mapping_params, _, inv_spatial_dict, inv_mapping_matrix = \
+            builder.build(
+                dirpath=self.dirpath,
+                names=names,
+                data_label="amount",
+                row_id_label="activity",
+                row_index_label="row",
+                col_id_label="geo",
+                col_index_label="col",
+                row_dict=self.technosphere_dict,
+            )
+        return (inv_mapping_params, inv_spatial_dict, inv_mapping_matrix)
+
+    def get_inventory_topological_mapping_matrix(self, builder):
+        """Get topological inventory mapping matrix, **M**, which maps inventory activities to inventory locations. Rows are inventory activities and columns are inventory spatial units.
+
+
+
+
+
+        Uses ``self.technosphere_dict`` and ``self.databases``.
+
+        Returns:
+            * ``inv_mapping_params``: Parameter array with row/col of inventory activities/locations
+            * ``inv_spatial_dict``: Dictionary linking inventory locations to matrix columns
+            * ``inv_mapping_matrix``: The matrix **M**
+
+        """
+        try:
+            from constructive_geometries import ConstructiveGeometries
+        except ImportError:
+            raise ImportError("Please install the ``constructive_geometries`` library.")
+
+        # Validation check
+        #
+
         inv_mapping_params, _, inv_spatial_dict, inv_mapping_matrix = \
             builder.build(
                 dirpath=self.dirpath,
