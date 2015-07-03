@@ -46,7 +46,7 @@ class Loading(ProcessedDataStore):
     def _write_raster_loadings_to_map(self, map_obj, data):
         NODATA = -9999.
         filepath = os.path.join(
-            config.request_dir(u"output"),
+            projects.request_directory(u"output"),
             self.filename + u".tiff"
         )
 

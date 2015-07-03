@@ -1,5 +1,5 @@
-LCA classes - technical reference
-*********************************
+Technical reference
+*******************
 
 .. _regionalization-mixin:
 

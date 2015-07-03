@@ -34,8 +34,6 @@ There are no required metadata fields for geocollections, but some common fields
 
 .. note:: It is *strongly* preferred that ESRI shapefile be zipped to a single file, with appropriate metadata. Ideally, each Geocollection can have its associated spatial data in a single file. For example, the Natural Earth 50m political data is specified as: ``vfs="zip:///Users/cmutel/Downloads/Geodata/ne_50m_admin_0_countries.zip", filepath="/ne_50m_admin_0_countries.shp``. See `the Fiona manual <http://toblerity.org/fiona/manual.html#virtual-filesystems>`_ for more.
 
-.. note:: Data specific to a given impact assessment method, like which band has the characterization factors for a given impact category, should be stored in the impact assessment metadata.
-
 .. _standard-geocollections:
 
 Standard geocollections
@@ -56,7 +54,7 @@ Regionalized impact assessment
 
 Regionalized impact assessment methods have characterization factors that depend both on biosphere flows and spatial units. Characterization factors can be static or uncertain.
 
-In Brightway2, the ``Method`` object can store either site-generic or regionalized IA methods. Similarly, the ``methods`` metadata store works the same for site-generic and regionalized IA methods.
+In Brightway2, the ``Method`` object can store site-generic, regionalized, or both site-generic and regionalized characterization factors. Similarly, the ``methods`` metadata store works the same for site-generic and regionalized IA methods.
 
 .. _specifying-spatial:
 
@@ -68,8 +66,6 @@ Following the Brightway2 principle of KISS, spatial objects have a simple format
     #. If not location data is provided, the global location "GLO" is assumed
     #. A two-letter ISO county code can be used
     #. Otherwise, spatial objects should be identified by the combination of geocollection and id, just like objects in Databases: ``(geocollection, spatial unit id)``.
-
-The utility function :ref:`normalize-spatial` should be used to normalize options 1 and 2 with the respective geocollections.
 
 Metadata
 --------

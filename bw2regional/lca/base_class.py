@@ -51,7 +51,7 @@ class RegionalizationBase(LCA):
     def get_inventory_mapping_matrix(self, builder=MatrixBuilder):
         """Get inventory mapping matrix, **M**, which maps inventory activities to inventory locations. Rows are inventory activities and columns are inventory spatial units.
 
-        Uses ``self.technosphere_dict`` and ``self.databases``.
+        Uses ``self.activity_dict`` and ``self.databases``.
 
         Returns:
             * ``inv_mapping_params``: Parameter array with row/col of inventory activities/locations
@@ -114,7 +114,7 @@ class RegionalizationBase(LCA):
                 row_index_label="row",
                 col_id_label="geo",
                 col_index_label="col",
-                row_dict=self.technosphere_dict,
+                row_dict=self.activity_dict,
             )
         return (inv_mapping_params, inv_spatial_dict, inv_mapping_matrix)
 

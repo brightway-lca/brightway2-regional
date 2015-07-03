@@ -32,7 +32,6 @@ class TwoSpatialScalesLCATestCase(BW2RegionalTest):
         biosphere = Database("biosphere")
         biosphere.register(depends=[], geocollections=[])
         biosphere.write(biosphere_data)
-        biosphere.process()
 
         inventory_data = {
             ('inventory', 'U'): {
@@ -75,7 +74,6 @@ class TwoSpatialScalesLCATestCase(BW2RegionalTest):
         inventory = Database("inventory")
         inventory.register(depends=["biosphere"], geocollections=["places"])
         inventory.write(inventory_data)
-        inventory.process()
 
         intersection_data = [
             ["L", "A", 1],
@@ -88,7 +86,6 @@ class TwoSpatialScalesLCATestCase(BW2RegionalTest):
         inter = Intersection(("places", "regions"))
         inter.register()
         inter.write(intersection_data)
-        inter.process()
 
         method_data = [
             [('biosphere', 'F'), 1, "A"],
@@ -101,7 +98,6 @@ class TwoSpatialScalesLCATestCase(BW2RegionalTest):
         method = Method(("a", "method"))
         method.register(geocollections=['regions'])
         method.write(method_data)
-        method.process()
 
     def test_import_data(self):
         self.import_data()
@@ -131,7 +127,7 @@ class TwoSpatialScalesLCATestCase(BW2RegionalTest):
         ))
         lca.fix_dictionaries()
         self.assertEqual(
-            lca.technosphere_dict,
+            lca.activity_dict,
             {
                 ('inventory', 'X'): 0,
                 ('inventory', 'U'): 1,
