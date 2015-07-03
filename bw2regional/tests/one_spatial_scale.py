@@ -38,7 +38,6 @@ class OneSpatialScaleLCATestCase(BW2RegionalTest):
         biosphere = Database("biosphere")
         biosphere.register(depends=[], geocollections=[])
         biosphere.write(biosphere_data)
-        biosphere.process()
 
         inventory_data = {
             ('inventory', 'U'): {
@@ -81,7 +80,6 @@ class OneSpatialScaleLCATestCase(BW2RegionalTest):
         inventory = Database("inventory")
         inventory.register(depends=["biosphere"], geocollections=["places"])
         inventory.write(inventory_data)
-        inventory.process()
 
         method_data = [
             [('biosphere', 'F'), 1, "L"],
@@ -90,7 +88,6 @@ class OneSpatialScaleLCATestCase(BW2RegionalTest):
         method = Method(("a", "method"))
         method.register(geocollections=['places'])
         method.write(method_data)
-        method.process()
 
     def test_import_data(self):
         self.import_data()
@@ -120,7 +117,7 @@ class OneSpatialScaleLCATestCase(BW2RegionalTest):
         ))
         lca.fix_dictionaries()
         self.assertEqual(
-            lca.technosphere_dict,
+            lca.activity_dict,
             {
                 ('inventory', 'X'): 0,
                 ('inventory', 'U'): 1,

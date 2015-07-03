@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*
 from __future__ import division
-from bw2data import config
+from bw2data import config, projects
 import numpy as np
 import os
 import warnings
@@ -40,7 +40,7 @@ class RegionalizedGrapher(object):
         return {rev_ia[col][1]: val for col, val in zip(matrix.col, matrix.data)}
 
     def write(self, filename, fieldname="lcaresult"):
-        filepath = os.path.join(config.request_dir(u"output"), filename)
+        filepath = os.path.join(projects.request_directory(u"output"), filename)
         if self.map.raster:
             return self.write_raster(filepath)
         else:

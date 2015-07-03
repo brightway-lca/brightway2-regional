@@ -6,8 +6,27 @@ from bw2data import Method, methods
 import copy
 
 
-def import_regionalized_cfs(geocollection, method, flow, cf_field=None,
+def import_regionalized_cfs(geocollection, method, mapping, cf_field=None,
         overwrite=True):
+    """Import data from a geospatial dataset (i.e. raster or vector data) into a ``Method``.
+
+    A ``Method`` can have both site-generic and regionalized characterization factors.
+
+    The ``mapping`` defines which field (vector) or band (raster) maps to which biosphere flows. Some geocollections may only define regionalized chracterization factors for a single biosphere flow, but it is much more common to have each field or band map to multiple biosphere flows. Therefore, mapping should be defined as:
+
+    .. code-block:: python
+
+        {
+            field name (str) or raster band (int): [list of biosphere flows (tuples)]
+        }
+
+    Args:
+        * *geocollection*: A ``geocollection`` name.
+        * *method*: A ``Method`` instance (not the identifying tuple).
+        * *mapping*: Mapping from fields or bands to biosphere flows. See above.
+        * *overwrite*: Boolean. Overwrite existing characterization factors. Default is ``True``. Set to ``False`` if ``method`` already has site-generic characterization factors.
+
+    """
     try:
         from pandarus import Map
     except:
@@ -27,24 +46,42 @@ def import_regionalized_cfs(geocollection, method, flow, cf_field=None,
     map_obj = Map(**metadata)
 
     if map_obj.vector:
-        cf_field = cf_field or methods[method.name].get('cf_field')
-        if not cf_field:
-            raise ValueError("Method must specify ``cf_field`` field name to retrieve CF values")
         id_field = geocollections[geocollection].get('field')
         if not id_field:
             raise ValueError("Geocollection must specify ``field`` field name for unique feature ids")
 
-    for feature in map_obj:
-        if map_obj.vector:
-            label = feature['properties'][id_field]
-            value = float(feature['properties'][cf_field])
-        else:
-            label = feature['label']
-            value = feature['value']
-        data.append((flow, value, (geocollection, label)))
+        for feature in map_obj:
+            for field in mapping:
+                for flow in mapping[field]:
+                    data.append((
+                        flow,                                             # Biosphere flow
+                        float(feature['properties'][field]),              # CF value
+                        (geocollection, feature['properties'][id_field])  # Spatial unit
+                    ))
+
+    else:
+        # TODO: Does this respect raster band in mapping?
+        for feature in map_obj:
+            for band_index in mapping:
+                for flow in mapping[band_index]:
+                    data.append((
+                        # Biosphere flow
+                        flow,
+                        # CF value
+                        feature['value'],
+                        # Spatial unit
+                        (geocollection, feature['label'])
+                    ))
+
+
+            # if map_obj.vector:
+            #     label =
+            #     value =
+            # else:
+            #     label = feature['label']
+            #     value = feature['value']
 
     method.write(data)
-    method.process()
 
     if overwrite:
         methods[method.name]['geocollections'] = [geocollection]
@@ -103,7 +140,6 @@ def create_empty_intersection(name):
     inter = Intersection(name)
     inter.register()
     inter.write([])
-    inter.process()
     return inter
 
 def reset_geo_meta():

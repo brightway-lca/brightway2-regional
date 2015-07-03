@@ -2,7 +2,7 @@
 from .meta import loadings
 from .validate import loading_validator
 from .utils import get_pandarus_map
-from bw2data import geomapping, config
+from bw2data import geomapping, config, projects
 from bw2data.data_store import DataStore
 from bw2data.utils import MAX_INT_32
 import numpy as np
@@ -43,7 +43,7 @@ class Loading(DataStore):
     def _write_raster_loadings_to_map(self, map_obj, data):
         NODATA = -9999.
         filepath = os.path.join(
-            config.request_dir(u"output"),
+            projects.request_directory(u"output"),
             self.filename + u".tiff"
         )
 

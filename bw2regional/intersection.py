@@ -21,6 +21,9 @@ class Intersection(ImpactAssessmentDataStore):
     ]
 
     def add_mappings(self, data):
+        """Add all geographic units in both geocollections to ``geomapping``, the master location list.
+
+        Called automatically when data is written."""
         geomapping.add({x[0] for x in data})
         geomapping.add({x[1] for x in data})
 
@@ -47,7 +50,6 @@ class Intersection(ImpactAssessmentDataStore):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self.write(data)
-            self.process()
             self.metadata[self.name]['filepath'] =  filepath
             self.metadata.flush()
 
@@ -63,6 +65,5 @@ class Intersection(ImpactAssessmentDataStore):
             new_obj = Intersection(new_name)
             new_obj.register(**copy.deepcopy(self.metadata[self.name]))
             new_obj.write(new_data)
-            new_obj.process()
 
         return new_obj

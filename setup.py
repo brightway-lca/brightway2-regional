@@ -14,7 +14,6 @@ setup(
         "bw2data>=0.12",
         "pandarus",
         "fiona>=1.1.3",
-        "progressbar-ipython",
         "stats_arrays",
         "voluptuous",
     ],

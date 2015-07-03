@@ -6,11 +6,6 @@ Common tasks with regionalized data
 Match geocollections using Pandarus
 ===================================
 
-.. _normalize-spatial:
-
-Normalize spatial units
-=======================
-
 .. _convert-to-ia:
 
 Convert geocollection to Method data

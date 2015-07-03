@@ -47,4 +47,3 @@ class ExtensionTable(Loading):
             data.append((value, (geocollection, label)))
 
         self.write(data)
-        self.process()
