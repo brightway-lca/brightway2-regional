@@ -4,29 +4,30 @@ from eight import *
 
 from . import (
     ExtensionTable,
+    faces,
     geocollections,
     import_regionalized_cfs,
+    Intersection,
 )
+from brightway2 import config, geomapping, Method
 from bw2data.utils import download_file
-import warnings
-import os
-from brightway2 import config
+from constructive_geometries import ConstructiveGeometries
 import json
+import os
+import warnings
 
-LC_IMPACT_WARNING = """"This is a preliminary implementation of LC IMPACT!
 
+LC_IMPACT_WARNING = """This is a preliminary implementation of LC IMPACT!
 It is incomplete, and some values will change.
-As such, it should not be used for scientific results."""
+"""
 
 
 def import_base_reg_data():
     """Import base data needed for regionalization.
 
     Currently, this is the topology used for ecoinvent 3.1."""
-    try:
-        from constructive_geometries import ConstructiveGeometries
-    except ImportError:
-        raise ImportError("Please install the ``constructive_geometries`` library.")
+
+    print("Adding ecoinvent topology")
     cg = ConstructiveGeometries()
     cg.check_data()
     geocollections['ecoinvent-topology'] = {
@@ -34,21 +35,13 @@ def import_base_reg_data():
         'field': 'id',
     }
 
-    # Create special geomapping from ecoinvent location names
-    # to topological face ids
-
-    fp = os.path.join(
-        projects.dir,
-        "processed",
-        "eitopo.geomapping"
-    )
-    gl = config.global_location
     face_data = dict(json.load(open(cg.data_fp)))
+    faces.update({k: [('ecoinvent-topology', fid) for fid in v]
+                  for k, v in face_data.items()})
+    face_ids = set.union(*[set(x) for x in face_data.values()])
+    geomapping.add([('ecoinvent-topology', x) for x in face_ids])
 
-    # names=[Database(x).filename + u".geomapping"
-    #     for x in self.databases
-    # ],
-
+    print("Adding GDP-weighted population density map")
     geocollections['gdp-weighted-pop-density'] = {
         'filepath': download_file("gdpweighted.tiff", "reg")
     }
@@ -56,7 +49,8 @@ def import_base_reg_data():
     xt.register(geocollection='gdp-weighted-pop-density')
     xt.import_from_map()
     intersection = Intersection(('ecoinvent-topology', "gdp-weighted-pop-density"))
-    intersection.import_from_pandarus(download_file("", "reg"))
+    intersection.register()
+    intersection.import_from_pandarus(download_file("faces-gdpweighted.json.bz2", "reg"))
 
     # geocollections['cropland'] = {
     #     'filepath': download_file("cropland.tiff", "reg")
@@ -76,10 +70,17 @@ def import_lc_impact_lcia_method():
     # intersection = Intersection(("ammonia", "cropland"))
     # intersection.import_from_pandarus("/Users/cmutel/Projects/Regionalization/SETAC Barcelona/bw2reg/ammonia-cropland.json.bz2")
 
-    intersection = Intersection(("ammonia", "gdp-weighted-pop"))
-    intersection.import_from_pandarus("/Users/cmutel/Projects/Regionalization/SETAC Barcelona/bw2reg/ammonia-gdpweighted.json.bz2")
+    print("Adding ammonia characterization factors map")
+    geocollections['ammonia'] = {
+        'filepath': download_file("ammonia.tiff", "reg")
+    }
 
-    # intersection = Intersection(("eut", "gdp-weighted-pop"))
+    print("Downloading and importing ammonia-gdp intersection")
+    intersection = Intersection(("ammonia", 'gdp-weighted-pop-density'))
+    intersection.register()
+    intersection.import_from_pandarus(download_file("ammonia-gdpweighted.json.bz2", "reg"))
+
+    # intersection = Intersection(("eut", "gdp-weighted-pop-density"))
     # intersection.import_from_pandarus("/Users/cmutel/Projects/Regionalization/SETAC Barcelona/bw2reg/eut-gdp.json.bz2")
 
     # intersection = Intersection(("eut", "cropland"))
@@ -101,22 +102,15 @@ def import_lc_impact_lcia_method():
     #     }
     # )
 
+    print("Creating acidification method")
     acidification_method = Method((u"LC IMPACT", u"acidification"))
-    acidification_method.register(band=1, unit="Unknown")
-
-    import_regionalized_cfs(
-        "ammonia",
-        acidification_method,
-        {1: [
-                (u'biosphere3', u'0f440cc0-0f74-446d-99d6-8ff0e97a2444'),
-                (u'biosphere3', u'8494ed3c-0416-4aa5-b100-51a2b2bcadbd'),
-                (u'biosphere3', u'2b50f643-216a-412b-a0e5-5946867aa2ed'),
-                (u'biosphere3', u'87883a4e-1e3e-4c9d-90c0-f1bea36f8014'),
-                (u'biosphere3', u'9990b51b-7023-4700-bca0-1a32ef921f74')
-            ]
-        }
+    acidification_method.register(
+        band=1,
+        unit="Unknown",
+        geocollections=['ammonia']
     )
-    acid_cf_data = acidification_method.load()
+
+    # Site-generic CFs
     flows = [
         (u'biosphere3', u'0f440cc0-0f74-446d-99d6-8ff0e97a2444'),
         (u'biosphere3', u'8494ed3c-0416-4aa5-b100-51a2b2bcadbd'),
@@ -124,6 +118,12 @@ def import_lc_impact_lcia_method():
         (u'biosphere3', u'87883a4e-1e3e-4c9d-90c0-f1bea36f8014'),
         (u'biosphere3', u'9990b51b-7023-4700-bca0-1a32ef921f74')
     ]
-    for flow in flows:
-        acid_cf_data.append((flow, 1.48e-10, "GLO"))
-    acidification_method.write(acid_cf_data)
+    acidification_method.write([(flow, 1.48e-10, "GLO") for flow in flows])
+
+    # Regionalized
+    import_regionalized_cfs(
+        "ammonia",
+        acidification_method,
+        {1: flows},
+        overwrite=False
+    )

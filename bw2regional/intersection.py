@@ -53,8 +53,8 @@ class Intersection(ImpactAssessmentDataStore):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self.write(data)
-            self.metadata[self.name]['filepath'] =  filepath
-            self.metadata.flush()
+            self._metadata[self.name]['filepath'] =  filepath
+            self._metadata.flush()
 
         self.create_reversed_intersection()
 

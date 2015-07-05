@@ -3,7 +3,11 @@ from __future__ import print_function, unicode_literals
 from eight import *
 from future.utils import python_2_unicode_compatible
 
-from bw2data.serialization import SerializedDict, CompoundJSONDict
+from bw2data.serialization import (
+    CompoundJSONDict,
+    PickledDict,
+    SerializedDict,
+)
 
 
 @python_2_unicode_compatible
@@ -49,7 +53,12 @@ class ExtensionTables(SerializedDict):
         return u"Brightway extension tables metadata: %i tables" % len(self)
 
 
+class TopologicalFaces(PickledDict):
+    filename = "topo-face.pickle"
+
+
 loadings = Loadings()
 intersections = Intersections()
 geocollections = Geocollections()
 extension_tables = ExtensionTables()
+faces = TopologicalFaces()

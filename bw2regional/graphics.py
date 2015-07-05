@@ -2,9 +2,6 @@
 from __future__ import print_function, unicode_literals, division
 from eight import *
 
-from bw2data import config
-# -*- coding: utf-8 -*
-from __future__ import division
 from bw2data import config, projects
 import numpy as np
 import os

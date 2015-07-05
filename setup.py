@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='bw2regional',
-    version="0.2",
+    version="0.3",
     packages=["bw2regional", "bw2regional.tests", "bw2regional.lca"],
     author="Chris Mutel",
     author_email="cmutel@gmail.com",

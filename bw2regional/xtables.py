@@ -6,6 +6,7 @@ from .meta import extension_tables, geocollections
 from .validate import xtable_validator
 from .loading import Loading
 from .utils import get_pandarus_map
+import pyprind
 
 
 class ExtensionTable(Loading):
@@ -40,7 +41,7 @@ class ExtensionTable(Loading):
             if not id_field:
                 raise ValueError("Geocollection must specify ``field`` field name for unique feature ids")
 
-        for feature in map_obj:
+        for feature in pyprind.prog_bar(map_obj):
             if map_obj.vector:
                 label = feature['properties'][id_field]
                 value = float(feature['properties'][xt_field])
