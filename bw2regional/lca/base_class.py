@@ -67,7 +67,7 @@ class RegionalizationBase(LCA):
                 row_index_label="row",
                 col_id_label="geo",
                 col_index_label="col",
-                row_dict=self.technosphere_dict,
+                row_dict=self.activity_dict,
             )
         return (inv_mapping_params, inv_spatial_dict, inv_mapping_matrix)
 

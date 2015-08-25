@@ -31,7 +31,7 @@ class LoadingTestCase(BW2RegionalTest):
 
     def test_filename(self):
         s = "some loading with a crazy name"
-        r = s.replace(" ", "-") + "." + hashlib.md5(s).hexdigest() + ".loading"
+        r = s.replace(" ", "-") + "." + hashlib.md5(s.encode('utf-8')).hexdigest() + ".loading"
         lg = Loading("some loading with a crazy name")
         self.assertEqual(lg.filename, r)
 

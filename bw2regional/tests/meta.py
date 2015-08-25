@@ -13,7 +13,7 @@ class GeocollectionsTestCase(BW2RegionalTest):
     def test_unicode(self):
         self.assertTrue(isinstance(str(geocollections), str))
         self.assertEqual(
-            unicode(geocollections),
+            str(geocollections),
             u"Brightway2 geocollections metadata: 0 data sets"
         )
 
@@ -25,7 +25,7 @@ class IntersectionsTestCase(BW2RegionalTest):
     def test_unicode(self):
         self.assertTrue(isinstance(str(intersections), str))
         self.assertEqual(
-            unicode(intersections),
+            str(intersections),
             u"Brightway2 LCI/LCIA areal intersection metadata: 0 data sets"
         )
 
@@ -37,6 +37,6 @@ class LoadingsTestCase(BW2RegionalTest):
     def test_unicode(self):
         self.assertTrue(isinstance(str(loadings), str))
         self.assertEqual(
-            unicode(loadings),
+            str(loadings),
             u"Brightway2 regionalized LCIA loading metadata: 0 data sets"
         )
