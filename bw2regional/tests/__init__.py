@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*
 from .intersections import IntersectionTestCase
-from .lca_mixin import RegionalizedLCAMixinTestCase
+from .lca_mixin import RegionalizationBaseTestCase
 from .loading import LoadingTestCase
 from .meta import IntersectionsTestCase, LoadingsTestCase, GeocollectionsTestCase
 from .one_spatial_scale import OneSpatialScaleLCATestCase

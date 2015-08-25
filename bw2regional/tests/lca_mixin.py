@@ -3,17 +3,13 @@ from __future__ import print_function, unicode_literals, division
 from eight import *
 
 from ..errors import MissingIntersection, SiteGenericMethod, UnprocessedDatabase
-from ..lca import RegionalizationMixin
+from ..lca.base_class import RegionalizationBase
 from bw2calc import LCA
 from .base import BW2RegionalTest
 from bw2data import Database, Method, geomapping
 
 
-class RegionalizedLCA(LCA, RegionalizationMixin):
-    pass
-
-
-class RegionalizedLCAMixinTestCase(BW2RegionalTest):
+class RegionalizationBaseTestCase(BW2RegionalTest):
     def test_unprocessed_database_error(self):
         empty = Database("empty")
         empty.register(depends=[])
