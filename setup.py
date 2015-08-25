@@ -12,6 +12,7 @@ setup(
         "brightway2",
         "bw2calc>=0.11",
         "bw2data>=0.12",
+        "constructive_geometries",
         "eight",
         "pandarus",
         "fiona>=1.1.3",
