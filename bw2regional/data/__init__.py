@@ -1,0 +1,2 @@
+from .ecoinvent import expand_ecoinvent_location_codes
+from .lcimpact import import_lcimpact_lcia_method
