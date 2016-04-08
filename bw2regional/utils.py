@@ -145,8 +145,17 @@ def create_empty_intersection(name):
     inter.write([])
     return inter
 
+
+def convert_default_ecoinvent_locations(string):
+    if len(string) == 2 or string == "GLO":
+        return string
+    else:
+        return ("ecoinvent", string)
+
+
 def reset_geo_meta():
     intersections.__init__()
     loadings.__init__()
     geocollections.__init__()
+    topocollections.__init__()
     extension_tables.__init__()

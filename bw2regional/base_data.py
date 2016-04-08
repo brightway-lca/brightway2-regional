@@ -3,11 +3,12 @@ from __future__ import print_function, unicode_literals
 from eight import *
 
 from . import (
+    convert_default_ecoinvent_locations,
     ExtensionTable,
-    faces,
     geocollections,
     import_regionalized_cfs,
     Intersection,
+    topocollections,
 )
 from brightway2 import config, geomapping, Method
 from bw2data.utils import download_file
@@ -22,50 +23,57 @@ It is incomplete, and some values will change.
 """
 
 
-def import_base_reg_data():
+def bw2regionalsetup():
     """Import base data needed for regionalization.
 
-    Currently, this is the topology used for ecoinvent 3.1."""
+    Currently, this is the topology used for ecoinvent 3."""
 
     print("Adding ecoinvent topology")
     cg = ConstructiveGeometries()
     cg.check_data()
-    geocollections['ecoinvent-topology'] = {
-        'filepath': cg.faces_fp,
-        'field': 'id',
+    geocollections['world'] = {
+        'filepath': download_file(
+            "all.gpkg",
+            "regional",
+            url="https://geography.ecoinvent.org/report/files/"
+        ),
+        'field': 'isotwolettercode',
+    }
+    geocollections['ecoinvent'] = {
+        'filepath': geocollections['countries']['filepath'],
+        'field': 'shortname',
     }
 
+    # TODO: Update
+    topocollections['ecoinvent']
     face_data = dict(json.load(open(cg.data_fp)))
-    faces.update({k: [('ecoinvent-topology', fid) for fid in v]
+    faces.update({k: [('ecoinvent', fid) for fid in v]
                   for k, v in face_data.items()})
     face_ids = set.union(*[set(x) for x in face_data.values()])
-    geomapping.add([('ecoinvent-topology', x) for x in face_ids])
 
     print("Adding GDP-weighted population density map")
     geocollections['gdp-weighted-pop-density'] = {
-        'filepath': download_file("gdpweighted.tiff", "reg")
+        'filepath': download_file("gdpweighted.tiff", "regional", url=None) # TODO
     }
     xt = ExtensionTable('gdp-weighted-pop-density')
     xt.register(geocollection='gdp-weighted-pop-density')
     xt.import_from_map()
+
+    # TODO: Update
     intersection = Intersection(('ecoinvent-topology', "gdp-weighted-pop-density"))
     intersection.register()
+    # TODO: Should use pandarus_remote server API calls
     intersection.import_from_pandarus(download_file("faces-gdpweighted.json.bz2", "reg"))
 
-    # geocollections['cropland'] = {
-    #     'filepath': download_file("cropland.tiff", "reg")
-    # }
-    # xt = ExtensionTable("cropland")
-    # xt.register(geocollection="cropland")
-    # xt.import_from_map()
-    # intersection = Intersection(('ecoinvent-topology', "cropland"))
-    # intersection.import_from_pandarus(download_file("", "reg"))
 
 def import_lc_impact_lcia_method():
     """Import the `LC IMPACT <http://www.lc-impact.eu/>`__ LCIA method"""
-    assert 'ecoinvent-topology' in geocollections, "Please install base data (`import_base_reg_data`) first"
+    assert 'ecoinvent' in geocollections, "Please install base data (function `bw2regionalsetup`) first"
 
     warnings.warn(LC_IMPACT_WARNING)
+
+    # TODO: Update all
+    return
 
     # intersection = Intersection(("ammonia", "cropland"))
     # intersection.import_from_pandarus("/Users/cmutel/Projects/Regionalization/SETAC Barcelona/bw2reg/ammonia-cropland.json.bz2")

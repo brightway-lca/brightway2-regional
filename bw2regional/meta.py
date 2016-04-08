@@ -12,27 +12,22 @@ from bw2data.serialization import (
 
 @python_2_unicode_compatible
 class Loadings(SerializedDict):
-    """A dictionary for metadata on regionalized LCIA weightings.
-
-    File is saved in ``loading.json``
-
-    Metdata fields:
-        *
-
-    """
+    """Metadata on regionalized LCIA weightings."""
     filename = "loadings.json"
 
     def __str__(self):
-        return u"Brightway2 regionalized LCIA loading metadata: %i data sets" % len(self)
+        return ("Brightway2 regionalized LCIA loading metadata: {} data sets"
+                ).format(len(self))
 
 
 @python_2_unicode_compatible
 class Intersections(CompoundJSONDict):
-    """"""
+    """Areal intersections between the elements of two geo- or topocollections"""
     filename = "intersections.json"
 
     def __str__(self):
-        return u"Brightway2 LCI/LCIA areal intersection metadata: %s data sets" % len(self)
+        return ("Brightway2 LCI/LCIA areal intersection metadata: {} data sets"
+                ).format(len(self))
 
 
 @python_2_unicode_compatible
@@ -41,24 +36,29 @@ class Geocollections(SerializedDict):
     filename = "geocollections.json"
 
     def __str__(self):
-        return u"Brightway2 geocollections metadata: %i data sets" % len(self)
+        return "Brightway2 geocollections metadata: {} data sets".format(len(self))
+
+
+@python_2_unicode_compatible
+class Topocollections(SerializedDict):
+    """Mappings from geocollections to a set of topographical face ids."""
+    filename = "topocollections.json"
+
+    def __str__(self):
+        return "Brightway2 topocollections metadata: {} data sets".format(len(self))
 
 
 @python_2_unicode_compatible
 class ExtensionTables(SerializedDict):
-    """Metadata for extension tables."""
+    """Metadata for extension tables that give loadings on a third spatial scale."""
     filename = "extension-tables.json"
 
     def __str__(self):
-        return u"Brightway extension tables metadata: %i tables" % len(self)
-
-
-class TopologicalFaces(PickledDict):
-    filename = "topo-face.pickle"
+        return "Brightway extension tables metadata: {} tables".format(len(self))
 
 
 loadings = Loadings()
 intersections = Intersections()
 geocollections = Geocollections()
+topocollections = Topocollections()
 extension_tables = ExtensionTables()
-faces = TopologicalFaces()

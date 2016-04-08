@@ -39,6 +39,13 @@ class Intersection(ImpactAssessmentDataStore):
             ), row[2]
 
     def import_from_pandarus(self, filepath):
+        """Import a `pandarus` output file.
+
+        The order of geocollections in the output file must be the same as in this intersection. This can't be checked automatically, so it is up to the user to make sure it is correct.
+
+        Also creates the reversed intersection, e.g. if this intersection is `(A,B)`, this method also creates `(B,A)`.
+
+        """
         if self.name not in self._metadata:
             self.register()
         assert isinstance(self.name, tuple) and len(self.name) == 2
