@@ -5,7 +5,7 @@ from eight import *
 from ..lca import OneSpatialScaleLCA as LCA
 from ..meta import intersections, loadings
 from .base import BW2RegionalTest
-from bw2data import Database, Method, databases, methods
+from bw2data import Database, Method, databases, methods, geomapping
 import numpy as np
 from ..errors import GeocollectionsMismatch
 
@@ -94,10 +94,10 @@ class OneSpatialScaleLCATestCase(BW2RegionalTest):
 
     def test_import_data(self):
         self.import_data()
-        self.assertTrue(databases.list)
-        self.assertFalse(intersections.list)
-        self.assertTrue(methods.list)
-        self.assertFalse(loadings.list)
+        assert list(databases)
+        assert not list(intersections)
+        assert list(methods)
+        assert not list(loadings)
 
     def get_lca(self):
         self.import_data()
@@ -109,38 +109,28 @@ class OneSpatialScaleLCATestCase(BW2RegionalTest):
     def test_inventory(self):
         lca = self.get_lca()
         lca.lci()
-        self.assertTrue(np.allclose(
-            lca.technosphere_matrix.todense(),
-            np.eye(5)
-        ))
-        lca.fix_dictionaries()
-        self.assertTrue(np.allclose(
-            lca.biosphere_matrix.todense(),
-            np.array(((0, 1, 0, 0, 0), (0, 1, 0, 0, 0)))
-        ))
-        lca.fix_dictionaries()
-        self.assertEqual(
-            lca.activity_dict,
-            {
-                ('inventory', 'X'): 0,
-                ('inventory', 'U'): 1,
-                ('inventory', 'V'): 2,
-                ('inventory', 'Y'): 3,
-                ('inventory', 'Z'): 4
-            }
-        )
-        self.assertEqual(
-            lca.biosphere_dict,
-            {('biosphere', 'G'): 0, ('biosphere', 'F'): 1}
-        )
-        self.assertTrue(np.allclose(
-            lca.supply_array,
-            np.array((0, 1, 0, 0, 0))
-        ))
-        self.assertTrue(np.allclose(
-            lca.inventory.todense(),
-            lca.biosphere_matrix.todense()
-        ))
+
+        assert np.allclose(lca.technosphere_matrix.todense(), np.eye(5))
+
+        assert lca.biosphere_matrix.sum() == 2
+        assert lca.biosphere_matrix.shape == (2, 5)
+        assert lca.biosphere_matrix[
+            lca.biosphere_dict[('biosphere', 'F')],
+            lca.activity_dict[('inventory', 'U')]
+        ] == 1
+        assert lca.biosphere_matrix[
+            lca.biosphere_dict[('biosphere', 'G')],
+            lca.activity_dict[('inventory', 'U')]
+        ] == 1
+
+        assert {('inventory', o) for o in 'XUVYZ'} == set(lca.activity_dict.keys())
+        assert set(range(5)) == set(lca.activity_dict.values())
+        assert {('biosphere', 'G'), ('biosphere', 'F')} == set(lca.biosphere_dict.keys())
+        assert set(range(2)) == set(lca.biosphere_dict.values())
+
+        assert lca.supply_array.sum() == 1
+        assert lca.supply_array.shape == (5,)
+        assert lca.supply_array[lca.product_dict[('inventory', 'U')]] == 1
 
     def test_characterization_matrix(self):
         lca = self.get_lca()
@@ -149,17 +139,20 @@ class OneSpatialScaleLCATestCase(BW2RegionalTest):
         matrix = np.zeros((4, 2))
         matrix[1, 1] = 1
         matrix[1, 0] = 2
-        self.assertTrue(np.allclose(
-            lca.reg_cf_matrix.todense(),
-            matrix
-        ))
+        assert lca.reg_cf_matrix.sum() == 3
+        assert lca.reg_cf_matrix.shape == (4, 2)
+        assert lca.reg_cf_matrix[
+            lca.inv_spatial_dict[geomapping['L']],
+            lca.biosphere_dict[('biosphere', 'F')]
+        ] == 1
+        assert lca.reg_cf_matrix[
+            lca.inv_spatial_dict[geomapping['L']],
+            lca.biosphere_dict[('biosphere', 'G')]
+        ] == 2
 
     def test_lca_score(self):
         lca = self.get_lca()
         lca.lci()
         lca.lcia()
-        self.assertEqual(
-            lca.score,
-            3
-        )
+        assert lca.score == 3
 

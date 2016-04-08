@@ -6,7 +6,7 @@ from ..intersection import Intersection
 from ..lca import TwoSpatialScalesLCA as LCA
 from ..meta import intersections, loadings
 from .base import BW2RegionalTest
-from bw2data import Database, Method, databases, methods
+from bw2data import Database, Method, databases, methods, geomapping
 import numpy as np
 
 
@@ -101,10 +101,10 @@ class TwoSpatialScalesLCATestCase(BW2RegionalTest):
 
     def test_import_data(self):
         self.import_data()
-        self.assertTrue(databases.list)
-        self.assertTrue(intersections.list)
-        self.assertTrue(methods.list)
-        self.assertFalse(loadings.list)
+        assert list(databases)
+        assert list(intersections)
+        assert list(methods)
+        assert not list(loadings)
 
     def get_lca(self):
         self.import_data()
@@ -116,88 +116,105 @@ class TwoSpatialScalesLCATestCase(BW2RegionalTest):
     def test_inventory(self):
         lca = self.get_lca()
         lca.lci()
-        self.assertTrue(np.allclose(
-            lca.technosphere_matrix.todense(),
-            np.eye(5)
-        ))
-        lca.fix_dictionaries()
-        self.assertTrue(np.allclose(
-            lca.biosphere_matrix.todense(),
-            np.array(((0, 1, 0, 0, 0), (0, 1, 0, 0, 0)))
-        ))
-        lca.fix_dictionaries()
-        self.assertEqual(
-            lca.activity_dict,
-            {
-                ('inventory', 'X'): 0,
-                ('inventory', 'U'): 1,
-                ('inventory', 'V'): 2,
-                ('inventory', 'Y'): 3,
-                ('inventory', 'Z'): 4
-            }
-        )
-        self.assertEqual(
-            lca.biosphere_dict,
-            {('biosphere', 'G'): 0, ('biosphere', 'F'): 1}
-        )
-        self.assertTrue(np.allclose(
-            lca.supply_array,
-            np.array((0, 1, 0, 0, 0))
-        ))
-        self.assertTrue(np.allclose(
-            lca.inventory.todense(),
-            lca.biosphere_matrix.todense()
-        ))
+        lca.fix_spatial_dictionaries()
+
+        assert np.allclose(lca.technosphere_matrix.todense(), np.eye(5))
+
+        assert lca.biosphere_matrix.sum() == 2
+        assert lca.biosphere_matrix.shape == (2, 5)
+        assert lca.biosphere_matrix[
+            lca.biosphere_dict[('biosphere', 'F')],
+            lca.activity_dict[('inventory', 'U')]
+        ] == 1
+        assert lca.biosphere_matrix[
+            lca.biosphere_dict[('biosphere', 'G')],
+            lca.activity_dict[('inventory', 'U')]
+        ] == 1
+
+        assert {('inventory', o) for o in 'XUVYZ'} == set(lca.activity_dict.keys())
+        assert set(range(5)) == set(lca.activity_dict.values())
+        assert {('biosphere', 'G'), ('biosphere', 'F')} == set(lca.biosphere_dict.keys())
+        assert set(range(2)) == set(lca.biosphere_dict.values())
+
+        assert lca.supply_array.sum() == 1
+        assert lca.supply_array.shape == (5,)
+        assert lca.supply_array[lca.product_dict[('inventory', 'U')]] == 1
+
+        assert np.allclose(lca.inventory.todense(), lca.biosphere_matrix.todense())
 
     def test_geo_transform_matrix(self):
         lca = self.get_lca()
         lca.lci()
         lca.lcia()
         lca.fix_spatial_dictionaries()
-        self.assertEqual(
-            lca.inv_spatial_dict,
-            {'M': 0, 'L': 1, 'O': 2, 'N': 3}
-        )
-        self.assertEqual(
-            lca.ia_spatial_dict,
-            {'A': 0, 'B': 2, 'C': 1}
-        )
-        self.assertTrue(np.allclose(
-            lca.geo_transform_matrix.todense(),
-            np.array(((2, 0, 3), (1, 0, 0), (0, 13, 0), (0, 8, 5)))
-        ))
+
+        assert {x for x in 'MLNO'} == set(lca.inv_spatial_dict.keys())
+        assert set(range(4)) == set(lca.inv_spatial_dict.values())
+
+        assert {x for x in 'ABC'} == set(lca.ia_spatial_dict.keys())
+        assert set(range(3)) == set(lca.ia_spatial_dict.values())
+
+        assert lca.geo_transform_matrix.sum() == 32
+        assert lca.geo_transform_matrix.shape == (4, 3)
+        assert lca.geo_transform_matrix[
+            lca.inv_spatial_dict['L'],
+            lca.ia_spatial_dict['A']
+        ] == 1
+        assert lca.geo_transform_matrix[
+            lca.inv_spatial_dict['M'],
+            lca.ia_spatial_dict['B']
+        ] == 3
 
     def test_characterization_matrix(self):
         lca = self.get_lca()
         lca.lci()
         lca.lcia()
-        self.assertTrue(np.allclose(
-            lca.reg_cf_matrix.todense(),
-            np.array(((2, 1), (6, 5), (4, 3)))
-        ))
+        lca.fix_spatial_dictionaries()
+
+        assert lca.reg_cf_matrix.sum() == 21
+        assert lca.reg_cf_matrix.shape == (3, 2)
+        assert lca.reg_cf_matrix[
+            lca.ia_spatial_dict['A'],
+            lca.biosphere_dict[('biosphere', 'F')]
+        ] == 1
+        assert lca.reg_cf_matrix[
+            lca.ia_spatial_dict['B'],
+            lca.biosphere_dict[('biosphere', 'G')]
+        ] == 4
 
     def test_inv_mapping_matrix(self):
         lca = self.get_lca()
         lca.lci()
         lca.lcia()
-        self.assertTrue(np.allclose(
-            lca.inv_mapping_matrix.todense(),
-            np.array(((0, 0, 0, 1), (0, 1, 0, 0), (1, 0, 0, 0), (0, 0, 1, 0), (0, 0, 1, 0)))
-        ))
+        lca.fix_spatial_dictionaries()
+
+        assert lca.inv_mapping_matrix.sum() == 5
+        assert lca.inv_mapping_matrix.shape == (5, 4)
+        assert lca.inv_mapping_matrix[
+            lca.activity_dict[('inventory', 'V')],
+            lca.inv_spatial_dict['M']
+        ] == 1
+        assert lca.inv_mapping_matrix[
+            lca.activity_dict[('inventory', 'X')],
+            lca.inv_spatial_dict['N']
+        ] == 1
 
     def test_normalization_matrix(self):
         lca = self.get_lca()
         lca.lci()
         lca.lcia()
-        normalization = np.eye(4)
-        normalization[1,1] = 1
-        normalization[0,0] = 1/5
-        normalization[3,3] = 1/13
-        normalization[2,2] = 1/13
-        self.assertTrue(np.allclose(
-            lca.normalization_matrix.todense(),
-            normalization
-        ))
+        lca.fix_spatial_dictionaries()
+
+        assert np.allclose(lca.normalization_matrix.sum(), 1 + 1/5 + 2/13)
+        assert lca.normalization_matrix.shape == (4, 4)
+        assert np.allclose(lca.normalization_matrix[
+            lca.inv_spatial_dict['M'],
+            lca.inv_spatial_dict['M']
+        ], 1/5)
+        assert np.allclose(lca.normalization_matrix[
+            lca.inv_spatial_dict['N'],
+            lca.inv_spatial_dict['N']
+        ], 1/13)
 
     def test_lca_score(self):
         lca = self.get_lca()
