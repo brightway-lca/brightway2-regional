@@ -21,6 +21,7 @@ __all__ = (
     "remote",
     "reset_geo_meta",
     "topocollections",
+    "Topography",
     "TopologicalExtensionTablesLCA",
     "TwoSpatialScalesLCA",
     "TwoSpatialScalesWithGenericLoadingLCA",
@@ -43,6 +44,7 @@ from .meta import (
     intersections,
     loadings,
 )
+from .topography import Topography
 from .utils import (
     convert_default_ecoinvent_locations,
     create_empty_intersection,

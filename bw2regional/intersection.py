@@ -46,7 +46,7 @@ class Intersection(ImpactAssessmentDataStore):
         Also creates the reversed intersection, e.g. if this intersection is `(A,B)`, this method also creates `(B,A)`.
 
         """
-        if self.name not in self._metadata:
+        if not self.registered:
             self.register()
         assert isinstance(self.name, tuple) and len(self.name) == 2
         try:
@@ -60,8 +60,7 @@ class Intersection(ImpactAssessmentDataStore):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self.write(data)
-            self._metadata[self.name]['filepath'] =  filepath
-            self._metadata.flush()
+            self.metadata['filepath'] =  filepath
 
         self.create_reversed_intersection()
 

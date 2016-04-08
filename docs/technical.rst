@@ -40,3 +40,9 @@ Extension tables
 
 .. autoclass:: bw2regional.lca.ExtensionTablesLCA
     :members:
+
+Topographies
+============
+
+.. autoclass:: bw2regional.topography.Topography
+    :members:
