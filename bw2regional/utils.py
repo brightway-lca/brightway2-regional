@@ -7,6 +7,7 @@ from .meta import geocollections, intersections, loadings, extension_tables
 from .intersection import Intersection
 from bw2data import Method, methods
 import copy
+import hashlib
 
 
 def import_regionalized_cfs(geocollection, method, mapping, cf_field=None,
@@ -136,6 +137,17 @@ def get_pandarus_map_for_method(method, geocollection=None):
     }
     metadata = {k:v for k, v in metadata.items() if v is not None}
     return Map(geocollection['filepath'], **metadata)
+
+
+def sha256(filepath, blocksize=65536):
+    """Generate SHA 256 hash for file at `filepath`"""
+    hasher = hashlib.sha256()
+    fo = open(filepath, 'rb')
+    buf = fo.read(blocksize)
+    while len(buf) > 0:
+        hasher.update(buf)
+        buf = fo.read(blocksize)
+    return hasher.hexdigest()
 
 
 def create_empty_intersection(name):

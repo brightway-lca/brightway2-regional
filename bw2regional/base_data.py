@@ -12,7 +12,7 @@ from . import (
 )
 from brightway2 import config, geomapping, Method
 from bw2data.utils import download_file
-from constructive_geometries import ConstructiveGeometries
+from constructive_geometries import ConstructiveGeometries, DATA_FILEPATH
 import json
 import os
 import warnings
@@ -28,42 +28,54 @@ def bw2regionalsetup():
 
     Currently, this is the topology used for ecoinvent 3."""
 
-    print("Adding ecoinvent topology")
-    cg = ConstructiveGeometries()
-    cg.check_data()
+    # print("Adding ecoinvent topology")
+    # cg = ConstructiveGeometries()
+    # cg.check_data()
+
+    print("Downloading and creating world geocollections")
     geocollections['world'] = {
         'filepath': download_file(
-            "all.gpkg",
+            "countries.gpkg",
             "regional",
             url="https://geography.ecoinvent.org/report/files/"
         ),
         'field': 'isotwolettercode',
     }
     geocollections['ecoinvent'] = {
-        'filepath': geocollections['countries']['filepath'],
+        'filepath': download_file(
+            "all.gpkg",
+            "regional",
+            url="https://geography.ecoinvent.org/report/files/"
+        ),
         'field': 'shortname',
     }
-
-    # TODO: Update
-    topocollections['ecoinvent']
-    face_data = dict(json.load(open(cg.data_fp)))
-    faces.update({k: [('ecoinvent', fid) for fid in v]
-                  for k, v in face_data.items()})
-    face_ids = set.union(*[set(x) for x in face_data.values()])
+    topocollections['world'] = {
+        'geocollection': 'world',
+        'filepath': os.path.join(DATA_FILEPATH, "faces.gpkg"),
+        'field': 'id'
+    }
+    topocollections['ecoinvent'] = {
+        'geocollection': 'ecoinvent',
+        'filepath': os.path.join(DATA_FILEPATH, "faces.gpkg"),
+        'field': 'id'
+    }
 
     print("Adding GDP-weighted population density map")
     geocollections['gdp-weighted-pop-density'] = {
-        'filepath': download_file("gdpweighted.tiff", "regional", url=None) # TODO
+        'filepath': download_file(
+            "gdpweighted.tiff",
+            "regional",
+            url=None
+        ) # TODO
     }
     xt = ExtensionTable('gdp-weighted-pop-density')
     xt.register(geocollection='gdp-weighted-pop-density')
     xt.import_from_map()
 
-    # TODO: Update
-    intersection = Intersection(('ecoinvent-topology', "gdp-weighted-pop-density"))
-    intersection.register()
-    # TODO: Should use pandarus_remote server API calls
-    intersection.import_from_pandarus(download_file("faces-gdpweighted.json.bz2", "reg"))
+    print("Adding world topology")
+    topo = Topography('countries-topo')
+    topo.write(json.load(open(os.path.join(data_dir, "test_topo_mapping.json"))))
+    topo.import_from_pandarus(os.path.join(data_dir, "intersect-topo-cfs.json.bz2"), "countries")
 
 
 def import_lc_impact_lcia_method():
