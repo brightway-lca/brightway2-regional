@@ -19,6 +19,10 @@ import numpy as np
 
 
 class RegionalizationBase(LCA):
+    def __init__(self, demand, *args, **kwargs):
+        super(RegionalizationBase, self).__init__(demand, *args, **kwargs)
+        self.databases = {k[0] for k in demand}
+
     def get_inventory_geocollections(self):
         """Get the set of all needed inventory geocollections.
 
@@ -46,7 +50,7 @@ class RegionalizationBase(LCA):
     def get_inventory_mapping_matrix(self, builder=MatrixBuilder):
         """Get inventory mapping matrix, **M**, which maps inventory activities to inventory locations. Rows are inventory activities and columns are inventory spatial units.
 
-        Uses ``self.activity_dict`` and ``self.databases``.
+        Uses ``self._activity_dict`` and ``self.databases``.
 
         Returns:
             * ``inv_mapping_params``: Parameter array with row/col of inventory activities/locations
@@ -54,20 +58,15 @@ class RegionalizationBase(LCA):
             * ``inv_mapping_matrix``: The matrix **M**
 
         """
-        names=[Database(x).filename + u".geomapping"
-            for x in self.databases
-        ],
-
         inv_mapping_params, _, inv_spatial_dict, inv_mapping_matrix = \
             builder.build(
-                dirpath=self.dirpath,
-                names=names,
+                paths=[Database(x).filepath_geomapping() for x in self.databases],
                 data_label="amount",
                 row_id_label="activity",
                 row_index_label="row",
                 col_id_label="geo",
                 col_index_label="col",
-                row_dict=self.activity_dict,
+                row_dict=self._activity_dict,
             )
         return (inv_mapping_params, inv_spatial_dict, inv_mapping_matrix)
 
@@ -97,9 +96,8 @@ class RegionalizationBase(LCA):
         """
         geo_transform_params, _, _, geo_transform_matrix = \
             builder.build(
-                dirpath=self.dirpath,
-                names=[
-                    Intersection(name).filename
+                paths=[
+                    Intersection(name).filepath_processed()
                     for name in self.needed_intersections()
                 ],
                 data_label="amount",
@@ -115,7 +113,7 @@ class RegionalizationBase(LCA):
     def get_regionalized_characterization_matrix(self, builder=MatrixBuilder):
         """Get regionalized characterization matrix, **R**, which gives location- and biosphere flow-specific characterization factors. Rows are impact assessment spatial units, and columns are biosphere flows.
 
-        Uses ``self.biosphere_dict`` and ``self.method``.
+        Uses ``self._biosphere_dict`` and ``self.method``.
 
         Returns:
             * ``reg_cf_params``: Parameter array with row/col of IA locations/biosphere flows
@@ -125,14 +123,13 @@ class RegionalizationBase(LCA):
         """
         reg_cf_params, ia_spatial_dict, _, reg_cf_matrix = \
             builder.build(
-                dirpath=self.dirpath,
-                names=[Method(self.method).filename],
+                paths=[Method(self.method).filepath_processed()],
                 data_label="amount",
                 row_id_label="geo",
                 row_index_label="row",
                 col_id_label="flow",
                 col_index_label="col",
-                col_dict=self.biosphere_dict,
+                col_dict=self._biosphere_dict,
             )
         return (reg_cf_params, ia_spatial_dict, reg_cf_matrix)
 
@@ -148,8 +145,7 @@ class RegionalizationBase(LCA):
         """
         loading_params, _, _, loading_matrix = \
             builder.build(
-                dirpath=self.dirpath,
-                names=[self.loading.filename],
+                paths=[self.loading.filepath_processed()],
                 data_label="amount",
                 row_id_label="geo",
                 row_index_label="row",
@@ -180,7 +176,6 @@ class RegionalizationBase(LCA):
     def _results_new_scale(self, matrix, flow):
         self.fix_spatial_dictionaries()
         if flow is not None:
-            self.fix_dictionaries()
             try:
                 row_index = self.biosphere_dict[flow]
                 matrix = matrix[row_index, :]
