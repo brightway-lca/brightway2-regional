@@ -102,11 +102,6 @@ Example import of pandarus output data:
                                         }
     Intersection(('some-raster', 'some-shapefile')).import_from_pandarus('foo.bar.json.bz2')
 
-Import regionalized characterization factors
-============================================
-
-The utility function :ref:`import-reg-cfs`
-
 Contents:
 
 .. toctree::

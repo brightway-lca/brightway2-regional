@@ -3,10 +3,10 @@ Technical reference
 
 .. _regionalization-mixin:
 
-Regionalization mixin
-=====================
+Regionalization base class
+==========================
 
-.. autoclass:: bw2regional.lca.RegionalizationMixin
+.. autoclass:: bw2regional.lca.base_class.RegionalizationBase
     :members:
 
 .. _two-scales-with-loading:
