@@ -119,8 +119,8 @@ If you know these intersections are not needed, you can create empty intersectio
     def build_distribution_matrix(self):
         params, _, spatial_dict, matrix = \
             MatrixBuilder.build(
-                dirpath=self.dirpath,
-                names=[Intersection(name).filename for name in self.inv_xtable_intersections],
+                paths=[Intersection(name).filepath_processed()
+                       for name in self.inv_xtable_intersections],
                 data_label="amount",
                 row_id_label="geo_inv",
                 row_index_label="row",
@@ -132,8 +132,7 @@ If you know these intersections are not needed, you can create empty intersectio
 
     def load_xtable_matrix(self):
         params, _, _, matrix = MatrixBuilder.build(
-            dirpath=self.dirpath,
-            names=[self.xtable.filename],
+            paths=[self.xtable.filepath_processed()],
             data_label="amount",
             row_id_label="geo",
             row_index_label="row",
@@ -171,9 +170,8 @@ If you know these intersections are not needed, you can create empty intersectio
     def get_geo_transform_matrix(self, builder=MatrixBuilder):
         geo_transform_params, _, _, geo_transform_matrix = \
             builder.build(
-                dirpath=self.dirpath,
-                names=[
-                    Intersection(name).filename
+                paths=[
+                    Intersection(name).filepath_processed()
                     for name in self.xtable_ia_intersections
                 ],
                 data_label="amount",

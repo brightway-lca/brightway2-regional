@@ -11,6 +11,12 @@ import numpy as np
 
 
 class TopologicalExtensionTablesLCA(ExtensionTablesLCA):
+    """LCA class that handles intersections that work directly with topological face ids.
+
+    This code is not recommended - please use the topological merging functions instead.
+
+    """
+
     def __init__(self, *args, **kwargs):
         super(TopologicalExtensionTablesLCA, self).__init__(*args, **kwargs)
 
@@ -18,20 +24,15 @@ class TopologicalExtensionTablesLCA(ExtensionTablesLCA):
         return [('ecoinvent-topology', obj) for obj in self.xtable_geocollections]
 
     def get_inventory_mapping_matrix(self, builder=MatrixBuilder):
-        names=[Database(x).filename + u".topomapping"
-            for x in self.databases
-        ]
-
         inv_mapping_params, _, inv_spatial_dict, inv_mapping_matrix = \
             builder.build(
-                dirpath=self.dirpath,
-                names=names,
+                paths=[Database(x).filepath_geomapping() for x in self.databases],
                 data_label="amount",
                 row_id_label="activity",
                 row_index_label="row",
                 col_id_label="geo",
                 col_index_label="col",
-                row_dict=self.activity_dict,
+                row_dict=self._activity_dict,
             )
         return (inv_mapping_params, inv_spatial_dict, inv_mapping_matrix)
 

@@ -6,7 +6,7 @@ from ..errors import GeocollectionsMismatch
 from .base_class import RegionalizationBase
 from bw2calc.lca import LCA
 from bw2calc.matrices import MatrixBuilder
-from bw2data import methods
+from bw2data import methods, Method
 
 
 class OneSpatialScaleLCA(RegionalizationBase):
@@ -35,7 +35,7 @@ class OneSpatialScaleLCA(RegionalizationBase):
     def get_regionalized_characterization_matrix(self, builder=MatrixBuilder):
         """Get regionalized characterization matrix, **R**, which gives location- and biosphere flow-specific characterization factors. Rows are inventory spatial units, and columns are biosphere flows.
 
-        Uses ``self.inv_spatial_dict``, ``self.biosphere_dict`` and ``self.method``.
+        Uses ``self.inv_spatial_dict``, ``self._biosphere_dict`` and ``self.method``.
 
         Returns:
             * ``reg_cf_params``: Parameter array with row/col of IA locations/biosphere flows
@@ -44,15 +44,14 @@ class OneSpatialScaleLCA(RegionalizationBase):
         """
         reg_cf_params, _, _, reg_cf_matrix = \
             builder.build(
-                dirpath=self.dirpath,
-                names=[methods[self.method]['abbreviation']],
+                paths=[Method(self.method).filepath_processed()],
                 data_label="amount",
                 row_id_label="geo",
                 row_index_label="row",
                 col_id_label="flow",
                 col_index_label="col",
                 row_dict=self.inv_spatial_dict,
-                col_dict=self.biosphere_dict,
+                col_dict=self._biosphere_dict,
             )
         return (reg_cf_params, reg_cf_matrix)
 
