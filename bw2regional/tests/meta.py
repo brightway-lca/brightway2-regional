@@ -2,8 +2,15 @@
 from __future__ import print_function, unicode_literals
 from eight import *
 
-from ..meta import intersections, loadings, geocollections
+from . import data_dir
+from .. import (
+    geocollections,
+    Intersection,
+    intersections,
+    loadings,
+)
 from .base import BW2RegionalTest
+import os
 
 
 class GeocollectionsTestCase(BW2RegionalTest):
@@ -17,6 +24,17 @@ class GeocollectionsTestCase(BW2RegionalTest):
             "Brightway2 geocollections metadata: 0 data sets"
         )
 
+    def test_vector_test_data(self):
+        geocollections['countries'] = {
+            'filepath': os.path.join(data_dir, "test_countries.gpkg"),
+            'field': 'name'
+        }
+
+    def test_raster_test_data(self):
+        geocollections['cfs'] = {
+            'filepath': os.path.join(data_dir, "test_raster_cfs.tif")
+        }
+
 
 class IntersectionsTestCase(BW2RegionalTest):
     def test_filename(self):
@@ -27,6 +45,32 @@ class IntersectionsTestCase(BW2RegionalTest):
         self.assertEqual(
             str(intersections),
             "Brightway2 LCI/LCIA areal intersection metadata: 0 data sets"
+        )
+
+    def test_load_test_data_1(self):
+        geocollections['countries'] = {
+            'filepath': os.path.join(data_dir, "test_countries.gpkg"),
+            'field': 'name'
+        }
+        geocollections['cfs'] = {
+            'filepath': os.path.join(data_dir, "test_raster_cfs.tif")
+        }
+        Intersection(("countries", "cfs")).import_from_pandarus(
+            os.path.join(data_dir, "intersect-countries-cfs.json.bz2")
+        )
+        # TODO: Check some values
+
+    def test_load_test_data_2(self):
+        geocollections['countries'] = {
+            'filepath': os.path.join(data_dir, "test_countries.gpkg"),
+            'field': 'name'
+        }
+        geocollections['provinces'] = {
+            'filepath': os.path.join(data_dir, "test_provinces.gpkg"),
+            'field': 'adm1_code'
+        }
+        Intersection(("provinces", "countries")).import_from_pandarus(
+            os.path.join(data_dir, "intersect-provinces-countries.json.bz2")
         )
 
 
@@ -40,3 +84,5 @@ class LoadingsTestCase(BW2RegionalTest):
             str(loadings),
             "Brightway2 regionalized LCIA loading metadata: 0 data sets"
         )
+
+    # TODO: Test data loading

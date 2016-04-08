@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*
+import os
+
+data_dir = os.path.join(os.path.dirname(__file__), "data")
+
 from .intersections import IntersectionTestCase
 from .lca_mixin import RegionalizationBaseTestCase
 from .loading import LoadingTestCase
