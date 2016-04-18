@@ -3,6 +3,7 @@ __version__ = (0, 3)
 
 __all__ = (
     "bw2regionalsetup",
+    "cg",
     "create_empty_intersection",
     "extension_tables",
     "ExtensionTable",
@@ -10,7 +11,6 @@ __all__ = (
     "geocollections",
     "import_lc_impact_lcia_method",
     "import_regionalized_cfs",
-    "import_standard_geocollections",
     "Intersection",
     "intersections",
     "Loading",
@@ -26,6 +26,10 @@ __all__ = (
     "TwoSpatialScalesLCA",
     "TwoSpatialScalesWithGenericLoadingLCA",
 )
+
+from constructive_geometries import ConstructiveGeometries
+
+cg = ConstructiveGeometries()
 
 from .graphics import RegionalizedGrapher
 from .intersection import Intersection

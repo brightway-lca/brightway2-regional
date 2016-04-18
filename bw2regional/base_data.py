@@ -3,6 +3,7 @@ from __future__ import print_function, unicode_literals
 from eight import *
 
 from . import (
+    cg,
     convert_default_ecoinvent_locations,
     ExtensionTable,
     geocollections,
@@ -12,7 +13,6 @@ from . import (
 )
 from brightway2 import config, geomapping, Method
 from bw2data.utils import download_file
-from constructive_geometries import ConstructiveGeometries, DATA_FILEPATH
 import json
 import os
 import warnings
@@ -28,16 +28,12 @@ def bw2regionalsetup():
 
     Currently, this is the topology used for ecoinvent 3."""
 
-    # print("Adding ecoinvent topology")
-    # cg = ConstructiveGeometries()
-    # cg.check_data()
-
     print("Downloading and creating world geocollections")
     geocollections['world'] = {
         'filepath': download_file(
             "countries.gpkg",
             "regional",
-            url="https://geography.ecoinvent.org/report/files/"
+            url="http://geography.ecoinvent.org/report/files/"
         ),
         'field': 'isotwolettercode',
     }
@@ -45,18 +41,18 @@ def bw2regionalsetup():
         'filepath': download_file(
             "all.gpkg",
             "regional",
-            url="https://geography.ecoinvent.org/report/files/"
+            url="http://geography.ecoinvent.org/report/files/"
         ),
         'field': 'shortname',
     }
     topocollections['world'] = {
         'geocollection': 'world',
-        'filepath': os.path.join(DATA_FILEPATH, "faces.gpkg"),
+        'filepath': cg.faces_fp,
         'field': 'id'
     }
     topocollections['ecoinvent'] = {
         'geocollection': 'ecoinvent',
-        'filepath': os.path.join(DATA_FILEPATH, "faces.gpkg"),
+        'filepath': cg.faces_fp,
         'field': 'id'
     }
 
@@ -65,17 +61,16 @@ def bw2regionalsetup():
         'filepath': download_file(
             "gdpweighted.tiff",
             "regional",
-            url=None
-        ) # TODO
+        )
     }
     xt = ExtensionTable('gdp-weighted-pop-density')
     xt.register(geocollection='gdp-weighted-pop-density')
-    xt.import_from_map()
+    # xt.import_from_map()
 
-    print("Adding world topology")
-    topo = Topography('countries-topo')
-    topo.write(json.load(open(os.path.join(data_dir, "test_topo_mapping.json"))))
-    topo.import_from_pandarus(os.path.join(data_dir, "intersect-topo-cfs.json.bz2"), "countries")
+    # print("Adding world topology")
+    # topo = Topography('countries-topo')
+    # topo.write(json.load(open(os.path.join(data_dir, "test_topo_mapping.json"))))
+    # topo.import_from_pandarus(os.path.join(data_dir, "intersect-topo-cfs.json.bz2"), "countries")
 
 
 def import_lc_impact_lcia_method():
