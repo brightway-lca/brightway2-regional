@@ -3,11 +3,17 @@ from __future__ import print_function, unicode_literals
 from eight import *
 
 from .errors import SiteGenericMethod, MissingSpatialSourceData
-from .meta import geocollections, intersections, loadings, extension_tables
+from .hashing import sha256
 from .intersection import Intersection
+from .meta import (
+    extension_tables,
+    geocollections,
+    intersections,
+    loadings,
+    topocollections,
+)
 from bw2data import Method, methods
 import copy
-import hashlib
 
 
 def import_regionalized_cfs(geocollection, method, mapping, cf_field=None,
@@ -139,15 +145,28 @@ def get_pandarus_map_for_method(method, geocollection=None):
     return Map(geocollection['filepath'], **metadata)
 
 
-def sha256(filepath, blocksize=65536):
-    """Generate SHA 256 hash for file at `filepath`"""
-    hasher = hashlib.sha256()
-    fo = open(filepath, 'rb')
-    buf = fo.read(blocksize)
-    while len(buf) > 0:
-        hasher.update(buf)
-        buf = fo.read(blocksize)
-    return hasher.hexdigest()
+def hash_collection(name):
+    """Return SHA256 hash for a topo- or geocollection.
+
+    Prefers topocollection if available.
+    """
+    if name in topocollections:
+        if 'sha256' in topocollections[name]:
+            return topocollections[name]['sha256']
+        try:
+            assert os.path.isfile(topocollections[name]['filepath'])
+            return sha256(topocollections[name]['filepath'])
+        except KeyError:
+            pass
+    if name in geocollections:
+        if 'sha256' in geocollections[name]:
+            return geocollections[name]['sha256']
+        try:
+            assert os.path.isfile(geocollections[name]['filepath'])
+            return sha256(geocollections[name]['filepath'])
+        except KeyError:
+            pass
+    return False
 
 
 def create_empty_intersection(name):
