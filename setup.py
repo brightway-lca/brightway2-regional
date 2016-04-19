@@ -19,6 +19,7 @@ setup(
         "requests",
         "stats_arrays",
         "voluptuous",
+        "wrapt",
     ],
     long_description=open('README.rst').read(),
     classifiers=[
