@@ -8,9 +8,9 @@ __all__ = (
     "ExtensionTable",
     "ExtensionTablesLCA",
     "geocollections",
-    "import_lc_impact_lcia_method",
+    "hash_collection",
+    # "import_lc_impact_lcia_method",
     "import_regionalized_cfs",
-    "import_standard_geocollections",
     "Intersection",
     "intersections",
     "Loading",
@@ -20,6 +20,7 @@ __all__ = (
     "RegionalizedGrapher",
     "remote",
     "reset_geo_meta",
+    "sha256",
     "topocollections",
     "Topography",
     "TopologicalExtensionTablesLCA",
@@ -27,6 +28,7 @@ __all__ = (
     "TwoSpatialScalesWithGenericLoadingLCA",
 )
 
+from .hashing import sha256
 from .graphics import RegionalizedGrapher
 from .intersection import Intersection
 from .lca import (
@@ -48,6 +50,7 @@ from .topography import Topography
 from .utils import (
     convert_default_ecoinvent_locations,
     create_empty_intersection,
+    hash_collection,
     import_regionalized_cfs,
     reset_geo_meta,
 )
