@@ -8,6 +8,8 @@ from bw2data.serialization import (
     PickledDict,
     SerializedDict,
 )
+from .hashing import sha256
+import os
 
 
 @python_2_unicode_compatible
@@ -38,9 +40,16 @@ class Geocollections(SerializedDict):
     def __str__(self):
         return "Brightway2 geocollections metadata: {} data sets".format(len(self))
 
+    def __setitem__(self, key, value):
+        if 'filepath' in value:
+            assert os.path.isfile(value['filepath']), \
+                "Can't find file at `{}`".format(value['filepath'])
+            value['sha256'] = sha256(value['filepath'])
+        super(Geocollections, self).__setitem__(key, value)
+
 
 @python_2_unicode_compatible
-class Topocollections(SerializedDict):
+class Topocollections(Geocollections):
     """Mappings from geocollections to a set of topographical face ids."""
     filename = "topocollections.json"
 
