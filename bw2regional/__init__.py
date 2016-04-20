@@ -9,6 +9,7 @@ __all__ = (
     "ExtensionTable",
     "ExtensionTablesLCA",
     "geocollections",
+    "get_spatial_dataset_kind",
     "hash_collection",
     # "import_lc_impact_lcia_method",
     "import_regionalized_cfs",
@@ -55,6 +56,7 @@ from .topography import Topography
 from .utils import (
     convert_default_ecoinvent_locations,
     create_empty_intersection,
+    get_spatial_dataset_kind,
     hash_collection,
     import_regionalized_cfs,
     reset_geo_meta,

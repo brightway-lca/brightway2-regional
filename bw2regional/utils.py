@@ -14,6 +14,8 @@ from .meta import (
 )
 from bw2data import Method, methods
 import copy
+import fiona
+import rasterio
 
 
 def import_regionalized_cfs(geocollection, method, mapping, cf_field=None,
@@ -175,6 +177,40 @@ def create_empty_intersection(name):
     inter.register()
     inter.write([])
     return inter
+
+
+def sha256(filepath, blocksize=65536):
+    """Generate SHA 256 hash for file at `filepath`"""
+    hasher = hashlib.sha256()
+    fo = open(filepath, 'rb')
+    buf = fo.read(blocksize)
+    while len(buf) > 0:
+        hasher.update(buf)
+        buf = fo.read(blocksize)
+    return hasher.hexdigest()
+
+
+def get_spatial_dataset_kind(filepath):
+    """Get kind of spatial dataset at `filepath`.
+
+    Returns one of "vector", "raster", None.
+
+    """
+    with fiona.drivers():
+        try:
+            with fiona.open(filepath) as source:
+                assert source.meta
+                return "vector"
+        except:
+            pass
+    with rasterio.drivers():
+        try:
+            with rasterio.open(filepath) as source:
+                assert source.meta
+                return "raster"
+        except:
+            pass
+    return None
 
 
 def convert_default_ecoinvent_locations(string):
