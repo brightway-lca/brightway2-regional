@@ -9,8 +9,10 @@ from . import (
     geocollections,
     import_regionalized_cfs,
     Intersection,
+    remote,
     topocollections,
 )
+from .ecoinvent.names import load_ecoinvent_names
 from brightway2 import config, geomapping, Method
 from bw2data.utils import download_file
 import json
@@ -63,13 +65,43 @@ def bw2regionalsetup():
             "regional",
         )
     }
+
+    print("Creating GDP-weighted population density extension table")
     xt = ExtensionTable('gdp-weighted-pop-density')
     xt.register(geocollection='gdp-weighted-pop-density')
-    # xt.import_from_map()
+    xt.import_from_map()
 
-    # print("Adding world topology")
-    # topo = Topography('countries-topo')
-    # topo.write(json.load(open(os.path.join(data_dir, "test_topo_mapping.json"))))
+    # Mapping from Constructive Geometries is for full name, but we need the ecoinvent short names
+    ecoinvent_names = {obj['name']: obj['shortname'] for obj in load_ecoinvent_names()}
+
+    print("Adding world topology")
+    topo_data = json.load(open(cg.data_fp))
+    world_topo_data = [
+        (ecoinvent_names[x[0]], x[1])
+        for x in topo_data
+        if x[0] != '__all__'
+        and ecoinvent_names[x[0]]
+        and len(ecoinvent_names[x[0]]) == 2
+    ]
+    Topography('world').write(world_topo_data)
+
+    print("Adding ecoinvent-specific topology")
+    ecoinvent_topo_data = [
+        (ecoinvent_names[x[0]], x[1])
+        for x in topo_data
+        if x[0] != '__all__'
+        and ecoinvent_names[x[0]]
+        and len(ecoinvent_names[x[0]]) != 2
+    ]
+    Topography('ecoinvent').write(ecoinvent_topo_data)
+
+    if remote.alive:
+        print("Retrieving and processing intersections")
+        remote.intersection('world', 'geo-weighted-pop-density')
+        remote.intersection('ecoinvent', 'geo-weighted-pop-density')
+    else:
+        print("Skipping creation of intersections - pandarus_remote server is down")
+
     # topo.import_from_pandarus(os.path.join(data_dir, "intersect-topo-cfs.json.bz2"), "countries")
 
 
@@ -87,8 +119,10 @@ def import_lc_impact_lcia_method():
 
     print("Adding ammonia characterization factors map")
     geocollections['ammonia'] = {
-        'filepath': download_file("ammonia.tiff", "reg")
-    }
+        'filepath': download_file(
+            "ammonia.tiff",
+            "regional"
+    )}
 
     print("Downloading and importing ammonia-gdp intersection")
     intersection = Intersection(("ammonia", 'gdp-weighted-pop-density'))

@@ -37,15 +37,23 @@ class PendingJob(object):
 
     @property
     def status(self):
-        return requests.get(self.url).text
+        response = requests.get(self.url)
+        if response.status_code != 404:
+            return response.text
+        else:
+            return "forgotten"
 
     def poll(self, interval=10):
-        while True:
-            if self.status not in {'failed', 'finished'}:
-                time.sleep(interval)
-            else:
-                break
-        print("Job ended with status {}".format(self.status))
+        try:
+            while True:
+                if self.status not in {'failed', 'finished', 'forgotten'}:
+                    time.sleep(interval)
+                else:
+                    break
+        except KeyboardInterrupt:
+            pass
+        finally:
+            print("\nJob ended with status '{}'".format(self.status))
 
 
 @wrapt.decorator
@@ -151,7 +159,8 @@ class PandarusRemote(object):
                 f.write(segment)
 
         # Create Intersection
-        return filepath
+        Intersection((collection_one, collection_two)
+            ).import_from_pandarus(filepath)
 
     @check_alive
     def calculate_intersection(self, collection_one, collection_two):
