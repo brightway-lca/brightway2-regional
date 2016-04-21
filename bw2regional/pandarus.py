@@ -82,7 +82,7 @@ def handle_intersection(metadata, data):
 
     # Only one topocollection
     if {x[1] for x in second_collections} == \
-        {x[1] for x in first_collections} == ['topocollection']:
+        {x[1] for x in first_collections} == {'topocollection'}:
         raise ValueError("Intersections between a topography and "
             "another topography are not supported")
 
