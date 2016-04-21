@@ -8,6 +8,13 @@ setup(
     author_email="cmutel@gmail.com",
     license=open('LICENSE.txt').read(),
     url="https://bitbucket.org/cmutel/brightway2-regional",
+    package_data={'bw2regional': [
+        "tests/data/*.gpkg",
+        "tests/data/*.tif",
+        "tests/data/*.bz2",
+        "tests/data/*.json",
+        "tests/data/*.sh",
+    ]},
     install_requires=[
         "brightway2",
         "bw2calc>=1.2",
