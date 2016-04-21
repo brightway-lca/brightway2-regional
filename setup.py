@@ -22,7 +22,7 @@ setup(
         "constructive_geometries",
         "eight",
         "fiona",
-        "pandarus>=0.5",
+        "pandarus>=0.6",
         "requests",
         "stats_arrays",
         "voluptuous",
