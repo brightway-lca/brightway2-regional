@@ -12,10 +12,11 @@ from .meta import (
     loadings,
     topocollections,
 )
-from bw2data import Method, methods
+from bw2data import Method, methods, projects
 import copy
 import fiona
 import rasterio
+import shutil
 
 
 def import_regionalized_cfs(geocollection, method, mapping, cf_field=None,
@@ -218,6 +219,15 @@ def convert_default_ecoinvent_locations(string):
         return string
     else:
         return ("ecoinvent", string)
+
+
+def reset_all_geo():
+    """Reset all bw2regional data and metadata"""
+    shutil.rmtree(projects.request_directory("regional"))
+    projects.request_directory("regional")
+    for meta in (intersections, loadings, geocollections, topocollections, extension_tables):
+        meta.data = {}
+        meta.flush()
 
 
 def reset_geo_meta():

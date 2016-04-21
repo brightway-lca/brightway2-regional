@@ -41,7 +41,7 @@ def bw2regionalsetup():
     }
     geocollections['ecoinvent'] = {
         'filepath': download_file(
-            "all.gpkg",
+            "all-ecoinvent.gpkg",
             "regional",
             url="http://geography.ecoinvent.org/report/files/"
         ),

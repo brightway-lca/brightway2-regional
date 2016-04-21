@@ -4,7 +4,7 @@ from eight import *
 
 import os
 from bw2data import JsonWrapper
-from . import geocollections, topocollections, Topology
+from . import geocollections, topocollections, Topography
 
 
 def merge(data, mapping):

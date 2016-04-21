@@ -23,6 +23,7 @@ __all__ = (
     "RegionalizedGrapher",
     "remote",
     "reset_geo_meta",
+    "reset_all_geo",
     "sha256",
     "topocollections",
     "Topography",
@@ -60,6 +61,7 @@ from .utils import (
     get_spatial_dataset_kind,
     hash_collection,
     import_regionalized_cfs,
+    reset_all_geo,
     reset_geo_meta,
 )
 from .xtables import ExtensionTable
