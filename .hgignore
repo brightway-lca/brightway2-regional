@@ -10,3 +10,4 @@ cover
 .coverage
 bw2regional.egg-info
 dev
+.cache

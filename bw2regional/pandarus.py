@@ -115,19 +115,22 @@ def handle_intersection(metadata, data, fp):
         return handle_topographical_intersection(metadata, data,
             first_collections, second_collections, fp)
 
-    # Either geo- or topocollection
-    if len({x[1] for x in first_collections}) == 2:
-        raise ValueError("Intersecting both geocollections and "
-            "topocollections is not supported")
-    if len({x[1] for x in second_collections}) == 2:
-        raise ValueError("Intersecting both geocollections and "
-            "topocollections is not supported")
+    # Only one geocollection in borth `first` and `second`
+    assert len(first_collections) == 1, "Must intersect with exactly one geocollection"
+    assert len(second_collections) == 1, "Must intersect with exactly one geocollection"
+    first = list(first_collections)[0][0]
+    second = list(second_collections)[0][0]
 
-    # Only one topocollection
-    if {x[1] for x in second_collections} == \
-        {x[1] for x in first_collections} == {'topocollection'}:
-        raise ValueError("Intersections between a topography and "
-            "another topography are not supported")
+    assert (first, second) not in intersections, \
+        "Intersection between {} and {} already exists".format(first, second)
+
+    dataset = relabel(data, first, second)
+    intersection = Intersection((first, second))
+    intersection.register(filepath=fp)
+    intersection.write(dataset)
+    intersection.create_reversed_intersection()
+
+    return first, second
 
 
 def handle_topographical_intersection(metadata, data, first_collections, second_collections, filepath):
