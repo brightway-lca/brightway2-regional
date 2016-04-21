@@ -12,6 +12,7 @@ __all__ = (
     "get_spatial_dataset_kind",
     "hash_collection",
     # "import_lc_impact_lcia_method",
+    "import_from_pandarus",
     "import_regionalized_cfs",
     "Intersection",
     "intersections",
@@ -66,6 +67,7 @@ from .base_data import (
     bw2regionalsetup,
     import_lc_impact_lcia_method,
 )
+from .pandarus import import_from_pandarus
 
 from bw2data import config
 config.metadata.extend([
