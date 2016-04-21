@@ -61,6 +61,7 @@ class Topography(DataStore):
 
     def write(self, data):
         self.metadata['empty'] = False
+        self._metadata.flush()
         super(Topography, self).write(data)
 
     def import_from_pandarus(self, filepath, target_geocollection):

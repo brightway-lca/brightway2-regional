@@ -10,6 +10,21 @@ import pprint
 import pyprind
 
 
+_32_FIXED_CODES = {
+    "Al producing Area 2, North America": "IAI Area 2, North America",
+    "IAI Area 1": "IAI Area 1, Africa",
+    "IAI Area 3": "IAI Area 3, South America",
+    "IAI Area 4&5 without China": "IAI Area 4&5, without China",
+    "IAI Area 6A": "IAI Area 6, Europe",
+    "IAI Area 8": "IAI Area 8, Gulf",
+}
+
+
+def fix_ecoinvent_32_codes(code):
+    """Fix ecoinvent shortnames that weren't updated for 3.2 release"""
+    return _32_FIXED_CODES.get(code, code)
+
+
 def discretize_rest_of_world(database, warn=True):
     """Create new locations for each unique rest of the world (RoW). A RoW location is defined by the topological faces that aren't covered by a specific market.
 

@@ -4,7 +4,13 @@ from eight import *
 
 import os
 from bw2data import JsonWrapper
-from . import geocollections, topocollections, Topography
+from . import (
+    geocollections,
+    Intersection,
+    intersections,
+    topocollections,
+    Topography,
+)
 
 
 def merge(data, mapping):
@@ -17,9 +23,8 @@ def merge(data, mapping):
     Returns a new version of `data` where `feature 1` is now geocollection features intead of topo face ids.
 
     """
-    merged = {}
-    reverse_mapping = {}
-    for k, v in mapping.items():
+    merged, reverse_mapping = {}, {}
+    for k, v in mapping:
         for face_id in v:
             reverse_mapping[face_id] = reverse_mapping.get(face_id, []) + [k]
 
@@ -32,8 +37,42 @@ def merge(data, mapping):
     return [(k[0], k[1], v) for k, v in merged.items()]
 
 
-# def relabel(data, label):
-#     return [((first, a), b, c) for a, b, c in data]
+def relabel(data, first, second):
+    """Add geocollection names to geo identifiers"""
+    return [((first, a), (second, b), c) for a, b, c in data]
+
+
+def switch_order(data):
+    """Switch data order from ``(first, second, area)`` to ``(second, first, area)``."""
+    return [(y, x, z) for x, y, z in data]
+
+
+def load_file(filepath):
+    """Load Pandarus JSON output file.
+
+    Returns metadata and calculation results."""
+    try:
+        obj = JsonWrapper.load_bz2(filepath)
+    except:
+        obj = JsonWrapper.load(filepath)
+    return obj['metadata'], obj['data']
+
+
+def get_possible_collections(hash_value):
+    """Return all geo- and topocollections for a file hash.
+
+    Returns list of (collection name, collection type) tuples."""
+    possibles = {
+        (name, 'geocollection')
+        for name, value in geocollections.items()
+        if value.get('sha256') == hash_value
+    }.union({
+        (name, 'topocollection')
+        for name, value in topocollections.items()
+        if value.get('sha256') == hash_value
+        and not value['empty']
+    })
+    return possibles
 
 
 def import_from_pandarus(fp):
@@ -51,26 +90,30 @@ def import_from_pandarus(fp):
     metadata, data = load_file(fp)
     is_area = len(metadata) == 1
     if is_area:
-        return handle_area(metadata, data)
+        return handle_area(metadata, data, fp)
     else:
-        return handle_intersection(metadata, data)
+        return handle_intersection(metadata, data, fp)
 
 
-def handle_area(metadata, data):
+def handle_area(metadata, data, fp):
     assert 'first' in metadata, "Invalid metadata in file"
     collections = get_possible_collections(metadata['first']['sha256'])
     # for data, kind in
 
 
-def handle_intersection(metadata, data):
+def handle_intersection(metadata, data, fp):
     # Check metadata
     assert 'first' in metadata and 'second' in metadata, "Invalid metadata in file"
 
     first_collections = get_possible_collections(metadata['first']['sha256'])
-    second_collections = self.get_possible_collections(metadata['second']['sha256'])
+    second_collections = get_possible_collections(metadata['second']['sha256'])
 
     # No self-intersections
     assert not first_collections.intersection(second_collections), "Overlapping geocollections"
+
+    if len({x[1] for x in second_collections}.union({x[1] for x in first_collections})) == 2:
+        return handle_topographical_intersection(metadata, data,
+            first_collections, second_collections, fp)
 
     # Either geo- or topocollection
     if len({x[1] for x in first_collections}) == 2:
@@ -87,49 +130,70 @@ def handle_intersection(metadata, data):
             "another topography are not supported")
 
 
-def load_file(fp):
-    try:
-        obj = JsonWrapper.load_bz2(filepath)
-    except:
-        obj = JsonWrapper.load(filepath)
-    return obj['metadata'], obj['data']
+def handle_topographical_intersection(metadata, data, first_collections, second_collections, filepath):
+    """Handle an intersection between one or more topographies and a single geocollection.
 
+    Each topography is associated with exactly one geocollection.
 
-def get_possible_collections(hash_value):
-    possibles = {
-        (name, 'geocollection')
-        for name, value in geocollections
-        if value.get('sha256') == hash_value
-    }.union({
-        (name, 'topocollection')
-        for name, value in topocollections
-        if value.get('sha256') == hash_value
-        and not value['empty']
-    })
-    return possibles
+    Each topography is not empty, i.e. we can use the topographical definitions to filter.
 
-
-def squash_topo_data_to_geocollection(data, topography):
-    """Squash intersection data in ``data`` from topographical face ids to geocollection identifiers.
-
-    Returns (geocollection name, modified data).
-
-    Topography/geocollection intersection is guaranteed to be one to one.
-
+    The procedure is:
+    #. Check metadata validity, and make sure the topography ids are in the first column
+    #. To split data into each topography
+    #. Squash the topography to geocollections
+    #. Create a new intersection for each geocollection/topography pair
     """
-    geocollection = topocollections[topography]["geocollection"]
-    topography_obj = Topography(topography)
-    assert not topography_obj.metadata['empty'], "Empty topography can't be processed"
-    mapping = topography_obj.load()
-    return geocollection, merge(data, mapping)
+    # Check that topography(s) are in either first or second position, and
+    # switch to first position if necessary
+    first_labels = {x[1] for x in first_collections}
+    second_labels = {x[1] for x in second_collections}
+    if first_labels == {'topocollection'}:
+        assert len(second_collections) == 1, "Must intersect with exactly one geocollection"
+        assert second_labels == {'geocollection'}, "Must intersect topography with geocollections"
+    elif second_labels == {'topocollections'}:
+        assert len(first_collections) == 1, "Must intersect with exactly one geocollection"
+        assert first_labels == {'geocollection'}, "Must intersect topography with geocollections"
+        data = switch_order(data)
+        metadata['first'], metadata['second'] = metadata['second'], metadata['first']
+        first_collections, second_collections = second_collections, first_collections
+    else:
+        raise ValueError("Intersections between mixed topocollections and "
+            "geocollections are not supported")
 
+    topo_data = [Topography(name).load() for name, kind in first_collections]
+    topo_geocollections = [
+        topocollections[name]['geocollection']
+        for name, kind in first_collections
+    ]
+    other_geocollection = list(second_collections)[0][0]
 
-# data = [((self.name[0], row[0]), (self.name[1], row[1]), row[2])
-#     for row in data]
+    for name in topo_geocollections:
+        assert (other_geocollection, name) not in intersections, (
+            "Intersection between {} and {} already exists".format(
+            other_geocollection, name)
+        )
 
-# with warnings.catch_warnings():
-#     warnings.simplefilter("ignore")
-#     self.write(data)
-#     self.metadata['filepath'] =  filepath
+    # Split data into topography-specific sections
+    included_labels = [
+        {face for name, faces in topo_dataset for face in faces}
+        for topo_dataset in topo_data
+    ]
+    data = [
+        [(x, y, z) for x, y, z in data if x in labels]
+        for labels in included_labels
+    ]
 
-# self.create_reversed_intersection()
+    # Squash topographies to geocollections
+    data = [
+        merge(dataset, mapping)
+        for dataset, mapping in zip(data, topo_data)
+    ]
+
+    for name, dataset in zip(topo_geocollections, data):
+        dataset = relabel(dataset, name, other_geocollection)
+        intersection = Intersection((name, other_geocollection))
+        intersection.register(filepath=filepath)
+        intersection.write(dataset)
+        intersection.create_reversed_intersection()
+
+    return [(n, other_geocollection) for n in topo_geocollections]
