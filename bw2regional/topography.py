@@ -33,7 +33,7 @@ class Topography(DataStore):
         #. Instantiate the new `Topography` object created in the earlier step, and write mapping data from spatial features in the `geocollection`(s) to face ids in the `Topography` spatial data set.
         #. Import intersection data between the `Topography` and `geocollection` 2 using the method `import_from_pandarus`. This method will create a new `Intersection` between the `geocollection` linked to the current `Topography` and `geocollection` 2.
 
-    The data format for mapping data is `{(feature field value: [list of topo field values (usually id numbers)]}`.
+    The data format for mapping data is ``{feature field value: [list of topo field values (usually id numbers)]}``.
 
     Here is a code sample for using the test data in `bw2regional`:
 

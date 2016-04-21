@@ -24,7 +24,7 @@ def merge(data, mapping):
 
     """
     merged, reverse_mapping = {}, {}
-    for k, v in mapping:
+    for k, v in mapping.items():
         for face_id in v:
             reverse_mapping[face_id] = reverse_mapping.get(face_id, []) + [k]
 
@@ -175,7 +175,7 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
 
     # Split data into topography-specific sections
     included_labels = [
-        {face for name, faces in topo_dataset for face in faces}
+        {face for faces in topo_dataset.values() for face in faces}
         for topo_dataset in topo_data
     ]
     data = [

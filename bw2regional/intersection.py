@@ -38,31 +38,31 @@ class Intersection(ImpactAssessmentDataStore):
             MAX_INT_32,
             ), row[2]
 
-    def import_from_pandarus(self, filepath):
-        """Import a `pandarus` output file.
+    # def import_from_pandarus(self, filepath):
+    #     """Import a `pandarus` output file.
 
-        The order of geocollections in the output file must be the same as in this intersection. This can't be checked automatically, so it is up to the user to make sure it is correct.
+    #     The order of geocollections in the output file must be the same as in this intersection. This can't be checked automatically, so it is up to the user to make sure it is correct.
 
-        Also creates the reversed intersection, e.g. if this intersection is `(A,B)`, this method also creates `(B,A)`.
+    #     Also creates the reversed intersection, e.g. if this intersection is `(A,B)`, this method also creates `(B,A)`.
 
-        """
-        if not self.registered:
-            self.register()
-        assert isinstance(self.name, tuple) and len(self.name) == 2
-        try:
-            data = JsonWrapper.load_bz2(filepath)
-        except:
-            data = JsonWrapper.load(filepath)
+    #     """
+    #     if not self.registered:
+    #         self.register()
+    #     assert isinstance(self.name, tuple) and len(self.name) == 2
+    #     try:
+    #         data = JsonWrapper.load_bz2(filepath)
+    #     except:
+    #         data = JsonWrapper.load(filepath)
 
-        data = [((self.name[0], row[0]), (self.name[1], row[1]), row[2])
-            for row in data]
+    #     data = [((self.name[0], row[0]), (self.name[1], row[1]), row[2])
+    #         for row in data]
 
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            self.write(data)
-            self.metadata['filepath'] =  filepath
+    #     with warnings.catch_warnings():
+    #         warnings.simplefilter("ignore")
+    #         self.write(data)
+    #         self.metadata['filepath'] =  filepath
 
-        self.create_reversed_intersection()
+    #     self.create_reversed_intersection()
 
     def create_reversed_intersection(self):
         """Create (B, A) intersection from (A, B)."""
