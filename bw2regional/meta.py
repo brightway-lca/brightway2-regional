@@ -45,6 +45,15 @@ class Topocollections(Geocollections):
     """Mappings from geocollections to a set of topographical face ids."""
     filename = "topocollections.json"
 
+    def __setitem__(self, key, value):
+        value['empty'] = value.get('empty', True)
+        if 'geocollection' not in value:
+            raise ValueError("topocollections must be linked to exactly one geocollection")
+        elif value['geocollection'] not in geocollections:
+            raise ValueError("Linked geocollection {} does not exist".format(
+                value['geocollection']))
+        super(Topocollections, self).__setitem__(key, value)
+
 
 @python_2_unicode_compatible
 class ExtensionTables(SerializedDict):

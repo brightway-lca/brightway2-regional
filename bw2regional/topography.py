@@ -7,37 +7,10 @@ from .intersection import Intersection
 from bw2data import DataStore, JsonWrapper
 
 
-def merge(data, mapping):
-    """Merge topo face ids to geocollection features.
-
-    `data` has the form [(feature 1, feature 2, area)], where `feature 1` is a topo face id.
-
-    `mapping` has the form `{geocollection feature: [face id]}`.
-
-    Returns a new version of `data` where `feature 1` is now geocollection features intead of topo face ids.
-
-    """
-    merged = {}
-    reverse_mapping = {}
-    for k, v in mapping.items():
-        for face_id in v:
-            reverse_mapping[face_id] = reverse_mapping.get(face_id, []) + [k]
-
-    for first, second, area in data:
-        if first not in reverse_mapping:
-            continue
-        for feature in reverse_mapping[first]:
-            merged[(feature, second)] = merged.get((feature, second), 0) + area
-
-    return [(k[0], k[1], v) for k, v in merged.items()]
-
-
-def relabel(data, first, second):
-    return [((first, a), (second, b), c) for a, b, c in data]
-
-
 class Topography(DataStore):
     """A topographical description of a `geocollection`.
+
+    A topography must be registered to exactly one geocollection.
 
     For example, the geocollection 'countries' could have the location 'Ghana', and include a spatial data file which defines 'Ghana'. The `Topography` 'countries-topo' would have two files:
 
@@ -85,6 +58,10 @@ class Topography(DataStore):
 
     """
     _metadata = topocollections
+
+    def write(self, data):
+        self.metadata['empty'] = False
+        super(Topography, self).write(data)
 
     def import_from_pandarus(self, filepath, target_geocollection):
         """Import a `pandarus` intersections output file.

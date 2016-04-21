@@ -6,6 +6,7 @@ from .. import geocollections
 import fiona
 import os
 
+
 def load_ecoinvent_names():
     assert 'ecoinvent' in geocollections, "Please install base data (function `bw2regionalsetup`) first"
 
