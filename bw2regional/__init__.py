@@ -38,6 +38,7 @@ cg = ConstructiveGeometries()
 
 from .hashing import sha256
 from .graphics import RegionalizedGrapher
+from .area import Area
 from .intersection import Intersection
 from .lca import (
     ExtensionTablesLCA,
@@ -48,6 +49,7 @@ from .lca import (
 )
 from .loading import Loading
 from .meta import (
+    areas,
     extension_tables,
     topocollections,
     geocollections,

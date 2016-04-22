@@ -25,6 +25,12 @@ class Intersections(CompoundJSONDict):
 
 
 @python_2_unicode_compatible
+class Areas(CompoundJSONDict):
+    """Areas of all spatial elements in a geo- or topocollection"""
+    filename = "areas.json"
+
+
+@python_2_unicode_compatible
 class Geocollections(SerializedDict):
     """Metadata for spatial data sets."""
     filename = "geocollections.json"
@@ -61,8 +67,9 @@ class ExtensionTables(SerializedDict):
     filename = "extension-tables.json"
 
 
-loadings = Loadings()
-intersections = Intersections()
-geocollections = Geocollections()
-topocollections = Topocollections()
+areas = Areas()
 extension_tables = ExtensionTables()
+geocollections = Geocollections()
+intersections = Intersections()
+loadings = Loadings()
+topocollections = Topocollections()

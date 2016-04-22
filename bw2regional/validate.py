@@ -42,5 +42,6 @@ def xtable_data(obj):
 
 
 loading_validator = Schema([uncertainty_list])
+area_validator = Schema([object, (float, int)])
 intersection_validator = Schema([float_as_last])
 xtable_validator = Schema([xtable_data])
