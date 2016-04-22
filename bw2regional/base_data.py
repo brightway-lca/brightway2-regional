@@ -4,7 +4,6 @@ from eight import *
 
 from . import (
     cg,
-    convert_default_ecoinvent_locations,
     ExtensionTable,
     geocollections,
     import_regionalized_cfs,
@@ -12,7 +11,7 @@ from . import (
     remote,
     topocollections,
 )
-from .ecoinvent.names import load_ecoinvent_names
+from .ecoinvent import load_ecoinvent_names
 from brightway2 import config, geomapping, Method
 from bw2data.utils import download_file
 import json

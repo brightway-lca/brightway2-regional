@@ -58,7 +58,6 @@ from .meta import (
 )
 from .topography import Topography
 from .utils import (
-    convert_default_ecoinvent_locations,
     create_empty_intersection,
     get_spatial_dataset_kind,
     hash_collection,

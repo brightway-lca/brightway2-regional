@@ -214,13 +214,6 @@ def get_spatial_dataset_kind(filepath):
     return None
 
 
-def convert_default_ecoinvent_locations(string):
-    if len(string) == 2 or string == "GLO":
-        return string
-    else:
-        return ("ecoinvent", string)
-
-
 def reset_all_geo():
     """Reset all bw2regional data and metadata"""
     shutil.rmtree(projects.request_directory("regional"))
