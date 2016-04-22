@@ -31,7 +31,6 @@ class Topography(DataStore):
         #. Create a `geocollection`, including defining a spatial dataset
         #. Create a new `topocollection` and specify the linked `geocollection`. You can also optionally define another spatial dataset, using the same format as for `geocollections`.
         #. Instantiate the new `Topography` object created in the earlier step, and write mapping data from spatial features in the `geocollection`(s) to face ids in the `Topography` spatial data set.
-        #. Import intersection data between the `Topography` and `geocollection` 2 using the method `import_from_pandarus`. This method will create a new `Intersection` between the `geocollection` linked to the current `Topography` and `geocollection` 2.
 
     The data format for mapping data is ``{feature field value: [list of topo field values (usually id numbers)]}``.
 
@@ -54,7 +53,6 @@ class Topography(DataStore):
         }
         topo = Topography('countries-topo')
         topo.write(json.load(open(os.path.join(data_dir, "test_topo_mapping.json"))))
-        topo.import_from_pandarus(os.path.join(data_dir, "intersect-topo-cfs.json.bz2"), "countries")
 
     """
     _metadata = topocollections
@@ -63,38 +61,3 @@ class Topography(DataStore):
         self.metadata['empty'] = False
         self._metadata.flush()
         super(Topography, self).write(data)
-
-    def import_from_pandarus(self, filepath, target_geocollection):
-        """Import a `pandarus` intersections output file.
-
-        The imported file must be between the current topography and the geocollection `target_geocollection`, and in this order.
-
-        An intersection between this topography's associated geocollection and the `target_geocollection` is created, as well as the reversed intersection.
-
-        """
-        our_geocollection = self.metadata.get("geocollection")
-        assert our_geocollection in geocollections, "No registered geocollection"
-        assert target_geocollection in geocollections, "Can't find target geocollection"
-        assert (our_geocollection, target_geocollection) not in intersections, "intersection already exists"
-
-        mapping = self.load()
-        assert mapping, "No topographical mapping data available"
-
-        try:
-            intersection_data = JsonWrapper.load_bz2(filepath)
-        except:
-            intersection_data = JsonWrapper.load(filepath)
-
-        merged_data = merge(intersection_data, mapping)
-        processed_data = relabel(
-            merged_data,
-            our_geocollection,
-            target_geocollection
-        )
-
-        intersection = Intersection((our_geocollection, target_geocollection))
-        intersection.write(processed_data)
-        intersection.metadata['filepath'] = filepath
-        intersection.create_reversed_intersection()
-
-        return intersection

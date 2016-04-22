@@ -149,6 +149,7 @@ def handle_area(metadata, data, fp):
 
     return collection
 
+
 def handle_topographical_area(metadata, data, collections, filepath):
     collections = [x[0] for x in collections]
     topo_data = [Topography(name).load() for name in collections]
