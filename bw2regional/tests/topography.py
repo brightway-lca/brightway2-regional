@@ -75,3 +75,20 @@ class TopographyTestCase(BW2RegionalTest):
 
 
     #         LCA({("empty", "nothing"): 1})
+
+
+
+
+# import json
+# from bw2regional import *
+
+# geocollections['countries'] = {'filepath': '/Users/cmutel/Code/bw2/regional/bw2regional/tests/data/test_countries.gpkg', 'field': 'name'}
+
+# topocollections['countries'] = {'geocollection': 'countries', 'filepath': '/Users/cmutel/Code/bw2/regional/bw2regional/tests/data/test_provinces.gpkg', 'field': 'OBJECTID_1'}
+# mapping = json.load(open("/Users/cmutel/Code/bw2/regional/bw2regional/tests/data/test_topo_mapping.json"))
+# Topography('countries').write(mapping)
+
+# geocollections['cfs'] = {'filepath': '/Users/cmutel/Code/bw2/regional/bw2regional/tests/data/test_raster_cfs.tif'}
+
+# from bw2regional import *
+# import_from_pandarus('/Users/cmutel/Code/bw2/regional/bw2regional/tests/data/intersect-topo-cfs.json.bz2')
