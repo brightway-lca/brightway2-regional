@@ -57,16 +57,24 @@ def discretize_rest_of_world(database, warn=True):
     database = Database(database)
     locations, activities, exceptions = {}, {}, []
 
+    strip_ecoinvent_geocollection = lambda x: x[1] if isinstance(x, tuple) else x
+
     for ds in database:
+        if 'market group' in ds['name']:
+            assert ds['location'] != 'RoW', \
+                "RoW locations are not supported for market groups"
+            continue
         label = (ds['name'], ds['reference product'])
-        locations.setdefault(label, []).append(ds['location'])
+        locations.setdefault(label, []).append(
+            strip_ecoinvent_geocollection(ds['location'])
+        )
         if ds['location'] == 'RoW':
             activities[ds.key] = label
 
     for key, value in locations.items():
         # Check for well-defined RoW markets, i.e. yes RoW but no GLO
         if "GLO" in value:
-            assert value == ["GLO"], "Market {} include GLO location".format(key)
+            assert value == ["GLO"], "Market {} includes GLO location".format(key)
         elif "RoW" not in value:
             exceptions.append(key)
 
@@ -74,10 +82,13 @@ def discretize_rest_of_world(database, warn=True):
         print("Can't find `RoW` location in the following markets. This is not necessarily an error!")
         pprint.pprint(exceptions)
 
+    strip_RoW = lambda obj: [x for x in obj if x != 'RoW']
+
     locations = {
-        k: tuple(sorted(v))
+        k: tuple(sorted(strip_RoW(v)))
         for k, v in locations.items()
         if k not in exceptions
+        and v != ['GLO']
     }
 
     # Shouldn't be possible to have any repeated locations in a RoW exclusion list
@@ -85,17 +96,17 @@ def discretize_rest_of_world(database, warn=True):
         assert len(v) == len(set(v)), \
             "Locations repeated in market {}: {}".format(k, v)
 
-    row_locations = {
-        obj: "RoW-{}".format(index)
+    row_locations = [
+        (obj, "RoW-{}".format(index))
         for index, obj in enumerate(sorted(set(locations.values())))
-    }
+    ]
 
     # labels = {}
 
     # for act_key, act_location in activities.items():
     #     labels[act_key] = row_locations[frozenset(locations[act_location])]
 
-    return activities, row_locations, locations
+    return activities, row_locations, locations, exceptions
 
 
 def load_ecoinvent_names():
