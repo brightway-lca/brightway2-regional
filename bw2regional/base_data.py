@@ -29,7 +29,7 @@ It is incomplete, and some values will change.
 def bw2regionalsetup():
     """Import base data needed for regionalization.
 
-    Currently, this is the topology used for ecoinvent 3."""
+    See :ref:`basedata` for more information."""
 
     print("Downloading and creating Rest-of-the-World definitions")
     url = "http://geography.ecoinvent.org/report/files/rows-ecoinvent.json"
@@ -37,14 +37,13 @@ def bw2regionalsetup():
     row_data = json.loads(resp.content.decode('utf8'))
     restofworlds.data = {k: tuple(v) for k, v in row_data}
     restofworlds.flush()
-    geocollections['RoW'] = {
-        'filepath': download_file(
-            "rows.gpkg",
-            "regional",
-            url="http://geography.ecoinvent.org/report/files/"
-        ),
-        'field': 'name',
-    }
+    geocollections['RoW'] = {}
+    # 'filepath': download_file(
+    #     "rows.gpkg",
+    #     "regional",
+    #     url="http://geography.ecoinvent.org/report/files/"
+    # ),
+    # 'field': 'name',
 
     print("Downloading and creating world geocollections")
     geocollections['world'] = {
@@ -62,6 +61,11 @@ def bw2regionalsetup():
             url="http://geography.ecoinvent.org/report/files/"
         ),
         'field': 'shortname',
+    }
+    topocollections['RoW'] = {
+        'geocollection': 'RoW',
+        'filepath': cg.faces_fp,
+        'field': 'id'
     }
     topocollections['world'] = {
         'geocollection': 'world',
