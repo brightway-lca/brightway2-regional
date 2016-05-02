@@ -22,8 +22,9 @@ __all__ = (
     "PandarusRemote",
     "RegionalizedGrapher",
     "remote",
-    "reset_geo_meta",
     "reset_all_geo",
+    "reset_geo_meta",
+    "restofworlds",
     "sha256",
     "topocollections",
     "Topography",
@@ -55,6 +56,7 @@ from .meta import (
     geocollections,
     intersections,
     loadings,
+    restofworlds,
 )
 from .topography import Topography
 from .utils import (

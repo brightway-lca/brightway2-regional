@@ -31,6 +31,14 @@ class Areas(CompoundJSONDict):
 
 
 @python_2_unicode_compatible
+class RestOfWorlds(CompoundJSONDict):
+    """Definitions of Rest-of-World locations by what they exclude.
+
+    Exclusions are a list of codes, but should be treated as a set."""
+    filename = "restofworlds.json"
+
+
+@python_2_unicode_compatible
 class Geocollections(SerializedDict):
     """Metadata for spatial data sets."""
     filename = "geocollections.json"
@@ -72,4 +80,5 @@ extension_tables = ExtensionTables()
 geocollections = Geocollections()
 intersections = Intersections()
 loadings = Loadings()
+restofworlds = RestOfWorlds()
 topocollections = Topocollections()

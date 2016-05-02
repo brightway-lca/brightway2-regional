@@ -10,6 +10,7 @@ from .meta import (
     geocollections,
     intersections,
     loadings,
+    restofworlds,
     topocollections,
 )
 from bw2data import Method, methods, projects
@@ -216,9 +217,17 @@ def get_spatial_dataset_kind(filepath):
 
 def reset_all_geo():
     """Reset all bw2regional data and metadata"""
+    all_meta = (
+        extension_tables,
+        geocollections,
+        intersections,
+        loadings,
+        restofworlds,
+        topocollections,
+    )
     shutil.rmtree(projects.request_directory("regional"))
     projects.request_directory("regional")
-    for meta in (intersections, loadings, geocollections, topocollections, extension_tables):
+    for meta in all_meta:
         meta.data = {}
         meta.flush()
 
@@ -226,6 +235,7 @@ def reset_all_geo():
 def reset_geo_meta():
     intersections.__init__()
     loadings.__init__()
+    restofworlds.__init__()
     geocollections.__init__()
     topocollections.__init__()
     extension_tables.__init__()

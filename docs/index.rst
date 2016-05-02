@@ -1,7 +1,7 @@
 Regionalization in Brightway2
 =============================
 
-`bw2regional` is a separate library that extends the `Brightway LCA framework <https://brightwaylca.org>`__ to do regionalized LCA calculations.
+``bw2regional`` is a separate library that extends the `Brightway LCA framework <https://brightwaylca.org>`__ to do regionalized LCA calculations.
 
 .. image:: images/mnglr.png
     :align: center
@@ -19,28 +19,30 @@ In addition to making regionalized LCA calculations, maps of regionalized impact
 
 Each separate spatial scale is stored as a ``geocollection``. The relationships between spatial scales (i.e. how much area of unit *a* in spatial scale *1* intersects unit *b* in spatial scale *2*) is stored as an ``Intersection``. Areal intersection calculations are done using the separate utility `pandarus <https://bitbucket.org/cmutel/pandarus>`__, a library for matching spatial data sets and calculating their mutual intersected areas. Impact assessment methods store characterization factors per biosphere flow and spatial unit. Each organization unit is described in more detail below.
 
+``bw2regional`` is part of a family of software libraries - see :ref:`libraries` for more information.
+
 Lifecycle of a regionalized LCA calculation
 ===========================================
 
-A new project is created, and `bw2setup()` is run. Background databases are imported, and some foreground data in added. `bw2regionalsetup()` is run, and the function `fix_ecoinvent_locations()` is run for each inventory database which uses ecoinvent-specific location codes.
+A new project is created, and ``bw2setup()`` is run. Background databases are imported, and some foreground data in added. ``bw2regionalsetup()`` is run (see :ref:`basedata` for more information), and the function ``fix_ecoinvent_database()`` is run for each inventory database which uses ecoinvent-specific location codes.
 
-A regionalized LCIA method is chosen. If this method is `LC IMPACT <http://lc-impact.eu/>`__, the function `import_lc_impact_lcia_method()` is run. Otherwise, a new LCIA method is created, and global characterization factors are optionally added. One or more geocollections are created for the LCIA method, including specifying filepaths to the raster or vector datasets which define these geocollections and characterization factors. Regionalized characterization factors are imported from the spatial datasets using the function `import_regionalized_cfs()`.
+A regionalized LCIA method is chosen. If this method is `LC IMPACT <http://lc-impact.eu/>`__, the function ``import_lc_impact_lcia_method()`` is run. Otherwise, a new LCIA method is created, and global characterization factors are optionally added. One or more geocollections are created for the LCIA method, including specifying filepaths to the raster or vector datasets which define these geocollections and characterization factors. Regionalized characterization factors are imported from the spatial datasets using the function ``import_regionalized_cfs()``.
 
 Most of the time, a third spatial scale is created, either a `Loading` or `ExtensionTable`. This third scale defines activity intensities within the larger inventory locations. Another geocollection is created for this third spatial scale, which includes specifying another spatial data file.
 
-A functional unit for analysis is chosen, and the function `check_needed_intersections()` is called to get all necessary `Intersection` datasets. Most of the time, some intersections will need to be calculated, and the method `remote.get_needed_intersections()` can be called to do all necessary GIS calculations remotely. This step may take some time.
+A functional unit for analysis is chosen, and the function ``check_needed_intersections()`` is called to get all necessary ``Intersection`` datasets. Most of the time, some intersections will need to be calculated, and the method ``remote.get_needed_intersections()`` can be called to do all necessary GIS calculations remotely. This step may take some time.
 
-Finally, an LCA object is created. Depending on the study, and whether a third spatial scale was added, this will be an instance of `OneSpatialScaleLCA`, `TwoSpatialScalesLCA`, `TwoSpatialScalesWithGenericLoadingLCA`, or `ExtensionTablesLCA`. Regionalized results can be summarized numerically, or exported to maps using methods like `write_results_to_ia_map()`, `write_results_to_inv_map()`, and `write_results_to_xtable_map()`.
+Finally, an LCA object is created. Depending on the study, and whether a third spatial scale was added, this will be an instance of `OneSpatialScaleLCA`, `TwoSpatialScalesLCA`, `TwoSpatialScalesWithGenericLoadingLCA`, or `ExtensionTablesLCA`. Regionalized results can be summarized numerically, or exported to maps using methods like ``write_results_to_ia_map()``, ``write_results_to_inv_map()``, and ``write_results_to_xtable_map()``.
 
 Project setup
 =============
 
-Please run the utility function `bw2regionalsetup` in each new project that will do regionalized LCA calculations.
+Please run the utility function ``bw2regionalsetup()`` in each new project that will do regionalized LCA calculations.
 
-Any version of ecoinvent will need to be processed with the utility function `fix_ecoinvent_locations("some ecoinvent database name")`. This function will do the following:
+Any version of ecoinvent will need to be processed with the utility function ``fix_ecoinvent_database("some ecoinvent database name")``. This function will do the following:
 
     * Convert any Rest-of-World locations into actual world regions and subsequently relabel them.
-    * Relabel any ecoinvent-specific locations names to place them inside the `ecoinvent` geocollection.
+    * Relabel any ecoinvent-specific locations names to place them inside the ``ecoinvent`` geocollection.
 
 Spatial scales (``geocollections``)
 ===================================
@@ -110,7 +112,8 @@ Contents:
    formats
    lca
    common
-   py-constructive-geom
+   base-data
+   libraries
    technical
 
 Development

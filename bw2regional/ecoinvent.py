@@ -2,7 +2,7 @@
 from __future__ import print_function, unicode_literals
 from eight import *
 
-from . import cg
+from . import cg, restofworlds
 from bw2data import databases, Database, geomapping
 import json
 import pprint
@@ -27,7 +27,7 @@ def fix_ecoinvent_32_codes(code):
 
 def convert_default_ecoinvent_locations(code):
     """Convert to `ecoinvent` geocollection if necessary"""
-    if len(code) == 2 or code in {"GLO", "RoW"}:
+    if isinstance(code, tuple) or len(code) == 2 or code in {"GLO", "RoW"}:
         return code
     else:
         return ("ecoinvent", fix_ecoinvent_32_codes(code))
@@ -138,14 +138,16 @@ def fix_ecoinvent_database(name):
 
     """
     assert name in databases, "Unknown database"
-    # TODO: Test that base data is installed
+    assert len(restofworlds), "Install base data with ``bw2regionalsetup()``"
 
     db = Database(name)
     db.make_unsearchable()
 
     for act in pyprind.ProgBar(db):
-        act['location'] = convert_default_ecoinvent_locations(act['location'])
-        act.save()
+        new_location = convert_default_ecoinvent_locations(act['location'])
+        if act['location'] != new_location:
+            act['location'] = new_location
+            act.save()
 
     print("Fixing rest of the world locations")
     labels, row_locations, locations = discretize_rest_of_world(name, False)

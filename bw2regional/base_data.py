@@ -9,12 +9,14 @@ from . import (
     import_regionalized_cfs,
     Intersection,
     remote,
+    restofworlds,
     topocollections,
 )
 from .ecoinvent import load_ecoinvent_names
 from brightway2 import config, geomapping, Method
 from bw2data.utils import download_file
 import json
+import requests
 import os
 import warnings
 
@@ -28,6 +30,21 @@ def bw2regionalsetup():
     """Import base data needed for regionalization.
 
     Currently, this is the topology used for ecoinvent 3."""
+
+    print("Downloading and creating Rest-of-the-World definitions")
+    url = "http://geography.ecoinvent.org/report/files/rows-ecoinvent.json"
+    resp = requests.get(url)
+    row_data = json.loads(resp.content.decode('utf8'))
+    restofworlds.data = {k: tuple(v) for k, v in row_data}
+    restofworlds.flush()
+    geocollections['RoW'] = {
+        'filepath': download_file(
+            "rows.gpkg",
+            "regional",
+            url="http://geography.ecoinvent.org/report/files/"
+        ),
+        'field': 'name',
+    }
 
     print("Downloading and creating world geocollections")
     geocollections['world'] = {
@@ -83,6 +100,19 @@ def bw2regionalsetup():
         and len(ecoinvent_names[x[0]]) == 2
     ]
     Topography('world').write(world_topo_data)
+
+    print("Adding RoW topology")
+    row_topofilepath = download_file(
+        "rows-topomapping.json",
+        "regional",
+        url="http://geography.ecoinvent.org/report/files/"
+    )
+    topo_data = json.load(open(row_topofilepath))
+    row_topo_data = [
+        (("RoW", x[0]), x[1])
+        for x in row_topo_data
+    ]
+    Topography('RoW').write(row_topo_data)
 
     print("Adding ecoinvent-specific topology")
     ecoinvent_topo_data = [
