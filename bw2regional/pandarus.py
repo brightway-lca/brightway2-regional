@@ -2,8 +2,6 @@
 from __future__ import print_function, unicode_literals
 from eight import *
 
-import os
-from bw2data import JsonWrapper
 from . import (
     areas,
     Area,
@@ -13,6 +11,9 @@ from . import (
     topocollections,
     Topography,
 )
+from bw2data import JsonWrapper
+import os
+import pyprind
 
 
 def merge(data, mapping):
