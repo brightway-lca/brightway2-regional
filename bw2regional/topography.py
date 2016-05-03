@@ -8,7 +8,7 @@ from bw2data import DataStore, JsonWrapper
 
 
 class Topography(DataStore):
-    """A topographical description of a `geocollection`.
+    """A topographical description of a ``geocollection``.
 
     A topography must be registered to exactly one geocollection.
 
@@ -22,9 +22,7 @@ class Topography(DataStore):
         #. Large features are split into smaller faces, making GIS calculations easier and spatial index queries more efficient, as bounding boxes are smaller
         #. You only do GIS work on each topographical face once
 
-    The LCA classes in `bw2regional` don't work directly with the `Topography` objects; rather, GIS calculations on topographies can be merged to the spatial features of the `geocollection`.
-
-    TODO: What default topographies are installed, if any?
+    The LCA classes in ``bw2regional`` don't work directly with the `Topography` objects; rather, GIS calculations on topographies can be merged to the spatial features of the `geocollection`.
 
     The usual order of operations with a `geocollection` that has a `Topography` is the following:
 
