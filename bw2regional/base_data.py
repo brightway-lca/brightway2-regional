@@ -11,6 +11,7 @@ from . import (
     remote,
     restofworlds,
     topocollections,
+    Topography,
 )
 from brightway2 import config, geomapping, Method
 from bw2data.utils import download_file
@@ -91,13 +92,13 @@ def bw2regionalsetup():
     xt.import_from_map()
 
     print("Adding world topology")
-    topo_data = cg.data
-    world_topo_data = [
-        x for x in topo_data
-        if x[0] != '__all__'
-        and len(x[0]) == 2
-    ]
-    Topography('world').write(world_topo_data)
+    world_topo_data = {
+        k: v
+        for k, v in cg.data.items()
+        if k != '__all__'
+        and len(k) == 2
+    }
+    Topography('world').write(dict(world_topo_data))
 
     print("Adding RoW topology")
     row_topofilepath = download_file(
@@ -106,28 +107,28 @@ def bw2regionalsetup():
         url="http://geography.ecoinvent.org/report/files/"
     )
     topo_data = json.load(open(row_topofilepath))
-    row_topo_data = [
-        (("RoW", x[0]), x[1])
-        for x in topo_data
-    ]
+    assert topocollections['RoW']['sha256'] == topo_data['metadata']['sha256'], \
+        "Mismatch between topological faces and RoW mapping"
+    row_topo_data = {
+        ("RoW", x[0]): x[1]
+        for x in topo_data['data']
+    }
     Topography('RoW').write(row_topo_data)
 
     print("Adding ecoinvent-specific topology")
-    ecoinvent_topo_data = [
-        x for x in topo_data
-        if x[0] != '__all__'
-        and len(x[0]) != 2
-    ]
+    ecoinvent_topo_data = {
+        ("ecoinvent", k): v
+        for k, v in cg.data.items()
+        if k != '__all__'
+        and len(k) != 2
+    }
     Topography('ecoinvent').write(ecoinvent_topo_data)
 
     if remote.alive:
         print("Retrieving and processing intersections")
-        remote.intersection('world', 'geo-weighted-pop-density')
-        remote.intersection('ecoinvent', 'geo-weighted-pop-density')
+        remote.intersection('world', 'gdp-weighted-pop-density')
     else:
         print("Skipping creation of intersections - pandarus_remote server is down")
-
-    # topo.import_from_pandarus(os.path.join(data_dir, "intersect-topo-cfs.json.bz2"), "countries")
 
 
 def import_lc_impact_lcia_method():
