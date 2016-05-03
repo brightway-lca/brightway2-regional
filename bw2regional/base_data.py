@@ -16,8 +16,8 @@ from . import (
 from brightway2 import config, geomapping, Method
 from bw2data.utils import download_file
 import json
-import requests
 import os
+import requests
 import warnings
 
 

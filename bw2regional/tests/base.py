@@ -2,8 +2,8 @@
 from __future__ import print_function, unicode_literals
 from eight import *
 
-from bw2data.tests import BW2DataTest
 from ..meta import geocollections, intersections, loadings
+from bw2data.tests import BW2DataTest
 
 
 class BW2RegionalTest(BW2DataTest):

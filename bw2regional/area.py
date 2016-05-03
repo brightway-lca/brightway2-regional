@@ -5,9 +5,9 @@ from eight import *
 from .meta import areas
 from .validate import area_validator
 from bw2data import geomapping
+from bw2data.data_store import ProcessedDataStore
 from bw2data.utils import MAX_INT_32, numpy_string
 import numpy as np
-from bw2data.data_store import ProcessedDataStore
 
 
 class Area(ProcessedDataStore):

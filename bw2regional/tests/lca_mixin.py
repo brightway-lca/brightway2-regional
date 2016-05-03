@@ -4,8 +4,8 @@ from eight import *
 
 from ..errors import MissingIntersection, SiteGenericMethod, UnprocessedDatabase
 from ..lca.base_class import RegionalizationBase
-from bw2calc import LCA
 from .base import BW2RegionalTest
+from bw2calc import LCA
 from bw2data import Database, Method, geomapping
 
 
