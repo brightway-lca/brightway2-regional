@@ -3,14 +3,11 @@ from __future__ import print_function, unicode_literals, division
 from eight import *
 
 from bw2data import config, projects
+from pandarus import Map
+import fiona
 import numpy as np
 import os
 import warnings
-try:
-    from pandarus import Map
-    import fiona
-except ImportError:
-    Map = None
 
 
 class RegionalizedGrapher(object):

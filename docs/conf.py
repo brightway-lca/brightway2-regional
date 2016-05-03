@@ -22,6 +22,20 @@ release = '0.3'
 
 import sys
 from os.path import abspath, dirname
+from unittest.mock import MagicMock
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+        return Mock()
+
+
+MOCK_MODULES = ['bw2calc', 'bw2calc.lca', 'bw2calc.matrices', 'bw2data',
+                'bw2data.data_store', 'bw2data.ia_data_store',
+                'bw2data.serialization', 'bw2data.utils',
+                'bw2data.validate', 'fiona', 'numpy', 'rasterio',
+                'scipy.sparse']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # Make sure we use this copy of Brightway2
 sys.path.insert(1, abspath(dirname(dirname(__file__))))
