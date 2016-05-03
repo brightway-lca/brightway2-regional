@@ -35,7 +35,7 @@ def bw2regionalsetup():
     url = "http://geography.ecoinvent.org/report/files/rows-ecoinvent.json"
     resp = requests.get(url)
     row_data = json.loads(resp.content.decode('utf8'))
-    restofworlds.data = {k: tuple(v) for k, v in row_data}
+    restofworlds.data = {("RoW", k): tuple(v) for k, v in row_data}
     restofworlds.flush()
     geocollections['RoW'] = {}
     # 'filepath': download_file(

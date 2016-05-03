@@ -3,7 +3,7 @@ from __future__ import print_function, unicode_literals
 from eight import *
 
 from . import cg, restofworlds, geocollections
-from bw2data import databases, Database, geomapping
+from bw2data import databases, Database, geomapping, get_activity
 import fiona
 import json
 import os
@@ -134,8 +134,10 @@ def load_ecoinvent_names():
 def fix_ecoinvent_database(name):
     """Fix spatial definitions in ecoinvent-like databases.
 
-    #. Relabel Rest-of-World locations to be spatially explicit
-    #. Relabel ecoinvent locations to be part of the ``ecoinvent`` geocollection.
+    This function does two things:
+
+    #. Relabels Rest-of-World (``RoW``) locations to be spatially explicit and part of the *RoW* geocollection, e.g. ``("RoW", "RoW-52")``.
+    #. Relabel ecoinvent locations to be part of the *ecoinvent* geocollection.
 
     """
     assert name in databases, "Unknown database"
@@ -144,6 +146,7 @@ def fix_ecoinvent_database(name):
     db = Database(name)
     db.make_unsearchable()
 
+    print("Relabeling ecoinvent-specific locations")
     for act in pyprind.ProgBar(db):
         new_location = convert_default_ecoinvent_locations(act['location'])
         if act['location'] != new_location:
@@ -151,17 +154,24 @@ def fix_ecoinvent_database(name):
             act.save()
 
     print("Fixing rest of the world locations")
-    labels, row_locations, locations = discretize_rest_of_world(name, False)
-    geomapping.add(list(labels.values()))
-    for key, place in pyprind.prog_bar(labels.items()):
-        act = db.get(key[1])
-        act['location'] = place
-        act.save()
+    labels, row_locations, locations, exceptions = discretize_rest_of_world(name, False)
 
-    print("Defining different rest of the world locations")
-    row_topo = {name: cg.construct_rest_of_world(list(_(places)), geom=False) for places, name in row_locations.items()}
-    faces.update({k: [('ecoinvent-topology', fid) for fid in v]
-                      for k, v in row_topo.items()})
-    db.process()
+    # labels is from activity key to (name, product)
+    # locations is from (name, product) to (excluded geometries)
+    # row_lookup is from {excluded} to RoW label
+    row_lookup = {frozenset(v): k for k, v in restofworlds.items()}
+    for activity_key, name_product in labels.items():
+        try:
+            location = row_lookup[frozenset(locations[name_product])]
+            activity = get_activity(activity_key)
+            activity['location'] = location
+            activity.save()
+        except KeyError:
+            print(("Error with activity {}\n\t{}\n\t(name, product) "
+                   "in locations: {}\n\tExcluded: {}").format(activity_key,
+                   name_product, name_product in locations,
+                   row_lookup.get(frozenset(locations.get(name_product, []))))
+            )
 
     db.make_searchable()
+    db.process()
