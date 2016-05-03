@@ -12,7 +12,6 @@ from . import (
     restofworlds,
     topocollections,
 )
-from .ecoinvent import load_ecoinvent_names
 from brightway2 import config, geomapping, Method
 from bw2data.utils import download_file
 import json
@@ -91,17 +90,12 @@ def bw2regionalsetup():
     xt.register(geocollection='gdp-weighted-pop-density')
     xt.import_from_map()
 
-    # Mapping from Constructive Geometries is for full name, but we need the ecoinvent short names
-    ecoinvent_names = {obj['name']: obj['shortname'] for obj in load_ecoinvent_names()}
-
     print("Adding world topology")
-    topo_data = json.load(open(cg.data_fp))
+    topo_data = cg.data
     world_topo_data = [
-        (ecoinvent_names[x[0]], x[1])
-        for x in topo_data
+        x for x in topo_data
         if x[0] != '__all__'
-        and ecoinvent_names[x[0]]
-        and len(ecoinvent_names[x[0]]) == 2
+        and len(x[0]) == 2
     ]
     Topography('world').write(world_topo_data)
 
@@ -114,17 +108,15 @@ def bw2regionalsetup():
     topo_data = json.load(open(row_topofilepath))
     row_topo_data = [
         (("RoW", x[0]), x[1])
-        for x in row_topo_data
+        for x in topo_data
     ]
     Topography('RoW').write(row_topo_data)
 
     print("Adding ecoinvent-specific topology")
     ecoinvent_topo_data = [
-        (ecoinvent_names[x[0]], x[1])
-        for x in topo_data
+        x for x in topo_data
         if x[0] != '__all__'
-        and ecoinvent_names[x[0]]
-        and len(ecoinvent_names[x[0]]) != 2
+        and len(x[0]) != 2
     ]
     Topography('ecoinvent').write(ecoinvent_topo_data)
 

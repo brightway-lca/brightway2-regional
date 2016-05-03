@@ -2,12 +2,13 @@
 from __future__ import print_function, unicode_literals
 from eight import *
 
-from . import cg, restofworlds
+from . import cg, restofworlds, geocollections
 from bw2data import databases, Database, geomapping
+import fiona
 import json
+import os
 import pprint
 import pyprind
-import fiona
 
 
 _32_FIXED_CODES = {
@@ -110,7 +111,7 @@ def discretize_rest_of_world(database, warn=True):
 
 
 def load_ecoinvent_names():
-    assert 'ecoinvent' in geocollections, "Please install base data (function `bw2regionalsetup`) first"
+    assert 'ecoinvent' in geocollections, "Please install base data (function ``bw2regionalsetup()``) first"
 
     data = []
 
