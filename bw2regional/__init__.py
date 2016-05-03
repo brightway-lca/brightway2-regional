@@ -68,11 +68,12 @@ from .utils import (
     reset_geo_meta,
 )
 from .xtables import ExtensionTable
+from .pandarus import import_from_pandarus
+from .pandarus_remote import remote, PandarusRemote
 from .base_data import (
     bw2regionalsetup,
     import_lc_impact_lcia_method,
 )
-from .pandarus import import_from_pandarus
 
 from bw2data import config
 config.metadata.extend([
@@ -82,7 +83,3 @@ config.metadata.extend([
     intersections,
     loadings,
 ])
-
-from .remote import remote, PandarusRemote
-
-# TODO: Get default list of country codes

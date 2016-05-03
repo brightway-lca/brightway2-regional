@@ -5,7 +5,7 @@ from eight import *
 from bw2data import projects
 from . import (
     geocollections,
-    Intersection,
+    import_from_pandarus,
     topocollections,
 )
 from .utils import hash_collection, get_spatial_dataset_kind
@@ -159,8 +159,7 @@ class PandarusRemote(object):
                 f.write(segment)
 
         # Create Intersection
-        Intersection((collection_one, collection_two)
-            ).import_from_pandarus(filepath)
+        return import_from_pandarus(filepath)
 
     @check_alive
     def calculate_intersection(self, collection_one, collection_two):
@@ -222,7 +221,7 @@ class PandarusRemote(object):
                 f.write(segment)
 
         # Create Area
-        return filepath
+        return import_from_pandarus(filepath)
 
     @check_alive
     def calculate_area(self, collection):
