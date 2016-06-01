@@ -13,6 +13,7 @@ from . import (
 )
 from bw2data import JsonWrapper
 import os
+import pprint
 import pyprind
 
 
@@ -27,16 +28,19 @@ def merge(data, mapping):
 
     """
     merged, reverse_mapping = {}, {}
-    for k, v in mapping.items():
+    print("Merging topographies - first step")
+    for k, v in pyprind.prog_bar(mapping.items()):
         for face_id in v:
             reverse_mapping[face_id] = reverse_mapping.get(face_id, []) + [k]
 
-    for first, second, area in data:
+    print("Merging topographies - second step")
+    for first, second, area in pyprind.prog_bar(data):
         if first not in reverse_mapping:
             continue
         for feature in reverse_mapping[first]:
             merged[(feature, second)] = merged.get((feature, second), 0) + area
 
+    return merged
     return [(k[0], k[1], v) for k, v in merged.items()]
 
 
@@ -121,6 +125,7 @@ def import_from_pandarus(fp):
     assert os.path.isfile(fp)
     metadata, data = load_file(fp)
     is_area = len(metadata) == 1
+    return metadata, data, fp
     if is_area:
         return handle_area(metadata, data, fp)
     else:
@@ -199,6 +204,7 @@ def handle_intersection(metadata, data, fp):
 
     if 'topocollection' in {x[1] for x in second_collections}.union(
             {x[1] for x in first_collections}):
+        return first_collections, second_collections
         return handle_topographical_intersection(metadata, data,
             first_collections, second_collections, fp)
 
@@ -250,7 +256,9 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
         raise ValueError("Intersections between mixed topocollections and "
             "geocollections are not supported")
 
-    topo_data = [Topography(name).load() for name, kind in first_collections]
+    topo_data = [{k: set(v)
+                 for k, v in Topography(name).load().items()
+                 } for name, kind in first_collections]
     topo_geocollections = [
         topocollections[name]['geocollection']
         for name, kind in first_collections
@@ -272,6 +280,11 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
         [(x, y, z) for x, y, z in data if x in labels]
         for labels in included_labels
     ]
+
+    return data, topo_data, topo_geocollections, other_geocollection
+
+    print("Merging topographical faces for the following:")
+    pprint.pprint(topo_geocollections)
 
     # Squash topographies to geocollections
     data = [

@@ -19,6 +19,7 @@ setup(
         "brightway2",
         "bw2calc>=1.2",
         "bw2data>=2.0",
+        # "cytoolz",
         "constructive_geometries",
         "eight",
         "fiona",

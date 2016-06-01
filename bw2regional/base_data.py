@@ -31,13 +31,13 @@ def bw2regionalsetup():
 
     See :ref:`basedata` for more information."""
 
-    print("Downloading and creating Rest-of-the-World definitions")
-    url = "http://geography.ecoinvent.org/report/files/rows-ecoinvent.json"
-    resp = requests.get(url)
-    row_data = json.loads(resp.content.decode('utf8'))
-    restofworlds.data = {("RoW", k): tuple(v) for k, v in row_data}
-    restofworlds.flush()
-    geocollections['RoW'] = {}
+    # print("Downloading and creating Rest-of-the-World definitions")
+    # url = "http://geography.ecoinvent.org/report/files/rows-ecoinvent.json"
+    # resp = requests.get(url)
+    # row_data = json.loads(resp.content.decode('utf8'))
+    # restofworlds.data = {("RoW", k): tuple(v) for k, v in row_data}
+    # restofworlds.flush()
+    # geocollections['RoW'] = {}
     # 'filepath': download_file(
     #     "rows.gpkg",
     #     "regional",
@@ -62,11 +62,11 @@ def bw2regionalsetup():
         ),
         'field': 'shortname',
     }
-    topocollections['RoW'] = {
-        'geocollection': 'RoW',
-        'filepath': cg.faces_fp,
-        'field': 'id'
-    }
+    # topocollections['RoW'] = {
+    #     'geocollection': 'RoW',
+    #     'filepath': cg.faces_fp,
+    #     'field': 'id'
+    # }
     topocollections['world'] = {
         'geocollection': 'world',
         'filepath': cg.faces_fp,
@@ -81,7 +81,14 @@ def bw2regionalsetup():
     print("Adding GDP-weighted population density map")
     geocollections['gdp-weighted-pop-density'] = {
         'filepath': download_file(
-            "gdpweighted.tiff",
+            "gdpweighted-compressed.tiff",
+            "regional",
+        )
+    }
+    print("Adding crop intensity maps")
+    geocollections['crops'] = {
+        'filepath': download_file(
+            "cropland-compressed.tiff",
             "regional",
         )
     }
@@ -100,20 +107,20 @@ def bw2regionalsetup():
     }
     Topography('world').write(dict(world_topo_data))
 
-    print("Adding RoW topology")
-    row_topofilepath = download_file(
-        "rows-topomapping.json",
-        "regional",
-        url="http://geography.ecoinvent.org/report/files/"
-    )
-    topo_data = json.load(open(row_topofilepath))
-    assert topocollections['RoW']['sha256'] == topo_data['metadata']['sha256'], \
-        "Mismatch between topological faces and RoW mapping"
-    row_topo_data = {
-        ("RoW", x[0]): x[1]
-        for x in topo_data['data']
-    }
-    Topography('RoW').write(row_topo_data)
+    # print("Adding RoW topology")
+    # row_topofilepath = download_file(
+    #     "rows-topomapping.json",
+    #     "regional",
+    #     url="http://geography.ecoinvent.org/report/files/"
+    # )
+    # topo_data = json.load(open(row_topofilepath))
+    # assert topocollections['RoW']['sha256'] == topo_data['metadata']['sha256'], \
+    #     "Mismatch between topological faces and RoW mapping"
+    # row_topo_data = {
+    #     ("RoW", x[0]): x[1]
+    #     for x in topo_data['data']
+    # }
+    # Topography('RoW').write(row_topo_data)
 
     print("Adding ecoinvent-specific topology")
     ecoinvent_topo_data = {
@@ -137,11 +144,13 @@ def import_lc_impact_lcia_method():
 
     warnings.warn(LC_IMPACT_WARNING)
 
-    # TODO: Update all
-    return
-
-    # intersection = Intersection(("ammonia", "cropland"))
-    # intersection.import_from_pandarus("/Users/cmutel/Projects/Regionalization/SETAC Barcelona/bw2reg/ammonia-cropland.json.bz2")
+    print("Downloading rice-intensity map")
+    geocollections['rice'] = {
+        'filepath': download_file(
+            "rice-supercompressed.tiff",
+            "regional",
+        )
+    }
 
     print("Adding ammonia characterization factors map")
     geocollections['ammonia'] = {
@@ -149,17 +158,30 @@ def import_lc_impact_lcia_method():
             "ammonia.tiff",
             "regional"
     )}
+    print("Adding water consumption - human health impacts map")
+    geocollections['watersheds'] = {
+        'filepath': download_file(
+            "water_hh.gpkg",
+            "regional"
+    )}
+    print("Adding air pollution CFs map")
+    geocollections['air regions'] = {
+        'filepath': download_file(
+            "air_pollution_cfs.gpkg",
+            "regional"
+    )}
 
-    print("Downloading and importing ammonia-gdp intersection")
-    intersection = Intersection(("ammonia", 'gdp-weighted-pop-density'))
-    intersection.register()
-    intersection.import_from_pandarus(download_file("ammonia-gdpweighted.json.bz2", "reg"))
-
-    # intersection = Intersection(("eut", "gdp-weighted-pop-density"))
-    # intersection.import_from_pandarus("/Users/cmutel/Projects/Regionalization/SETAC Barcelona/bw2reg/eut-gdp.json.bz2")
-
-    # intersection = Intersection(("eut", "cropland"))
-    # intersection.import_from_pandarus("/Users/cmutel/Projects/Regionalization/SETAC Barcelona/bw2reg/eut-cropland.json.bz2")
+    if remote.alive:
+        print("Retrieving and processing intersections")
+        remote.intersection('world', 'crops')
+        remote.intersection('world', 'rice')
+        remote.intersection('gdp-weighted-pop-density', 'rice')
+        remote.intersection('world', 'air regions')
+        remote.intersection('rice', 'air regions')
+        remote.intersection('crops', 'air regions')
+        remote.intersection('gdp-weighted-pop-density', 'air regions')
+    else:
+        print("Skipping creation of intersections - pandarus_remote server is down")
 
     # eutrophication_method = Method(("LC IMPACT", "eutrophication"))
     # eutrophication_method.register(band=1, unit="unknown")
