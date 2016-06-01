@@ -163,13 +163,17 @@ def import_lc_impact_lcia_method():
         'filepath': download_file(
             "water_hh.gpkg",
             "regional"
-    )}
+        ),
+        'field': 'id'
+    }
     print("Adding air pollution CFs map")
     geocollections['air regions'] = {
         'filepath': download_file(
             "air_pollution_cfs.gpkg",
             "regional"
-    )}
+        ),
+        'field': 'id'
+    }
 
     if remote.alive:
         print("Retrieving and processing intersections")
