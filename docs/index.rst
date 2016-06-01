@@ -82,7 +82,7 @@ An ``Intersection`` is a dataset that shows the areal intersections between the 
 
 An ``Intersection`` object does not have its own name, but rather is defined by the two ``geocollections`` which are intersected.
 
-Example use of pandarus (see also the `pandarus documentation <http://pandarus.readthedocs.org/en/latest/>`__):
+Example use of pandarus (see also the `pandarus documentation <http://pandarus.readthedocs.io/en/latest/>`__):
 
 .. code-block:: bash
 

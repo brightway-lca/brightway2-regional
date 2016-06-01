@@ -87,7 +87,7 @@ Site-generic IA methods have a simple data format:
         [biosphere flow, maybe uncertainty],
     ]
 
-Where ``maybe uncertainty`` is either a floating point number (implying no uncertainty), or a `stats_array uncertainty dictionary <http://stats-arrays.readthedocs.org/en/latest/>`_, like:
+Where ``maybe uncertainty`` is either a floating point number (implying no uncertainty), or a `stats_array uncertainty dictionary <http://stats-arrays.readthedocs.io/en/latest/>`_, like:
 
 .. code-block:: python
 
