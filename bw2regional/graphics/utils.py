@@ -10,7 +10,7 @@ def normalize_array(array, nodata=None):
     if nodata is not None:
         mask = array != nodata
     else:
-        mask = np.ones(array.shape)
+        mask = np.ones(array.shape).astype(bool)
     copy = array[mask].ravel()
     copy.sort()
     top, bottom = copy[int(copy.shape[0] * 0.005)], copy[int(copy.shape[0] * 0.995)]

@@ -4,32 +4,49 @@ from ..errors import MissingSpatialSourceData
 from .utils import normalize_array
 from descartes import PolygonPatch
 from PIL import Image
+from shapely.geometry.multipolygon import MultiPolygon
+from shapely.geometry import shape
 import fiona
+import matplotlib.pyplot as plt
 import numpy as np
+import pyprind
 import rasterio
 
 
-def display_geocollection(name):
+def display_geocollection(name, field=None):
     assert name in geocollections
     if 'filepath' not in geocollections[name]:
         raise MissingSpatialSourceData("Geocollection {} has no associated source data".format(name))
     if geocollections[name]['kind'] == 'raster':
         return display_raster(name)
     else:
-        return display_vector(name)
+        return display_vector(name, field)
 
 
-def display_vector(name):
+def display_vector(name, field=None):
     metadata = geocollections[name]
-    field = metadata['field']
+    field = field or metadata['field']
+    figure = plt.figure(figsize=(10, 8))
+    axis = plt.axes([0,0,1,1], frameon=False)
+    axis.set_axis_off()
 
     with fiona.drivers():
         with fiona.open(metadata['filepath']) as source:
             data = normalize_array(np.array([feat['properties'][field] for feat in source]))
+            for feat, value in zip(source, data):
+                add_geom(shape(feat['geometry']), axis, viridis(value))
 
-            for feat in source:
-                print(feat['geometry'])
-                break
+    plt.axis('scaled')
+    return figure
+
+
+def add_geom(geom, axis, color):
+    if isinstance(geom, MultiPolygon):
+        for poly in geom:
+            add_geom(poly, axis, color)
+    else:
+        patch = PolygonPatch(geom, fc=color, ec=color, lw=0)
+        axis.add_patch(patch)
 
 
 def display_raster(name):
