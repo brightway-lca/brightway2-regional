@@ -16,6 +16,7 @@ from .meta import (
 from bw2data import Method, methods, projects
 import copy
 import fiona
+import os
 import rasterio
 import shutil
 
@@ -179,17 +180,6 @@ def create_empty_intersection(name):
     inter.register()
     inter.write([])
     return inter
-
-
-def sha256(filepath, blocksize=65536):
-    """Generate SHA 256 hash for file at `filepath`"""
-    hasher = hashlib.sha256()
-    fo = open(filepath, 'rb')
-    buf = fo.read(blocksize)
-    while len(buf) > 0:
-        hasher.update(buf)
-        buf = fo.read(blocksize)
-    return hasher.hexdigest()
 
 
 def get_spatial_dataset_kind(filepath):
