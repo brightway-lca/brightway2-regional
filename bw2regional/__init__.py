@@ -5,6 +5,7 @@ __all__ = (
     "bw2regionalsetup",
     "cg",
     "create_empty_intersection",
+    "display_geocollection",
     "extension_tables",
     "ExtensionTable",
     "ExtensionTablesLCA",
@@ -38,7 +39,6 @@ from constructive_geometries import ConstructiveGeometries
 cg = ConstructiveGeometries()
 
 from .hashing import sha256
-from .graphics import RegionalizedGrapher
 from .area import Area
 from .intersection import Intersection
 from .lca import (
@@ -74,6 +74,8 @@ from .base_data import (
     bw2regionalsetup,
     import_lc_impact_lcia_method,
 )
+from .graphics import RegionalizedGrapher, display_geocollection
+
 
 from bw2data import config
 config.metadata.extend([
