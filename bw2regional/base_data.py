@@ -45,6 +45,10 @@ def bw2regionalsetup():
     # ),
     # 'field': 'name',
 
+    if geocollections:
+        print("Geocollections already present!!! No setup is needed")
+        return
+
     print("Downloading and creating world geocollections")
     geocollections['world'] = {
         'filepath': download_file(
@@ -142,6 +146,10 @@ def import_lc_impact_lcia_method():
     """Import the `LC IMPACT <http://www.lc-impact.eu/>`__ LCIA method"""
     assert 'ecoinvent' in geocollections, "Please install base data (function `bw2regionalsetup`) first"
 
+    if 'rice' in geocollections:
+        print("LC IMPACT already present!!! No setup is needed")
+        return
+
     warnings.warn(LC_IMPACT_WARNING)
 
     print("Downloading rice-intensity map")
@@ -207,6 +215,18 @@ def import_lc_impact_lcia_method():
         {"cf": water_flows},
         cf_field="cf"
     )
+
+    print("Creating rice extension table")
+    xt = ExtensionTable('rice')
+    xt.register(geocollection='rice')
+    xt.import_from_map()
+
+    print("Creating crops extension table")
+    xt = ExtensionTable('crops')
+    xt.register(geocollection='crops')
+    xt.import_from_map()
+
+
 
     # eutrophication_method = Method(("LC IMPACT", "eutrophication"))
     # eutrophication_method.register(band=1, unit="unknown")

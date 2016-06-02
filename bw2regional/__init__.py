@@ -9,6 +9,7 @@ __all__ = (
     "extension_tables",
     "ExtensionTable",
     "ExtensionTablesLCA",
+    "fix_ecoinvent_database",
     "geocollections",
     "get_spatial_dataset_kind",
     "hash_collection",
@@ -74,6 +75,7 @@ from .base_data import (
     bw2regionalsetup,
     import_lc_impact_lcia_method,
 )
+from .ecoinvent import fix_ecoinvent_database
 from .graphics import RegionalizedGrapher, display_geocollection
 
 
