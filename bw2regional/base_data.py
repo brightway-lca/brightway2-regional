@@ -13,7 +13,7 @@ from . import (
     topocollections,
     Topography,
 )
-from brightway2 import config, geomapping, Method
+from brightway2 import config, geomapping, Method, Database
 from bw2data.utils import download_file
 import json
 import os
@@ -151,13 +151,12 @@ def import_lc_impact_lcia_method():
             "regional",
         )
     }
-
-    print("Adding ammonia characterization factors map")
-    geocollections['ammonia'] = {
-        'filepath': download_file(
-            "ammonia.tiff",
-            "regional"
-    )}
+    # print("Adding ammonia characterization factors map")
+    # geocollections['ammonia'] = {
+    #     'filepath': download_file(
+    #         "ammonia.tiff",
+    #         "regional"
+    # )}
     print("Adding water consumption - human health impacts map")
     geocollections['watersheds'] = {
         'filepath': download_file(
@@ -178,14 +177,36 @@ def import_lc_impact_lcia_method():
     if remote.alive:
         print("Retrieving and processing intersections")
         remote.intersection('world', 'crops')
+        remote.intersection('world', 'watersheds')
+        remote.intersection('watersheds', 'crops')
+        remote.intersection('watersheds', 'rice')
         remote.intersection('world', 'rice')
         remote.intersection('gdp-weighted-pop-density', 'rice')
         remote.intersection('world', 'air regions')
         remote.intersection('rice', 'air regions')
-        remote.intersection('crops', 'air regions')
+        # remote.intersection('crops', 'air regions')
         remote.intersection('gdp-weighted-pop-density', 'air regions')
     else:
         print("Skipping creation of intersections - pandarus_remote server is down")
+
+    biosphere = Database("biosphere3")
+    water_flows = [x.key for x in biosphere
+                   if ((x['name'] == 'Water' and x['categories'][0] == 'water') or
+                       x['name'] in ('Water, well, in ground',
+                                     'Water, unspecified natural origin',
+                                     'Water, lake',
+                                     'Water, river'))
+                   ]
+
+    water_global_cfs = [(flow, 1.8e-7 * 1e9, "GLO") for flow in water_flows]
+    water_method = Method(("LC Impact", "Water", "Human Health"))
+    water_method.register(unit="DALY/m3")
+    import_regionalized_cfs(
+        "watersheds",
+        water_method,
+        {"cf": water_flows},
+        cf_field="cf"
+    )
 
     # eutrophication_method = Method(("LC IMPACT", "eutrophication"))
     # eutrophication_method.register(band=1, unit="unknown")
@@ -203,28 +224,28 @@ def import_lc_impact_lcia_method():
     #     }
     # )
 
-    print("Creating acidification method")
-    acidification_method = Method((u"LC IMPACT", u"acidification"))
-    acidification_method.register(
-        band=1,
-        unit="Unknown",
-        geocollections=['ammonia']
-    )
+    # print("Creating acidification method")
+    # acidification_method = Method((u"LC IMPACT", u"acidification"))
+    # acidification_method.register(
+    #     band=1,
+    #     unit="Unknown",
+    #     geocollections=['ammonia']
+    # )
 
-    # Site-generic CFs
-    flows = [
-        (u'biosphere3', u'0f440cc0-0f74-446d-99d6-8ff0e97a2444'),
-        (u'biosphere3', u'8494ed3c-0416-4aa5-b100-51a2b2bcadbd'),
-        (u'biosphere3', u'2b50f643-216a-412b-a0e5-5946867aa2ed'),
-        (u'biosphere3', u'87883a4e-1e3e-4c9d-90c0-f1bea36f8014'),
-        (u'biosphere3', u'9990b51b-7023-4700-bca0-1a32ef921f74')
-    ]
-    acidification_method.write([(flow, 1.48e-10, "GLO") for flow in flows])
+    # # Site-generic CFs
+    # flows = [
+    #     (u'biosphere3', u'0f440cc0-0f74-446d-99d6-8ff0e97a2444'),
+    #     (u'biosphere3', u'8494ed3c-0416-4aa5-b100-51a2b2bcadbd'),
+    #     (u'biosphere3', u'2b50f643-216a-412b-a0e5-5946867aa2ed'),
+    #     (u'biosphere3', u'87883a4e-1e3e-4c9d-90c0-f1bea36f8014'),
+    #     (u'biosphere3', u'9990b51b-7023-4700-bca0-1a32ef921f74')
+    # ]
+    # acidification_method.write([(flow, 1.48e-10, "GLO") for flow in flows])
 
-    # Regionalized
-    import_regionalized_cfs(
-        "ammonia",
-        acidification_method,
-        {1: flows},
-        overwrite=False
-    )
+    # # Regionalized
+    # import_regionalized_cfs(
+    #     "ammonia",
+    #     acidification_method,
+    #     {1: flows},
+    #     overwrite=False
+    # )
