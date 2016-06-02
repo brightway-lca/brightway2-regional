@@ -22,7 +22,7 @@ import shutil
 
 
 def import_regionalized_cfs(geocollection, method, mapping, cf_field=None,
-        overwrite=True):
+        overwrite=True, global_cfs=None):
     """Import data from a geospatial dataset (i.e. raster or vector data) into a ``Method``.
 
     A ``Method`` can have both site-generic and regionalized characterization factors.
@@ -49,6 +49,9 @@ def import_regionalized_cfs(geocollection, method, mapping, cf_field=None,
     if not isinstance(method, Method):
         raise TypeError("Must pass bw2data Method instance (got %s: %s" % (type(method), method))
     assert geocollection in geocollections
+
+    if global_cfs is None:
+        global_cfs = []
 
     metadata = copy.deepcopy(method.metadata)
     metadata.update(geocollections[geocollection])
@@ -88,15 +91,7 @@ def import_regionalized_cfs(geocollection, method, mapping, cf_field=None,
                         (geocollection, feature['label'])
                     ))
 
-
-            # if map_obj.vector:
-            #     label =
-            #     value =
-            # else:
-            #     label = feature['label']
-            #     value = feature['value']
-
-    method.write(data)
+    method.write(data + global_cfs)
 
     if overwrite:
         methods[method.name]['geocollections'] = [geocollection]
