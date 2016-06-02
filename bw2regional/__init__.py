@@ -12,7 +12,7 @@ __all__ = (
     "geocollections",
     "get_spatial_dataset_kind",
     "hash_collection",
-    # "import_lc_impact_lcia_method",
+    "import_lc_impact_lcia_method",
     "import_from_pandarus",
     "import_regionalized_cfs",
     "Intersection",

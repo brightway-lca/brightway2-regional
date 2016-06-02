@@ -11,38 +11,14 @@ from . import (
     topocollections,
     Topography,
 )
-from bw2data import JsonWrapper, geomapping
+from bw2data import JsonWrapper, geomapping, projects
+from bw2data.utils import MAX_INT_32, numpy_string
+import numpy as np
 import os
 import pandas as pd
 import pprint
 import pyprind
-
-
-def merge(data, mapping):
-    """Merge topo face ids to geocollection features.
-
-    `data` has the form [(feature 1, feature 2, area)], where `feature 1` is a topo face id.
-
-    `mapping` has the form `{geocollection feature: [face id]}`.
-
-    We want (and return) [(geocollection feature, feature 2, area)], where we have summed all the areal intersections for each geocollection feature.
-
-    """
-    merged, reverse_mapping = {}, {}
-    print("Merging topographies - first step")
-    for k, v in pyprind.prog_bar(mapping.items()):
-        for face_id in v:
-            reverse_mapping[face_id] = reverse_mapping.get(face_id, []) + [k]
-
-    print("Merging topographies - second step")
-    for first, second, area in pyprind.prog_bar(data):
-        if first not in reverse_mapping:
-            continue
-        for feature in reverse_mapping[first]:
-            merged[(feature, second)] = merged.get((feature, second), 0) + area
-
-    return merged
-    return [(k[0], k[1], v) for k, v in merged.items()]
+import pickle
 
 
 def area_merge(data, mapping):
@@ -232,6 +208,9 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
     #. To split data into each topography
     #. Squash the topography to geocollections
     #. Create a new intersection for each geocollection/topography pair
+
+    We use Pandas DataFrames to do aggregation in a resource efficient way. We also write the processed Intersection arrays directly.
+
     """
     # Check that topography(s) are in either first or second position, and
     # switch to first position if necessary
@@ -261,6 +240,7 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
         raise ValueError("Intersections between mixed topocollections and "
             "geocollections are not supported")
 
+    grouped_data = data.groupby(['id'])
     topo_geocollections = [
         topocollections[name]['geocollection']
         for name, kind in first_collections
@@ -276,34 +256,63 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
             other_geocollection, name)
         )
 
-    data.set_index('id')
-
-    # Split data into topography-specific sections
-    # included_labels = [
-    #     {face for faces in topo_dataset.values() for face in faces}
-    #     for topo_dataset in topo_data
-    # ]
-    # data = [
-    #     [(x, y, z) for x, y, z in data if x in labels]
-    #     for labels in included_labels
-    # ]
-
-    return data, topo_data, topo_geocollections, other_geocollection
-
-    print("Merging topographical faces for the following:")
-    pprint.pprint(topo_geocollections)
-
-    # Squash topographies to geocollections
-    data = [
-        merge(dataset, mapping)
-        for dataset, mapping in zip(data, topo_data)
+    dtype = [
+        (numpy_string('geo_inv'), np.uint32),
+        (numpy_string('geo_ia'), np.uint32),
+        (numpy_string('amount'), float),
+        (numpy_string('row'), np.uint32),
+        (numpy_string('col'), np.uint32),
     ]
 
-    for name, dataset in zip(topo_geocollections, data):
-        dataset = relabel(dataset, name, other_geocollection)
+    for name, mapping in zip(topo_geocollections, topo_data):
+        print("Merging topographical faces for geocollection {}".format(name))
+        arrays = []
+        valid_topo_ids = data['id'].unique()
+
+        for key in pyprind.prog_bar(mapping):
+            try:
+                # Magic
+                temp = pd.concat((grouped_data.get_group(topo_id)
+                                  for topo_id in mapping[key]
+                                  if topo_id in valid_topo_ids)).groupby('feature').sum()
+                array = np.empty(len(temp), dtype=dtype)
+                array['geo_inv'] = key
+                array['geo_ia'] = temp.index.values
+                array['amount'] = temp['area'].values
+                arrays.append(array)
+            except ValueError:
+                continue
+
+        arrays = np.hstack(arrays)
+        arrays['row'] = MAX_INT_32
+        arrays['col'] = MAX_INT_32
+
+        print("Creating intersection ({}, {})".format(name, other_geocollection))
         intersection = Intersection((name, other_geocollection))
         intersection.register(filepath=filepath)
-        intersection.write(dataset)
-        intersection.create_reversed_intersection()
+        filepath = os.path.join(
+            projects.dir,
+            "processed",
+            intersection.filename + ".pickle"
+        )
+        with open(filepath, "wb") as f:
+            pickle.dump(arrays, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+        intersection = Intersection((other_geocollection, name))
+        intersection.register(filepath=filepath)
+        arrays.dtype.names = (
+            numpy_string('geo_inv'),
+            numpy_string('geo_ia'),
+            numpy_string('amount'),
+            numpy_string('row'),
+            numpy_string('col'),
+        )
+        filepath = os.path.join(
+            projects.dir,
+            "processed",
+            intersection.filename + ".pickle"
+        )
+        with open(filepath, "wb") as f:
+            pickle.dump(arrays, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     return [(n, other_geocollection) for n in topo_geocollections]

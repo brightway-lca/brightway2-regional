@@ -161,7 +161,6 @@ class PandarusRemote(object):
 
         # Create Intersection
         print("Processing intersections file")
-        return filepath
         return import_from_pandarus(filepath)
 
     @check_alive
