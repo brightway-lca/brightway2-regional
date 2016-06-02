@@ -141,7 +141,7 @@ def fix_ecoinvent_database(name):
 
     """
     assert name in databases, "Unknown database"
-    assert len(restofworlds), "Install base data with ``bw2regionalsetup()``"
+    assert 'ecoinvent' in geocollections, "Please install base data (function ``bw2regionalsetup()``) first"
 
     db = Database(name)
     db.make_unsearchable()
@@ -152,26 +152,28 @@ def fix_ecoinvent_database(name):
         if act['location'] != new_location:
             act['location'] = new_location
             act.save()
+        if act['location'] == 'RoW':
+            act['location'] = 'GLO'
+            act.save()
+    # print("Fixing rest of the world locations")
+    # labels, row_locations, locations, exceptions = discretize_rest_of_world(name, False)
 
-    print("Fixing rest of the world locations")
-    labels, row_locations, locations, exceptions = discretize_rest_of_world(name, False)
-
-    # labels is from activity key to (name, product)
-    # locations is from (name, product) to (excluded geometries)
-    # row_lookup is from {excluded} to RoW label
-    row_lookup = {frozenset(v): k for k, v in restofworlds.items()}
-    for activity_key, name_product in labels.items():
-        try:
-            location = row_lookup[frozenset(locations[name_product])]
-            activity = get_activity(activity_key)
-            activity['location'] = location
-            activity.save()
-        except KeyError:
-            print(("Error with activity {}\n\t{}\n\t(name, product) "
-                   "in locations: {}\n\tExcluded: {}").format(activity_key,
-                   name_product, name_product in locations,
-                   row_lookup.get(frozenset(locations.get(name_product, []))))
-            )
+    # # labels is from activity key to (name, product)
+    # # locations is from (name, product) to (excluded geometries)
+    # # row_lookup is from {excluded} to RoW label
+    # row_lookup = {frozenset(v): k for k, v in restofworlds.items()}
+    # for activity_key, name_product in labels.items():
+    #     try:
+    #         location = row_lookup[frozenset(locations[name_product])]
+    #         activity = get_activity(activity_key)
+    #         activity['location'] = location
+    #         activity.save()
+    #     except KeyError:
+    #         print(("Error with activity {}\n\t{}\n\t(name, product) "
+    #                "in locations: {}\n\tExcluded: {}").format(activity_key,
+    #                name_product, name_product in locations,
+    #                row_lookup.get(frozenset(locations.get(name_product, []))))
+    #         )
 
     db.make_searchable()
     db.process()
