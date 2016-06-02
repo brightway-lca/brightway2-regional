@@ -4,7 +4,7 @@ from eight import *
 
 from .meta import topocollections, geocollections, intersections
 from .intersection import Intersection
-from bw2data import DataStore, JsonWrapper
+from bw2data import DataStore, JsonWrapper, geomapping
 
 
 class Topography(DataStore):
@@ -55,7 +55,16 @@ class Topography(DataStore):
     """
     _metadata = topocollections
 
+    @property
+    def geocollection(self):
+        return self.metadata['geocollection']
+
+    def add_mappings(self, data):
+        geocollection = self.geocollection
+        geomapping.add(data)
+
     def write(self, data):
         self.metadata['empty'] = False
         self._metadata.flush()
+        self.add_mappings(data)
         super(Topography, self).write(data)
