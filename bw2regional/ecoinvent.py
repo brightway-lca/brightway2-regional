@@ -147,7 +147,7 @@ def fix_ecoinvent_database(name):
     db.make_unsearchable()
 
     print("Relabeling ecoinvent-specific locations")
-    for act in pyprind.ProgBar(db):
+    for act in pyprind.prog_bar(db):
         new_location = convert_default_ecoinvent_locations(act['location'])
         if act['location'] != new_location:
             act['location'] = new_location
