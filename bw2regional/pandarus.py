@@ -11,8 +11,9 @@ from . import (
     topocollections,
     Topography,
 )
-from bw2data import JsonWrapper
+from bw2data import JsonWrapper, geomapping
 import os
+import pandas as pd
 import pprint
 import pyprind
 
@@ -24,7 +25,7 @@ def merge(data, mapping):
 
     `mapping` has the form `{geocollection feature: [face id]}`.
 
-    Returns a new version of `data` where `feature 1` is now geocollection features intead of topo face ids.
+    We want (and return) [(geocollection feature, feature 2, area)], where we have summed all the areal intersections for each geocollection feature.
 
     """
     merged, reverse_mapping = {}, {}
@@ -65,11 +66,6 @@ def relabel(data, first, second=None):
         return [((first, a), b) for a, b in data]
     else:
         return [((first, a), (second, b), c) for a, b, c in data]
-
-
-def switch_order(data):
-    """Switch data order from ``(first, second, area)`` to ``(second, first, area)``."""
-    return [(y, x, z) for x, y, z in data]
 
 
 def load_file(filepath):
@@ -125,7 +121,6 @@ def import_from_pandarus(fp):
     assert os.path.isfile(fp)
     metadata, data = load_file(fp)
     is_area = len(metadata) == 1
-    return metadata, data, fp
     if is_area:
         return handle_area(metadata, data, fp)
     else:
@@ -204,7 +199,6 @@ def handle_intersection(metadata, data, fp):
 
     if 'topocollection' in {x[1] for x in second_collections}.union(
             {x[1] for x in first_collections}):
-        return first_collections, second_collections
         return handle_topographical_intersection(metadata, data,
             first_collections, second_collections, fp)
 
@@ -246,23 +240,34 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
     if first_labels == {'topocollection'}:
         assert len(second_collections) == 1, "Must intersect with exactly one geocollection"
         assert second_labels == {'geocollection'}, "Must intersect topography with geocollections"
-    elif second_labels == {'topocollections'}:
+        lbl = list(second_collections)[0][0]
+        geomapping.add({(lbl, y) for x, y, z in data})
+        data = pd.DataFrame(
+            [(x, geomapping[(lbl, y)], z) for x, y, z in data],
+            columns=['id', 'feature', 'area']
+        )
+    elif second_labels == {'topocollection'}:
         assert len(first_collections) == 1, "Must intersect with exactly one geocollection"
         assert first_labels == {'geocollection'}, "Must intersect topography with geocollections"
-        data = switch_order(data)
+        lbl = list(first_collections)[0][0]
+        geomapping.add({(lbl, x) for x, y, z in data})
+        data = pd.DataFrame(
+            [(y, geomapping[(lbl, x)], z) for x, y, z in data],
+            columns=['id', 'feature', 'area']
+        )
         metadata['first'], metadata['second'] = metadata['second'], metadata['first']
         first_collections, second_collections = second_collections, first_collections
     else:
         raise ValueError("Intersections between mixed topocollections and "
             "geocollections are not supported")
 
-    topo_data = [{k: set(v)
-                 for k, v in Topography(name).load().items()
-                 } for name, kind in first_collections]
     topo_geocollections = [
         topocollections[name]['geocollection']
         for name, kind in first_collections
     ]
+    topo_data = [{geomapping[k]: set(v)
+                 for k, v in Topography(obj[0]).load().items()
+                 } for obj, name in zip(first_collections, topo_geocollections)]
     other_geocollection = second_collections.pop()[0]
 
     for name in topo_geocollections:
@@ -271,15 +276,17 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
             other_geocollection, name)
         )
 
+    data.set_index('id')
+
     # Split data into topography-specific sections
-    included_labels = [
-        {face for faces in topo_dataset.values() for face in faces}
-        for topo_dataset in topo_data
-    ]
-    data = [
-        [(x, y, z) for x, y, z in data if x in labels]
-        for labels in included_labels
-    ]
+    # included_labels = [
+    #     {face for faces in topo_dataset.values() for face in faces}
+    #     for topo_dataset in topo_data
+    # ]
+    # data = [
+    #     [(x, y, z) for x, y, z in data if x in labels]
+    #     for labels in included_labels
+    # ]
 
     return data, topo_data, topo_geocollections, other_geocollection
 
