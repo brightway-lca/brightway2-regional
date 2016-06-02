@@ -34,13 +34,13 @@ def display_vector(name, field=None):
         with fiona.open(metadata['filepath']) as source:
             data = normalize_array(np.array([feat['properties'][field] for feat in source]))
             for feat, value in zip(source, data):
-                add_geom(shape(feat['geometry']), axis, viridis(value))
+                add_geom_to_axis(shape(feat['geometry']), axis, viridis(value))
 
     plt.axis('scaled')
     return figure
 
 
-def add_geom(geom, axis, color):
+def add_geom_to_axis(geom, axis, color):
     if isinstance(geom, MultiPolygon):
         for poly in geom:
             add_geom(poly, axis, color)
@@ -62,3 +62,10 @@ def display_raster(name):
     if nodata is not None:
         array = np.ma.masked_array(array, array == nodata)
     return Image.fromarray(viridis(array, bytes=True))
+
+
+# def display_result(matrix, geocollection):
+#             array = np.zeros(self.map.file.array().shape) + self.NODATA
+#         for obj in self.map:
+#             if obj['label'] in self.results:
+#                 array[obj['row'], obj['col']] = self.results[obj['label']]

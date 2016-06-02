@@ -151,7 +151,6 @@ class PandarusRemote(object):
             resp.headers['Content-Disposition'].replace('attachment; filename=', '')
         )
         chunk = 128 * 1024
-        print("Downloading file")
         with open(filepath, "wb") as f:
             while True:
                 segment = resp.raw.read(chunk)
@@ -160,7 +159,6 @@ class PandarusRemote(object):
                 f.write(segment)
 
         # Create Intersection
-        print("Processing intersections file")
         return import_from_pandarus(filepath)
 
     @check_alive

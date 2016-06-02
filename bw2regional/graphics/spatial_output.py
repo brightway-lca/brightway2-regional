@@ -31,7 +31,7 @@ class RegionalizedGrapher(object):
         matrix = matrix.tocoo()
         if normalize:
             matrix.data = matrix.data / np.sum(np.abs(matrix.data))
-        if (matrix.data < 0).sum() and log_transform:
+        if (matrix.data <= 0).sum() and log_transform:
             warnings.warn("Can't log-transform data with negative values")
         elif log_transform:
             matrix.data = np.log(matrix.data)
