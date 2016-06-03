@@ -8,6 +8,7 @@ from . import (
     geocollections,
     import_regionalized_cfs,
     Intersection,
+    intersections,
     remote,
     restofworlds,
     topocollections,
@@ -142,11 +143,11 @@ def bw2regionalsetup():
         print("Skipping creation of intersections - pandarus_remote server is down")
 
 
-def import_lc_impact_lcia_method():
+def import_lc_impact_lcia_method(force=False):
     """Import the `LC IMPACT <http://www.lc-impact.eu/>`__ LCIA method"""
     assert 'ecoinvent' in geocollections, "Please install base data (function `bw2regionalsetup`) first"
 
-    if 'rice' in geocollections:
+    if 'rice' in geocollections and not force:
         print("LC IMPACT already present!!! No setup is needed")
         return
 
@@ -184,16 +185,26 @@ def import_lc_impact_lcia_method():
 
     if remote.alive:
         print("Retrieving and processing intersections")
-        remote.intersection('world', 'crops')
-        remote.intersection('world', 'watersheds')
-        remote.intersection('watersheds', 'crops')
-        remote.intersection('watersheds', 'rice')
-        remote.intersection('world', 'rice')
-        remote.intersection('gdp-weighted-pop-density', 'rice')
-        remote.intersection('world', 'air regions')
-        remote.intersection('rice', 'air regions')
-        # remote.intersection('crops', 'air regions')
-        remote.intersection('gdp-weighted-pop-density', 'air regions')
+        if ('world', 'crops') not in intersections:
+            remote.intersection('world', 'crops')
+        if ('world', 'watersheds') not in intersections:
+            remote.intersection('world', 'watersheds')
+        if ('watersheds', 'crops') not in intersections:
+            remote.intersection('watersheds', 'crops')
+        if ('watersheds', 'rice') not in intersections:
+            remote.intersection('watersheds', 'rice')
+        if ('world', 'rice') not in intersections:
+            remote.intersection('world', 'rice')
+        if ('gdp-weighted-pop-density', 'rice') not in intersections:
+            remote.intersection('gdp-weighted-pop-density', 'rice')
+        if ('world', 'air regions') not in intersections:
+            remote.intersection('world', 'air regions')
+        if ('rice', 'air regions') not in intersections:
+            remote.intersection('rice', 'air regions')
+        if ('crops', 'air regions') not in intersections:
+            remote.intersection('crops', 'air regions')
+        if ('gdp-weighted-pop-density', 'air regions') not in intersections:
+            remote.intersection('gdp-weighted-pop-density', 'air regions')
     else:
         print("Skipping creation of intersections - pandarus_remote server is down")
 
@@ -206,14 +217,14 @@ def import_lc_impact_lcia_method():
                                      'Water, river'))
                    ]
 
-    water_global_cfs = [(flow, 1.8e-7 * 1e9, "GLO") for flow in water_flows]
     water_method = Method(("LC Impact", "Water", "Human Health"))
     water_method.register(unit="DALY/m3")
     import_regionalized_cfs(
-        "watersheds",
-        water_method,
-        {"cf": water_flows},
-        cf_field="cf"
+        geocollection="watersheds",
+        method=water_method,
+        mapping={"cf": water_flows},
+        global_cfs=[(flow, 1.8e-7, "GLO") for flow in water_flows],
+        scaling_factor=1e-9,
     )
 
     print("Creating rice extension table")
@@ -226,7 +237,75 @@ def import_lc_impact_lcia_method():
     xt.register(geocollection='crops')
     xt.import_from_map()
 
+    # Air method from http://www.sciencedirect.com/science/article/pii/S1352231016302084
 
+    air_hh_pm_method = Method(("LC Impact", "Air", "Human health", "Particulates"))
+    air_hh_ozone_method = Method(("LC Impact", "Air", "Human health", "Ozone"))
+    air_hh_method = Method(("LC Impact", "Air", "Human health"))
+
+    air_hh_pm_method.register(unit="DALY/kg")
+    air_hh_ozone_method.register(unit="DALY/kg")
+    air_hh_method.register(unit="DALY/kg")
+
+    pm25 = [x.key for x in biosphere if x['name'] == 'Particulates, < 2.5 um']
+    ammonia = [x.key for x in biosphere if x['name'] == 'Ammonia']
+    nox = [x.key for x in biosphere if x['name'] == 'Nitrogen oxides']
+    so2 = [x.key for x in biosphere if x['name'] == 'Sulfur dioxide']
+    nmvoc = [x.key for x in biosphere if x['name'] == 'NMVOC, non-methane volatile organic compounds, unspecified origin']
+
+    import_regionalized_cfs(
+        geocollection="air regions",
+        method=air_hh_pm_method,
+        mapping={
+            "PM_PM25": pm25,
+            "PM_NH3": ammonia,
+            "PM_NOx": nox,
+            "PM_SO2": so2,
+        },
+        global_cfs=(
+            [(flow, 629.2 * 1e-6, "GLO") for flow in pm25] +
+            [(flow, 160.6 * 1e-6, "GLO") for flow in ammonia] +
+            [(flow,  76.2 * 1e-6, "GLO") for flow in nox] +
+            [(flow, 183.4 * 1e-6, "GLO") for flow in so2]
+        ),
+        scaling_factor=1e-6,
+    )
+
+    import_regionalized_cfs(
+        geocollection="air regions",
+        method=air_hh_ozone_method,
+        mapping={
+            "Ozone_MNMVOC": nmvoc,
+            "Ozone_NOx": nox,
+        },
+        global_cfs=(
+            [(flow, 0.14 * 1e-6, "GLO") for flow in nmvoc] +
+            [(flow, 0.91 * 1e-6, "GLO") for flow in nox]
+        ),
+        scaling_factor=1e-6,
+    )
+
+    import_regionalized_cfs(
+        geocollection="air regions",
+        method=air_hh_method,
+        mapping={
+            "PM_PM25": pm25,
+            "PM_NH3": ammonia,
+            "PM_NOx": nox,
+            "PM_SO2": so2,
+            "Ozone_MNMVOC": nmvoc,
+            "Ozone_NOx": nox,
+        },
+        global_cfs=(
+            [(flow, 629.2 * 1e-6, "GLO") for flow in pm25] +
+            [(flow, 160.6 * 1e-6, "GLO") for flow in ammonia] +
+            [(flow,  76.2 * 1e-6, "GLO") for flow in nox] +
+            [(flow, 183.4 * 1e-6, "GLO") for flow in so2] +
+            [(flow, 0.14 * 1e-6, "GLO") for flow in nmvoc] +
+            [(flow, 0.91 * 1e-6, "GLO") for flow in nox]
+        ),
+        scaling_factor=1e-6,
+    )
 
     # eutrophication_method = Method(("LC IMPACT", "eutrophication"))
     # eutrophication_method.register(band=1, unit="unknown")
