@@ -136,6 +136,14 @@ def display_vector_result(matrix, spatial_dict, name):
     return figure
 
 
+def crop(array):
+    nonzero_cols = np.nonzero(array.sum(axis=0))[0]
+    nonzero_cols.sort()
+    nonzero_rows = np.nonzero(array.sum(axis=1))[0]
+    nonzero_rows.sort()
+    return array[nonzero_rows[0]:nonzero_rows[-1] + 1, nonzero_cols[0]:nonzero_cols[-1] + 1]
+
+
 def display_raster_result(matrix, spatial_dict, name):
     map_obj = Map(geocollections[name]['filepath'],
                band=geocollections[name].get('band', 1))
@@ -148,5 +156,6 @@ def display_raster_result(matrix, spatial_dict, name):
         elif (name, obj['label']) in spatial_dict:
             array[obj['row'], obj['col']] = matrix[0, spatial_dict[(name, obj['label'])]]
 
+    array = crop(array)
     array = np.ma.masked_array(array, array == 0)
     return Image.fromarray(viridis(array, bytes=True))
