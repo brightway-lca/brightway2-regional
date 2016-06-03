@@ -1,11 +1,12 @@
 from . import viridis
 from .. import geocollections
-from ..errors import MissingSpatialSourceData
+from ..errors import MissingSpatialSourceData, IncompleteSpatialDefinition
 from .utils import normalize_array
 from descartes import PolygonPatch
+from pandarus import Map
 from PIL import Image
-from shapely.geometry.multipolygon import MultiPolygon
 from shapely.geometry import shape
+from shapely.geometry.multipolygon import MultiPolygon
 import fiona
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,23 +18,40 @@ def display_geocollection(name, field=None):
     assert name in geocollections
     if 'filepath' not in geocollections[name]:
         raise MissingSpatialSourceData("Geocollection {} has no associated source data".format(name))
+
     if geocollections[name]['kind'] == 'raster':
-        return display_raster(name)
+        return display_geocollection_raster(name)
     else:
-        return display_vector(name, field)
+        filepath = geocollections[name]['filepath']
+        field = field or geocollections[name].get('field')
+        if not field:
+            raise IncompleteSpatialDefinition(
+                "Geocollection {} metadata missing `field`".format(name)
+            )
+        values = normalize_array(get_vector_values(filepath, field))
+        return display_vector_and_values(filepath, field)
 
 
-def display_vector(name, field=None):
-    metadata = geocollections[name]
-    field = field or metadata['field']
-    figure = plt.figure(figsize=(10, 8))
+def get_vector_values(filepath, field):
+    with fiona.drivers():
+        with fiona.open(filepath) as source:
+            data = np.array([feat['properties'][field] for feat in source])
+    return data
+
+
+def setup_vector_figure(figsize=(10, 8)):
+    figure = plt.figure(figsize=figsize)
     axis = plt.axes([0,0,1,1], frameon=False)
     axis.set_axis_off()
+    return figure, axis
+
+
+def display_vector_and_values(filepath, values, field=None):
+    figure, axis = setup_vector_figure()
 
     with fiona.drivers():
-        with fiona.open(metadata['filepath']) as source:
-            data = normalize_array(np.array([feat['properties'][field] for feat in source]))
-            for feat, value in zip(source, data):
+        with fiona.open(filepath) as source:
+            for feat, value in zip(source, values):
                 add_geom_to_axis(shape(feat['geometry']), axis, viridis(value))
 
     plt.axis('scaled')
@@ -43,13 +61,13 @@ def display_vector(name, field=None):
 def add_geom_to_axis(geom, axis, color):
     if isinstance(geom, MultiPolygon):
         for poly in geom:
-            add_geom(poly, axis, color)
+            add_geom_to_axis(poly, axis, color)
     else:
         patch = PolygonPatch(geom, fc=color, ec=color, lw=0)
         axis.add_patch(patch)
 
 
-def display_raster(name):
+def display_geocollection_raster(name):
     # Some code from
     # http://stackoverflow.com/questions/10965417/how-to-convert-numpy-array-to-pil-image-applying-matplotlib-colormap
     metadata = geocollections[name]
@@ -64,8 +82,66 @@ def display_raster(name):
     return Image.fromarray(viridis(array, bytes=True))
 
 
-# def display_result(matrix, geocollection):
-#             array = np.zeros(self.map.file.array().shape) + self.NODATA
-#         for obj in self.map:
-#             if obj['label'] in self.results:
-#                 array[obj['row'], obj['col']] = self.results[obj['label']]
+def display_result(matrix, spatial_dict, geocollection):
+    """Display results from a regionalized LCA calculation.
+
+    ``matrix`` is a Scipy sparse matrix with shape ``(1, len(spatial_dict))``.
+
+    ``spatial_dict`` has the form ``{feature label: row index}``.
+
+    ``geocollection`` is the name of a valid geocollection.
+
+    Returns a matplotlib (vector) or pillow (raster) object.
+
+    """
+    if geocollections[geocollection]['kind'] == 'raster':
+        return display_raster_result(matrix, spatial_dict, geocollection)
+    else:
+        return display_vector_result(matrix, spatial_dict, geocollection)
+
+
+def eliminate_zeros(matrix):
+    matrix = matrix.tocsr()
+    matrix.eliminate_zeros()
+    return matrix.tocoo()
+
+
+def display_vector_result(matrix, spatial_dict, name):
+    field = geocollections[name].get('field')
+    filepath = geocollections[name]['filepath']
+    if not field:
+        raise IncompleteSpatialDefinition(
+            "Geocollection {} metadata missing `field`".format(name)
+        )
+
+    matrix.data = normalize_array(eliminate_zeros(matrix).data)
+    figure, axis = setup_vector_figure()
+
+    with fiona.drivers():
+        with fiona.open(filepath) as source:
+            for feat in source:
+                label = feat['properties'][field]
+                if (name, label) in spatial_dict:
+                    col = spatial_dict[(name, label)]
+                elif label in spatial_dict:
+                    col = spatial_dict[label]
+                else:
+                    continue
+                if matrix[0, col] == 0:
+                    continue
+                add_geom_to_axis(shape(feat['geometry']), axis, viridis(matrix[0, col]))
+
+    plt.axis('scaled')
+    return figure
+
+
+def display_raster_result(matrix, spatial_dict, name):
+    map_obj = Map(geocollections[name]['filepath'],
+               band=geocollections[name].get('band', 1))
+    matrix.data = normalize_array(eliminate_zeros(matrix).data)
+    array = np.zeros(map_obj.file.array().shape)
+    for obj in map_obj:
+        if obj['label'] in spatial_dict:
+            array[obj['row'], obj['col']] = matrix[spatial_dict[0, obj['label']]]
+    array = np.ma.masked_array(array, array == 0)
+    return Image.fromarray(viridis(array, bytes=True))

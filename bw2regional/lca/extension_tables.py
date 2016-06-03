@@ -3,6 +3,7 @@ from __future__ import print_function, unicode_literals, division
 from eight import *
 
 from ..errors import MissingIntersection
+from ..graphics import display_result
 from ..intersection import Intersection
 from ..meta import extension_tables, intersections
 from ..utils import get_pandarus_map
@@ -263,3 +264,15 @@ If you know these intersections are not needed, you can create empty intersectio
         grapher = RegionalizedGrapher(map_obj,
             self.xtable_spatial_dict, matrix, normalize, log_transform)
         return grapher.write(filename)
+
+    def display_xtable_results(self, flow=None, geocollection=None):
+        """Display regionalized LCA results using impact assessment spatial scale."""
+        if geocollection is None and len(self.xtable_geocollections) > 1:
+            raise ValueError(
+                "Must specify geocollection. Choose from: {}".format(
+                    self.xtable_geocollections
+                )
+            )
+        geocollection = geocollection or list(self.xtable_geocollections)[0]
+        matrix = self._results_new_scale(self.results_xtable_spatial_scale(), flow)
+        return display_result(matrix, self.xtable_spatial_dict, geocollection)

@@ -3,22 +3,17 @@ from __future__ import print_function, unicode_literals, division
 from eight import *
 
 from bw2data import config, projects
+from pandarus import Map
+import fiona
 import numpy as np
 import os
 import warnings
-try:
-    from pandarus import Map
-    import fiona
-except ImportError:
-    Map = None
 
 
 class RegionalizedGrapher(object):
     NODATA = -9999.
 
     def __init__(self, map_obj, spatial_dict, result_matrix, normalize=False, log_transform=False):
-        if Map is None:
-            raise ImportError("pandarus required for this function")
         assert result_matrix.shape[0] == 1, "Result matrix must only have one row"
         self.spatial_dict = spatial_dict
         self.map = map_obj

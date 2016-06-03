@@ -42,14 +42,6 @@ cg = ConstructiveGeometries()
 from .hashing import sha256
 from .area import Area
 from .intersection import Intersection
-from .lca import (
-    ExtensionTablesLCA,
-    OneSpatialScaleLCA,
-    TopologicalExtensionTablesLCA,
-    TwoSpatialScalesLCA,
-    TwoSpatialScalesWithGenericLoadingLCA,
-)
-from .loading import Loading
 from .meta import (
     areas,
     extension_tables,
@@ -59,6 +51,14 @@ from .meta import (
     loadings,
     restofworlds,
 )
+from .lca import (
+    ExtensionTablesLCA,
+    OneSpatialScaleLCA,
+    TopologicalExtensionTablesLCA,
+    TwoSpatialScalesLCA,
+    TwoSpatialScalesWithGenericLoadingLCA,
+)
+from .loading import Loading
 from .topography import Topography
 from .utils import (
     create_empty_intersection,

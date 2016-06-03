@@ -33,3 +33,8 @@ class MissingSpatialSourceData(BW2RegionalizationError):
 class TopologyError(BW2RegionalizationError):
     """Inventory includes locations for which no topology data is available"""
     pass
+
+
+class IncompleteSpatialDefinition(BW2RegionalizationError):
+    """Given metadata is not enough to understand a spatial data source"""
+    pass
