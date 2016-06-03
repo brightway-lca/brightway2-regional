@@ -103,7 +103,7 @@ def display_result(matrix, spatial_dict, geocollection):
 def eliminate_zeros(matrix):
     matrix = matrix.tocsr()
     matrix.eliminate_zeros()
-    return matrix.tocoo()
+    return matrix
 
 
 def display_vector_result(matrix, spatial_dict, name):
@@ -114,7 +114,8 @@ def display_vector_result(matrix, spatial_dict, name):
             "Geocollection {} metadata missing `field`".format(name)
         )
 
-    matrix.data = normalize_array(eliminate_zeros(matrix).data)
+    matrix = eliminate_zeros(matrix)
+    matrix.data = normalize_array(matrix.data)
     figure, axis = setup_vector_figure()
 
     with fiona.drivers():
@@ -138,10 +139,14 @@ def display_vector_result(matrix, spatial_dict, name):
 def display_raster_result(matrix, spatial_dict, name):
     map_obj = Map(geocollections[name]['filepath'],
                band=geocollections[name].get('band', 1))
-    matrix.data = normalize_array(eliminate_zeros(matrix).data)
+    matrix = eliminate_zeros(matrix)
+    matrix.data = normalize_array(matrix.data)
     array = np.zeros(map_obj.file.array().shape)
     for obj in map_obj:
         if obj['label'] in spatial_dict:
-            array[obj['row'], obj['col']] = matrix[spatial_dict[0, obj['label']]]
+            array[obj['row'], obj['col']] = matrix[0, spatial_dict[0, obj['label']]]
+        elif (name, obj['label']) in spatial_dict:
+            array[obj['row'], obj['col']] = matrix[0, spatial_dict[(name, obj['label'])]]
+
     array = np.ma.masked_array(array, array == 0)
     return Image.fromarray(viridis(array, bytes=True))
