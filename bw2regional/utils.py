@@ -21,8 +21,8 @@ import rasterio
 import shutil
 
 
-def import_regionalized_cfs(geocollection, method, mapping, cf_field=None,
-        overwrite=True, global_cfs=None):
+def import_regionalized_cfs(geocollection, method, mapping, overwrite=True,
+                            global_cfs=None, scaling_factor=1):
     """Import data from a geospatial dataset (i.e. raster or vector data) into a ``Method``.
 
     A ``Method`` can have both site-generic and regionalized characterization factors.
@@ -40,6 +40,8 @@ def import_regionalized_cfs(geocollection, method, mapping, cf_field=None,
         * *method*: A ``Method`` instance (not the identifying tuple).
         * *mapping*: Mapping from fields or bands to biosphere flows. See above.
         * *overwrite*: Boolean. Overwrite existing characterization factors. Default is ``True``. Set to ``False`` if ``method`` already has site-generic characterization factors.
+        * *global_cfs*: An optional list of CFs to add when writing the method.
+        * *scaling_factor*: Optional. Rescale the values in the spatial data source.
 
     """
     try:
@@ -72,9 +74,9 @@ def import_regionalized_cfs(geocollection, method, mapping, cf_field=None,
             for field in mapping:
                 for flow in mapping[field]:
                     data.append((
-                        flow,                                             # Biosphere flow
-                        float(feature['properties'][field]),              # CF value
-                        (geocollection, feature['properties'][id_field])  # Spatial unit
+                        flow,                                                 # Biosphere flow
+                        float(feature['properties'][field]) * scaling_factor, # CF value
+                        (geocollection, feature['properties'][id_field])      # Spatial unit
                     ))
 
     else:
@@ -86,7 +88,7 @@ def import_regionalized_cfs(geocollection, method, mapping, cf_field=None,
                         # Biosphere flow
                         flow,
                         # CF value
-                        feature['value'],
+                        feature['value'] * scaling_factor,
                         # Spatial unit
                         (geocollection, feature['label'])
                     ))
@@ -95,8 +97,6 @@ def import_regionalized_cfs(geocollection, method, mapping, cf_field=None,
 
     if overwrite:
         methods[method.name]['geocollections'] = [geocollection]
-        if cf_field:
-            methods[method.name]['cf_field'] = cf_field
         methods.flush()
 
 
