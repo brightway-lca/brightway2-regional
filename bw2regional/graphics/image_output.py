@@ -29,7 +29,7 @@ def display_geocollection(name, field=None):
                 "Geocollection {} metadata missing `field`".format(name)
             )
         values = normalize_array(get_vector_values(filepath, field))
-        return display_vector_and_values(filepath, field)
+        return display_vector_and_values(filepath, values)
 
 
 def get_vector_values(filepath, field):
