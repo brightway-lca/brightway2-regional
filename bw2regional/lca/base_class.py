@@ -22,7 +22,7 @@ import numpy as np
 class RegionalizationBase(LCA):
     def __init__(self, demand, *args, **kwargs):
         super(RegionalizationBase, self).__init__(demand, *args, **kwargs)
-        self.databases = {k[0] for k in demand}
+        self.databases = set.union(*[Database(key[0]).find_graph_dependents() for key in demand])
 
     def get_inventory_geocollections(self):
         """Get the set of all needed inventory geocollections.
