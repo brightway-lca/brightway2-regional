@@ -275,7 +275,7 @@ def import_lc_impact_lcia_method(force=False):
         geocollection="air regions",
         method=air_hh_ozone_method,
         mapping={
-            "Ozone_MNMVOC": nmvoc,
+            "Ozone_NMVOC": nmvoc,
             "Ozone_NOx": nox,
         },
         global_cfs=(
@@ -293,7 +293,7 @@ def import_lc_impact_lcia_method(force=False):
             "PM_NH3": ammonia,
             "PM_NOx": nox,
             "PM_SO2": so2,
-            "Ozone_MNMVOC": nmvoc,
+            "Ozone_NMVOC": nmvoc,
             "Ozone_NOx": nox,
         },
         global_cfs=(
