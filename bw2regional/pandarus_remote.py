@@ -5,6 +5,7 @@ from eight import *
 from bw2data import projects
 from . import (
     geocollections,
+    intersections,
     import_from_pandarus,
     topocollections,
 )
@@ -128,6 +129,11 @@ class PandarusRemote(object):
 
     @check_alive
     def intersection(self, collection_one, collection_two):
+        if (collection_one, collection_two) in intersections:
+            print("Skipping existing intersection: ({}, {})".format(
+                collection_one, collection_two
+            ))
+            return
         first = hash_collection(collection_one)
         if not first:
             raise ValueError("Can't find collection {}".format(collection_one))

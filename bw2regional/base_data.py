@@ -185,26 +185,17 @@ def import_lc_impact_lcia_method(force=False):
 
     if remote.alive:
         print("Retrieving and processing intersections")
-        if ('world', 'crops') not in intersections:
-            remote.intersection('world', 'crops')
-        if ('world', 'watersheds') not in intersections:
-            remote.intersection('world', 'watersheds')
-        if ('watersheds', 'crops') not in intersections:
-            remote.intersection('watersheds', 'crops')
-        if ('watersheds', 'rice') not in intersections:
-            remote.intersection('watersheds', 'rice')
-        if ('world', 'rice') not in intersections:
-            remote.intersection('world', 'rice')
-        if ('gdp-weighted-pop-density', 'rice') not in intersections:
-            remote.intersection('gdp-weighted-pop-density', 'rice')
-        if ('world', 'air regions') not in intersections:
-            remote.intersection('world', 'air regions')
-        if ('rice', 'air regions') not in intersections:
-            remote.intersection('rice', 'air regions')
-        if ('crops', 'air regions') not in intersections:
-            remote.intersection('crops', 'air regions')
-        if ('gdp-weighted-pop-density', 'air regions') not in intersections:
-            remote.intersection('gdp-weighted-pop-density', 'air regions')
+        remote.intersection('world', 'crops')
+        remote.intersection('world', 'watersheds')
+        remote.intersection('watersheds', 'crops')
+        remote.intersection('watersheds', 'rice')
+        remote.intersection('world', 'rice')
+        remote.intersection('gdp-weighted-pop-density', 'rice')
+        remote.intersection('world', 'air regions')
+        remote.intersection('rice', 'air regions')
+        remote.intersection('crops', 'air regions')
+        remote.intersection('gdp-weighted-pop-density', 'air regions')
+        remote.intersection('gdp-weighted-pop-density', 'watersheds')
     else:
         print("Skipping creation of intersections - pandarus_remote server is down")
 
