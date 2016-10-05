@@ -293,7 +293,7 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
         filepath = os.path.join(
             projects.dir,
             "processed",
-            intersection.filename + ".pickle"
+            intersection.filename + ".npy"
         )
         with open(filepath, "wb") as f:
             pickle.dump(arrays, f, protocol=pickle.HIGHEST_PROTOCOL)
@@ -310,7 +310,7 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
         filepath = os.path.join(
             projects.dir,
             "processed",
-            intersection.filename + ".pickle"
+            intersection.filename + ".npy"
         )
         with open(filepath, "wb") as f:
             pickle.dump(arrays, f, protocol=pickle.HIGHEST_PROTOCOL)

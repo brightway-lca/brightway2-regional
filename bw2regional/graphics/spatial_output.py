@@ -37,7 +37,7 @@ class RegionalizedGrapher(object):
         return {rev_ia[col][1]: val for col, val in zip(matrix.col, matrix.data)}
 
     def write(self, filename, fieldname="lcaresult"):
-        filepath = os.path.join(projects.request_directory(u"output"), filename)
+        filepath = os.path.join(projects.output_dir, filename)
         if self.map.raster:
             return self.write_raster(filepath)
         else:

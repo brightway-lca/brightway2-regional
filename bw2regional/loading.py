@@ -46,8 +46,8 @@ class Loading(ProcessedDataStore):
     def _write_raster_loadings_to_map(self, map_obj, data):
         NODATA = -9999.
         filepath = os.path.join(
-            projects.request_directory(u"output"),
-            self.filename + u".tiff"
+            projects.output_dir,
+            self.filename + ".tiff"
         )
 
         array = np.zeros(map_obj.file.array().shape) + NODATA
