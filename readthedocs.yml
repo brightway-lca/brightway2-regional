@@ -1,0 +1,5 @@
+python:
+  version: 3
+
+conda:
+  file: conda-env.yml
