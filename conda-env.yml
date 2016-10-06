@@ -1,4 +1,6 @@
 name: rtd
+channels:
+  - conda-forge
 dependencies:
 - appdirs=1.4.0=py35_0
 - backports.shutil_get_terminal_size=1.0.0=py35_0
