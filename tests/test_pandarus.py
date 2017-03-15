@@ -1,16 +1,17 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals
-from eight import *
-
-from . import data_dir
-from .. import geocollections, topocollections
-from ..topography import Topography, merge, relabel
-from .base import BW2RegionalTest
+from .base import BW2RegionalTest, data_dir
+from bw2regional import geocollections, topocollections
+from bw2regional.pandarus import (
+    import_from_pandarus,
+    merge,
+    relabel,
+    switch_order,
+)
+from bw2regional.topography import Topography
 import json
 import os
 
 
-class TopographyTestCase(BW2RegionalTest):
+class PandarusTestCase(BW2RegionalTest):
     def test_relabel(self):
         data = [(1, 2, 3)]
         relabeled = relabel(data, "foo", "bar")
@@ -35,22 +36,43 @@ class TopographyTestCase(BW2RegionalTest):
         ]
         assert expected == sorted(merge(intersection, mapping))
 
-    def test_import_data_files_without_error(self):
+    def test_switch_order(self):
+        assert switch_order([(1, 2, 3)]) == [(2, 1, 3)]
+
+    def test_import_topo_intersection_without_error(self):
+        def _(fn):
+            return os.path.join(data_dir, fn)
+
         geocollections['countries'] = {
-            'filepath': os.path.join(data_dir, "test_countries.gpkg"),
+            'filepath': _("test_countries.gpkg"),
+            'field': 'name'
+        }
+        geocollections['cfs'] = {
+            'filepath': _("test_raster_cfs.tif"),
             'field': 'name'
         }
         topocollections['countries'] = {
             'geocollection': 'countries',
+            'filepath': _("test_provinces.gpkg"),
+            'field': 'OBJECTID_1'
         }
         topo = Topography('countries')
-        topo.write(dict(json.load(open(
-            os.path.join(data_dir, "test_topo_mapping.json")
-        ))))
-        topo.import_from_pandarus(
-            os.path.join(data_dir, "intersect-topo-cfs.json.bz2"),
-            "countries"
-        )
+        topo.write(dict(json.load(open(_("test_topo_mapping.json")))))
+        import_from_pandarus(_("intersect-topo-cfs.json.bz2"))
+
+    def test_import_intersection_without_error(self):
+        def _(fn):
+            return os.path.join(data_dir, fn)
+
+        geocollections['countries'] = {
+            'filepath': _("test_countries.gpkg"),
+            'field': 'name'
+        }
+        geocollections['cfs'] = {
+            'filepath': _("test_raster_cfs.tif"),
+            'field': 'name'
+        }
+        import_from_pandarus(_("intersect-countries-cfs.json.bz2"))
 
     # def test_import_errors_1(self):
     #     topo = Topography('foo')
@@ -75,20 +97,3 @@ class TopographyTestCase(BW2RegionalTest):
 
 
     #         LCA({("empty", "nothing"): 1})
-
-
-
-
-# import json
-# from bw2regional import *
-
-# geocollections['countries'] = {'filepath': '/Users/cmutel/Code/bw2/regional/bw2regional/tests/data/test_countries.gpkg', 'field': 'name'}
-
-# topocollections['countries'] = {'geocollection': 'countries', 'filepath': '/Users/cmutel/Code/bw2/regional/bw2regional/tests/data/test_provinces.gpkg', 'field': 'OBJECTID_1'}
-# mapping = json.load(open("/Users/cmutel/Code/bw2/regional/bw2regional/tests/data/test_topo_mapping.json"))
-# Topography('countries').write(mapping)
-
-# geocollections['cfs'] = {'filepath': '/Users/cmutel/Code/bw2/regional/bw2regional/tests/data/test_raster_cfs.tif'}
-
-# from bw2regional import *
-# import_from_pandarus('/Users/cmutel/Code/bw2/regional/bw2regional/tests/data/intersect-topo-cfs.json.bz2')

@@ -14,7 +14,40 @@
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
-#
+
+# Mock everything to avoid having to install geospatial stuff on RTD
+import sys
+from unittest.mock import MagicMock
+from os.path import abspath, dirname
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+            return MagicMock()
+
+MOCK_MODULES = [
+  'pyprind',
+  'brightway2',
+  'bw2calc.lca',
+  'bw2calc.matrices',
+  'bw2data',
+  'bw2data.data_store',
+  'bw2data.ia_data_store',
+  'bw2data.serialization',
+  'bw2data.utils',
+  'constructive_geometries',
+  'fiona'
+  'future.utils',
+  'numpy',
+  'pandas',
+  'rasterio',
+  'requests',
+  'scipy.sparse',
+  'voluptuous',
+]
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+
+
 # The short X.Y version.
 version = '0.3'
 # The full version, including alpha/beta/rc tags.

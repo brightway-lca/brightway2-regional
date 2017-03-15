@@ -1,13 +1,9 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals, division
-from eight import *
-
-from ..intersection import Intersection
-from ..lca import TwoSpatialScalesWithGenericLoadingLCA as LCA
-from ..loading import Loading
-from ..meta import intersections, loadings
 from .base import BW2RegionalTest
 from bw2data import Database, Method, databases, methods
+from bw2regional.intersection import Intersection
+from bw2regional.lca import TwoSpatialScalesWithGenericLoadingLCA as LCA
+from bw2regional.loading import Loading
+from bw2regional.meta import intersections, loadings
 import numpy as np
 
 

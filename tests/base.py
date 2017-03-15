@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals
-from eight import *
-
-from ..meta import geocollections, intersections, loadings
+import os
+from bw2regional.meta import geocollections, intersections, loadings
 from bw2data.tests import BW2DataTest
+
+data_dir = os.path.join(os.path.dirname(__file__), "data")
 
 
 class BW2RegionalTest(BW2DataTest):

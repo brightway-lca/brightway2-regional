@@ -1,10 +1,6 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals
-from eight import *
-
-from ..xtables import ExtensionTable
 from .base import BW2RegionalTest
 from bw2data import geomapping
+from bw2regional.xtables import ExtensionTable
 from voluptuous import Invalid
 
 

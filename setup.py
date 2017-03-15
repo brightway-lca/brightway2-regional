@@ -1,38 +1,33 @@
 from setuptools import setup
+import os
+
+
+requirements=[
+    "brightway2",
+    "bw2calc>=1.2",
+    "bw2data>=2.0",
+    "constructive_geometries",
+    "eight",
+    "fiona",
+    "pandas",
+    "pandarus>=1.0.RC1",
+    "requests",
+    "stats_arrays",
+    "voluptuous",
+    "wrapt",
+]
+
+rtd_requirements = ["eight"]
 
 setup(
     name='bw2regional',
     version="0.3",
-    packages=["bw2regional", "bw2regional.tests", "bw2regional.lca"],
+    packages=["bw2regional", "bw2regional.lca"],
     author="Chris Mutel",
     author_email="cmutel@gmail.com",
     license=open('LICENSE.txt').read(),
     url="https://bitbucket.org/cmutel/brightway2-regional",
-    package_data={'bw2regional': [
-        "tests/data/*.gpkg",
-        "tests/data/*.tif",
-        "tests/data/*.bz2",
-        "tests/data/*.json",
-        "tests/data/*.sh",
-    ]},
-    install_requires=[
-        "brightway2",
-        "bw2calc>=1.2",
-        "bw2data>=2.0",
-        "constructive_geometries",
-        "descartes",
-        "eight",
-        "fiona",
-        "matplotlib",
-        "pandas",
-        "pandarus>=0.6",
-        "pillow",
-        "requests",
-        "shapely",
-        "stats_arrays",
-        "voluptuous",
-        "wrapt",
-    ],
+    install_requires=[] if os.environ.get('READTHEDOCS') else requirements,
     long_description=open('README.rst').read(),
     classifiers=[
         'Development Status :: 4 - Beta',

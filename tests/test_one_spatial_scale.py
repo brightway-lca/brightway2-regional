@@ -1,12 +1,8 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals
-from eight import *
-
-from ..errors import GeocollectionsMismatch
-from ..lca import OneSpatialScaleLCA as LCA
-from ..meta import intersections, loadings
 from .base import BW2RegionalTest
 from bw2data import Database, Method, databases, methods, geomapping
+from bw2regional.errors import GeocollectionsMismatch
+from bw2regional.lca import OneSpatialScaleLCA as LCA
+from bw2regional.meta import intersections, loadings
 import numpy as np
 
 
