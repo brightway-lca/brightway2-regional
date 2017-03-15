@@ -7,17 +7,14 @@ from ..errors import (
     SiteGenericMethod,
     UnprocessedDatabase,
 )
-from ..graphics import RegionalizedGrapher, display_result
 from ..intersection import Intersection
 from ..meta import intersections
 from ..utils import get_pandarus_map, get_pandarus_map_for_method
 from bw2calc.lca import LCA
 from bw2calc.matrices import MatrixBuilder
 from bw2data import databases, methods, geomapping, Method, Database
-from PIL import Image
 from scipy.sparse import csr_matrix
 import itertools
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -200,44 +197,3 @@ class RegionalizationBase(LCA):
 
     def results_inv_spatial_scale(self):
         raise NotImplementedError("Must be defined in subclasses")
-
-    def write_results_to_ia_map(self, filename, flow=None, geocollection=None,
-            normalize=False, log_transform=False):
-        """Write regionalized LCA results using impact assessment spatial scale."""
-        matrix = self._results_new_scale(self.results_ia_spatial_scale(), flow)
-        map_obj = get_pandarus_map_for_method(self.method, geocollection)
-        grapher = RegionalizedGrapher(map_obj,
-            self.ia_spatial_dict, matrix, normalize, log_transform)
-        return grapher.write(filename)
-
-    def _save_image(self, image, filename):
-        if hasattr(image, "savefig"):
-            image.savefig(filename, dpi=300)
-        elif hasattr(image, "save"):
-            image.save(filename)
-        else:
-            raise ValueError
-
-    def display_ia_results(self, filename=None, flow=None, geocollection=None):
-        """Display regionalized LCA results using impact assessment spatial scale."""
-        if geocollection is None and len(self.ia_geocollections) > 1:
-            raise ValueError(
-                "Must specify geocollection. Choose from: {}".format(
-                    self.ia_geocollections
-                )
-            )
-        geocollection = geocollection or list(self.ia_geocollections)[0]
-        matrix = self._results_new_scale(self.results_ia_spatial_scale(), flow)
-        image = display_result(matrix, self.ia_spatial_dict, geocollection)
-        if filename:
-            self._save_image(image, filename)
-        return image
-
-    def write_results_to_inv_map(self, filename, geocollection, flow=None,
-            normalize=False, log_transform=False):
-        """Write regionalized LCA results using inventory spatial scale."""
-        matrix = self._results_new_scale(self.results_inv_spatial_scale(), flow)
-        map_obj = get_pandarus_map(geocollection)
-        grapher = RegionalizedGrapher(map_obj,
-            self.inv_spatial_dict, matrix, normalize, log_transform)
-        return grapher.write(filename)
