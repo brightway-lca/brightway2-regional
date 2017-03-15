@@ -14,8 +14,10 @@ from ..utils import get_pandarus_map, get_pandarus_map_for_method
 from bw2calc.lca import LCA
 from bw2calc.matrices import MatrixBuilder
 from bw2data import databases, methods, geomapping, Method, Database
+from PIL import Image
 from scipy.sparse import csr_matrix
 import itertools
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -208,7 +210,15 @@ class RegionalizationBase(LCA):
             self.ia_spatial_dict, matrix, normalize, log_transform)
         return grapher.write(filename)
 
-    def display_ia_results(self, flow=None, geocollection=None):
+    def _save_image(self, image, filename):
+        if hasattr(image, "savefig"):
+            image.savefig(filename, dpi=300)
+        elif hasattr(image, "save"):
+            image.save(filename)
+        else:
+            raise ValueError
+
+    def display_ia_results(self, filename=None, flow=None, geocollection=None):
         """Display regionalized LCA results using impact assessment spatial scale."""
         if geocollection is None and len(self.ia_geocollections) > 1:
             raise ValueError(
@@ -218,7 +228,10 @@ class RegionalizationBase(LCA):
             )
         geocollection = geocollection or list(self.ia_geocollections)[0]
         matrix = self._results_new_scale(self.results_ia_spatial_scale(), flow)
-        return display_result(matrix, self.ia_spatial_dict, geocollection)
+        image = display_result(matrix, self.ia_spatial_dict, geocollection)
+        if filename:
+            self._save_image(image, filename)
+        return image
 
     def write_results_to_inv_map(self, filename, geocollection, flow=None,
             normalize=False, log_transform=False):

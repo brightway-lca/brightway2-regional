@@ -265,7 +265,7 @@ If you know these intersections are not needed, you can create empty intersectio
             self.xtable_spatial_dict, matrix, normalize, log_transform)
         return grapher.write(filename)
 
-    def display_xtable_results(self, flow=None, geocollection=None):
+    def display_xtable_results(self, filename=None, flow=None, geocollection=None):
         """Display regionalized LCA results using impact assessment spatial scale."""
         if geocollection is None and len(self.xtable_geocollections) > 1:
             raise ValueError(
@@ -275,4 +275,7 @@ If you know these intersections are not needed, you can create empty intersectio
             )
         geocollection = geocollection or list(self.xtable_geocollections)[0]
         matrix = self._results_new_scale(self.results_xtable_spatial_scale(), flow)
-        return display_result(matrix, self.xtable_spatial_dict, geocollection)
+        image = display_result(matrix, self.xtable_spatial_dict, geocollection)
+        if filename:
+            self._save_image(image, filename)
+        return image
