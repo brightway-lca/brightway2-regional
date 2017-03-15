@@ -1,1 +1,0 @@
-from .lcimpact import import_lcimpact_lcia_method

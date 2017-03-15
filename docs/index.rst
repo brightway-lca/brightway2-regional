@@ -26,7 +26,7 @@ Lifecycle of a regionalized LCA calculation
 
 A new project is created, and ``bw2setup()`` is run. Background databases are imported, and some foreground data in added. ``bw2regionalsetup()`` is run (see :ref:`basedata` for more information), and the function ``fix_ecoinvent_database()`` is run for each inventory database which uses ecoinvent-specific location codes.
 
-A regionalized LCIA method is chosen. If this method is `LC IMPACT <http://lc-impact.eu/>`__, the function ``import_lc_impact_lcia_method()`` is run. Otherwise, a new LCIA method is created, and global characterization factors are optionally added. One or more geocollections are created for the LCIA method, including specifying filepaths to the raster or vector datasets which define these geocollections and characterization factors. Regionalized characterization factors are imported from the spatial datasets using the function ``import_regionalized_cfs()``.
+A regionalized LCIA method is chosen. One or more geocollections are created for the LCIA method, including specifying filepaths to the raster or vector datasets which define these geocollections and characterization factors. Regionalized characterization factors are imported from the spatial datasets using the function ``import_regionalized_cfs()``.
 
 Most of the time, a third spatial scale is created, either a `Loading` or `ExtensionTable`. This third scale defines activity intensities within the larger inventory locations. Another geocollection is created for this third spatial scale, which includes specifying another spatial data file.
 

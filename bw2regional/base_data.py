@@ -22,11 +22,6 @@ import requests
 import warnings
 
 
-LC_IMPACT_WARNING = """This is a preliminary implementation of LC IMPACT!
-It is incomplete, and some values will change.
-"""
-
-
 def bw2regionalsetup():
     """Import base data needed for regionalization.
 
@@ -83,25 +78,25 @@ def bw2regionalsetup():
         'field': 'id'
     }
 
-    print("Adding GDP-weighted population density map")
-    geocollections['gdp-weighted-pop-density'] = {
-        'filepath': download_file(
-            "gdpweighted-compressed.tiff",
-            "regional",
-        )
-    }
-    print("Adding crop intensity maps")
-    geocollections['crops'] = {
-        'filepath': download_file(
-            "cropland-compressed.tiff",
-            "regional",
-        )
-    }
+    # print("Adding GDP-weighted population density map")
+    # geocollections['gdp-weighted-pop-density'] = {
+    #     'filepath': download_file(
+    #         "gdpweighted-compressed.tiff",
+    #         "regional",
+    #     )
+    # }
+    # print("Adding crop intensity maps")
+    # geocollections['crops'] = {
+    #     'filepath': download_file(
+    #         "cropland-compressed.tiff",
+    #         "regional",
+    #     )
+    # }
 
-    print("Creating GDP-weighted population density extension table")
-    xt = ExtensionTable('gdp-weighted-pop-density')
-    xt.register(geocollection='gdp-weighted-pop-density')
-    xt.import_from_map()
+    # print("Creating GDP-weighted population density extension table")
+    # xt = ExtensionTable('gdp-weighted-pop-density')
+    # xt.register(geocollection='gdp-weighted-pop-density')
+    # xt.import_from_map()
 
     print("Adding world topology")
     world_topo_data = {
@@ -141,201 +136,3 @@ def bw2regionalsetup():
         remote.intersection('world', 'gdp-weighted-pop-density')
     else:
         print("Skipping creation of intersections - pandarus_remote server is down")
-
-
-def import_lc_impact_lcia_method(force=False):
-    """Import the `LC IMPACT <http://www.lc-impact.eu/>`__ LCIA method"""
-    assert 'ecoinvent' in geocollections, "Please install base data (function `bw2regionalsetup`) first"
-
-    if 'rice' in geocollections and not force:
-        print("LC IMPACT already present!!! No setup is needed")
-        return
-
-    warnings.warn(LC_IMPACT_WARNING)
-
-    print("Downloading rice-intensity map")
-    geocollections['rice'] = {
-        'filepath': download_file(
-            "rice-supercompressed.tiff",
-            "regional",
-        )
-    }
-    # print("Adding ammonia characterization factors map")
-    # geocollections['ammonia'] = {
-    #     'filepath': download_file(
-    #         "ammonia.tiff",
-    #         "regional"
-    # )}
-    print("Adding water consumption - human health impacts map")
-    geocollections['watersheds'] = {
-        'filepath': download_file(
-            "water_hh.gpkg",
-            "regional"
-        ),
-        'field': 'id'
-    }
-    print("Adding air pollution CFs map")
-    geocollections['air regions'] = {
-        'filepath': download_file(
-            "air_pollution_cfs.gpkg",
-            "regional"
-        ),
-        'field': 'id'
-    }
-
-    if remote.alive:
-        print("Retrieving and processing intersections")
-        remote.intersection('world', 'crops')
-        remote.intersection('world', 'watersheds')
-        remote.intersection('watersheds', 'crops')
-        remote.intersection('watersheds', 'rice')
-        remote.intersection('world', 'rice')
-        remote.intersection('gdp-weighted-pop-density', 'rice')
-        remote.intersection('world', 'air regions')
-        remote.intersection('rice', 'air regions')
-        remote.intersection('crops', 'air regions')
-        remote.intersection('gdp-weighted-pop-density', 'air regions')
-        remote.intersection('gdp-weighted-pop-density', 'watersheds')
-    else:
-        print("Skipping creation of intersections - pandarus_remote server is down")
-
-    biosphere = Database("biosphere3")
-    water_flows = [x.key for x in biosphere
-                   if ((x['name'] == 'Water' and x['categories'][0] == 'water') or
-                       x['name'] in ('Water, well, in ground',
-                                     'Water, unspecified natural origin',
-                                     'Water, lake',
-                                     'Water, river'))
-                   ]
-
-    water_method = Method(("LC Impact", "Water", "Human Health"))
-    water_method.register(unit="DALY/m3")
-    import_regionalized_cfs(
-        geocollection="watersheds",
-        method=water_method,
-        mapping={"cf": water_flows},
-        global_cfs=[(flow, 1.8e-7, "GLO") for flow in water_flows],
-        scaling_factor=1e-9,
-    )
-
-    print("Creating rice extension table")
-    xt = ExtensionTable('rice')
-    xt.register(geocollection='rice')
-    xt.import_from_map()
-
-    print("Creating crops extension table")
-    xt = ExtensionTable('crops')
-    xt.register(geocollection='crops')
-    xt.import_from_map()
-
-    # Air method from http://www.sciencedirect.com/science/article/pii/S1352231016302084
-
-    air_hh_pm_method = Method(("LC Impact", "Air", "Human health", "Particulates"))
-    air_hh_ozone_method = Method(("LC Impact", "Air", "Human health", "Ozone"))
-    air_hh_method = Method(("LC Impact", "Air", "Human health"))
-
-    air_hh_pm_method.register(unit="DALY/kg")
-    air_hh_ozone_method.register(unit="DALY/kg")
-    air_hh_method.register(unit="DALY/kg")
-
-    pm25 = [x.key for x in biosphere if x['name'] == 'Particulates, < 2.5 um']
-    ammonia = [x.key for x in biosphere if x['name'] == 'Ammonia']
-    nox = [x.key for x in biosphere if x['name'] == 'Nitrogen oxides']
-    so2 = [x.key for x in biosphere if x['name'] == 'Sulfur dioxide']
-    nmvoc = [x.key for x in biosphere if x['name'] == 'NMVOC, non-methane volatile organic compounds, unspecified origin']
-
-    import_regionalized_cfs(
-        geocollection="air regions",
-        method=air_hh_pm_method,
-        mapping={
-            "PM_PM25": pm25,
-            "PM_NH3": ammonia,
-            "PM_NOx": nox,
-            "PM_SO2": so2,
-        },
-        global_cfs=(
-            [(flow, 629.2 * 1e-6, "GLO") for flow in pm25] +
-            [(flow, 160.6 * 1e-6, "GLO") for flow in ammonia] +
-            [(flow,  76.2 * 1e-6, "GLO") for flow in nox] +
-            [(flow, 183.4 * 1e-6, "GLO") for flow in so2]
-        ),
-        scaling_factor=1e-6,
-    )
-
-    import_regionalized_cfs(
-        geocollection="air regions",
-        method=air_hh_ozone_method,
-        mapping={
-            "Ozone_NMVOC": nmvoc,
-            "Ozone_NOx": nox,
-        },
-        global_cfs=(
-            [(flow, 0.14 * 1e-6, "GLO") for flow in nmvoc] +
-            [(flow, 0.91 * 1e-6, "GLO") for flow in nox]
-        ),
-        scaling_factor=1e-6,
-    )
-
-    import_regionalized_cfs(
-        geocollection="air regions",
-        method=air_hh_method,
-        mapping={
-            "PM_PM25": pm25,
-            "PM_NH3": ammonia,
-            "PM_NOx": nox,
-            "PM_SO2": so2,
-            "Ozone_NMVOC": nmvoc,
-            "Ozone_NOx": nox,
-        },
-        global_cfs=(
-            [(flow, 629.2 * 1e-6, "GLO") for flow in pm25] +
-            [(flow, 160.6 * 1e-6, "GLO") for flow in ammonia] +
-            [(flow,  76.2 * 1e-6, "GLO") for flow in nox] +
-            [(flow, 183.4 * 1e-6, "GLO") for flow in so2] +
-            [(flow, 0.14 * 1e-6, "GLO") for flow in nmvoc] +
-            [(flow, 0.91 * 1e-6, "GLO") for flow in nox]
-        ),
-        scaling_factor=1e-6,
-    )
-
-    # eutrophication_method = Method(("LC IMPACT", "eutrophication"))
-    # eutrophication_method.register(band=1, unit="unknown")
-
-    # import_regionalized_cfs(
-    #     "eut",
-    #     eutrophication_method,
-    #     {1: [
-    #             (u'biosphere3', u'b1fca66f-8e83-469a-a7b5-018e14d5d545'),
-    #             (u'biosphere3', u'b2631209-8374-431e-b7d5-56c96c6b6d79'),
-    #             (u'biosphere3', u'2d4b8ec1-8d53-4e62-8a11-ebc45909b02e'),
-    #             (u'biosphere3', u'62f3d964-9b53-4d01-9ee0-04112dcfc6d2'),
-    #             (u'biosphere3', u'76b09afe-52b9-4ecc-b97a-00b49ad8ed1a'),
-    #         ]
-    #     }
-    # )
-
-    # print("Creating acidification method")
-    # acidification_method = Method((u"LC IMPACT", u"acidification"))
-    # acidification_method.register(
-    #     band=1,
-    #     unit="Unknown",
-    #     geocollections=['ammonia']
-    # )
-
-    # # Site-generic CFs
-    # flows = [
-    #     (u'biosphere3', u'0f440cc0-0f74-446d-99d6-8ff0e97a2444'),
-    #     (u'biosphere3', u'8494ed3c-0416-4aa5-b100-51a2b2bcadbd'),
-    #     (u'biosphere3', u'2b50f643-216a-412b-a0e5-5946867aa2ed'),
-    #     (u'biosphere3', u'87883a4e-1e3e-4c9d-90c0-f1bea36f8014'),
-    #     (u'biosphere3', u'9990b51b-7023-4700-bca0-1a32ef921f74')
-    # ]
-    # acidification_method.write([(flow, 1.48e-10, "GLO") for flow in flows])
-
-    # # Regionalized
-    # import_regionalized_cfs(
-    #     "ammonia",
-    #     acidification_method,
-    #     {1: flows},
-    #     overwrite=False
-    # )

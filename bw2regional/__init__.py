@@ -13,7 +13,6 @@ __all__ = (
     "geocollections",
     "get_spatial_dataset_kind",
     "hash_collection",
-    "import_lc_impact_lcia_method",
     "import_from_pandarus",
     "import_regionalized_cfs",
     "Intersection",
@@ -71,10 +70,7 @@ from .utils import (
 from .xtables import ExtensionTable
 from .pandarus import import_from_pandarus
 from .pandarus_remote import remote, PandarusRemote
-from .base_data import (
-    bw2regionalsetup,
-    import_lc_impact_lcia_method,
-)
+from .base_data import bw2regionalsetup
 from .ecoinvent import fix_ecoinvent_database
 from .graphics import RegionalizedGrapher, display_geocollection
 
