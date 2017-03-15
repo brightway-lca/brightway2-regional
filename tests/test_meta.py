@@ -1,15 +1,10 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals
-from eight import *
-
-from . import data_dir
-from .. import (
+from .base import data_dir, BW2RegionalTest
+from bw2regional import (
     geocollections,
     Intersection,
     intersections,
     loadings,
 )
-from .base import BW2RegionalTest
 import os
 
 

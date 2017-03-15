@@ -1,10 +1,6 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals
-from eight import *
-
-from ..loading import Loading
 from .base import BW2RegionalTest
 from bw2data import geomapping
+from bw2regional.loading import Loading
 from voluptuous import Invalid
 import hashlib
 

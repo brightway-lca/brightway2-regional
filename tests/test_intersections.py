@@ -1,10 +1,6 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals
-from eight import *
-
-from ..intersection import Intersection
 from .base import BW2RegionalTest
 from bw2data import geomapping
+from bw2regional.intersection import Intersection
 from voluptuous import Invalid
 
 
@@ -31,4 +27,3 @@ class IntersectionTestCase(BW2RegionalTest):
             inter.validate([[1, 2]])
         with self.assertRaises(Invalid):
             inter.validate([[1, 2, {'amount': 3.}]])
-

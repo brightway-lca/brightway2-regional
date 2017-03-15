@@ -1,12 +1,8 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals, division
-from eight import *
-
-from ..errors import MissingIntersection, SiteGenericMethod, UnprocessedDatabase
-from ..lca.base_class import RegionalizationBase
 from .base import BW2RegionalTest
 from bw2calc import LCA
 from bw2data import Database, Method, geomapping
+from bw2regional.errors import MissingIntersection, SiteGenericMethod, UnprocessedDatabase
+from bw2regional.lca.base_class import RegionalizationBase
 
 
 class RegionalizationBaseTestCase(BW2RegionalTest):
