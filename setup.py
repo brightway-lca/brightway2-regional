@@ -17,7 +17,7 @@ requirements=[
     "wrapt",
 ]
 
-rtd_requirements = ["eight"]
+rtd_requirements = ["eight", "requests"]
 
 setup(
     name='bw2regional',
