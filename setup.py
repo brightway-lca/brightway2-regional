@@ -1,4 +1,27 @@
 from setuptools import setup
+import os
+
+
+requirements=[
+    "brightway2",
+    "bw2calc>=1.2",
+    "bw2data>=2.0",
+    "constructive_geometries",
+    "descartes",
+    "eight",
+    "fiona",
+    "matplotlib",
+    "pandas",
+    "pandarus>=0.6",
+    "pillow",
+    "requests",
+    "shapely",
+    "stats_arrays",
+    "voluptuous",
+    "wrapt",
+]
+
+rtd_requirements = ["eight"]
 
 setup(
     name='bw2regional',
@@ -15,24 +38,7 @@ setup(
         "tests/data/*.json",
         "tests/data/*.sh",
     ]},
-    install_requires=[
-        "brightway2",
-        "bw2calc>=1.2",
-        "bw2data>=2.0",
-        "constructive_geometries",
-        "descartes",
-        "eight",
-        "fiona",
-        "matplotlib",
-        "pandas",
-        "pandarus>=0.6",
-        "pillow",
-        "requests",
-        "shapely",
-        "stats_arrays",
-        "voluptuous",
-        "wrapt",
-    ],
+    install_requires=[] if os.environ.get('READTHEDOCS') else requirements,
     long_description=open('README.rst').read(),
     classifiers=[
         'Development Status :: 4 - Beta',
