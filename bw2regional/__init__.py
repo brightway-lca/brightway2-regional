@@ -5,7 +5,6 @@ __all__ = (
     "bw2regionalsetup",
     "cg",
     "create_empty_intersection",
-    "display_geocollection",
     "extension_tables",
     "ExtensionTable",
     "ExtensionTablesLCA",
@@ -21,7 +20,6 @@ __all__ = (
     "loadings",
     "OneSpatialScaleLCA",
     "PandarusRemote",
-    "RegionalizedGrapher",
     "remote",
     "reset_all_geo",
     "reset_geo_meta",
@@ -72,7 +70,6 @@ from .pandarus import import_from_pandarus
 from .pandarus_remote import remote, PandarusRemote
 from .base_data import bw2regionalsetup
 from .ecoinvent import fix_ecoinvent_database
-from .graphics import RegionalizedGrapher, display_geocollection
 
 
 from bw2data import config
