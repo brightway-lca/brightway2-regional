@@ -17,14 +17,15 @@ import pandas as pd
 import pprint
 import pyprind
 import pickle
+try:
+    import fiona
+except ImportError:
+    fiona = None
 
 
-def relabel(data, first, second=None):
+def relabel(data, first, second):
     """Add geocollection names to geo identifiers"""
-    if second is None:
-        return [((first, a), b) for a, b in data]
-    else:
-        return [((first, a), (second, b), c) for a, b, c in data]
+    return [((first, a), (second, b), c) for a, b, c in data]
 
 
 def load_file(filepath):
@@ -36,6 +37,35 @@ def load_file(filepath):
     except:
         obj = JsonWrapper.load(filepath)
     return obj['metadata'], obj['data']
+
+
+def intersections_from_intersection(geocollection):
+    """Process an intersections spatial dataset to create two intersections data files."""
+    if fiona is None:
+        raise ImportError("fiona is required for this function")
+
+    meta = geocollections[geocollection]
+    fp, field, first, second = meta['file'], meta['field'], [], []
+
+    with fiona.open(fp) as source:
+        for feat in source:
+            first.append((
+                feat['properties'][field],
+                feat['properties']['from'],
+                feat['properties']['measure']
+            ))
+            second.append((
+                feat['properties'][field],
+                feat['properties']['to'],
+                feat['properties']['measure']
+            ))
+    import_from_pandarus(
+        data=first,
+        metadata={
+            'first': geocollection,
+            'second': meta['from']
+        }
+    )
 
 
 def get_possible_collections(kwargs):
@@ -66,7 +96,7 @@ def get_possible_collections(kwargs):
     return possibles
 
 
-def import_from_pandarus(fp):
+def import_from_pandarus(fp=None, data=None, metadata=None):
     """Load output file from Pandarus job.
 
     This function will:
@@ -77,8 +107,11 @@ def import_from_pandarus(fp):
     * If ``first`` is a topocollection, make sure the appropriate ``Topology`` exists, and squash the pandarus results to the linked geocollection(s).
 
     """
-    assert os.path.isfile(fp)
-    metadata, data = load_file(fp)
+    if fp is not None:
+        assert os.path.isfile(fp)
+        metadata, data = load_file(fp)
+    else:
+        assert metadata is not None and data is not None
 
     # Check metadata
     assert 'first' in metadata and 'second' in metadata, "Invalid metadata in file"
