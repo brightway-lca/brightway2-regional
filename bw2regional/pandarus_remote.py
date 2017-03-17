@@ -79,6 +79,21 @@ class PandarusRemote(object):
     def alive(self):
         return requests.get(self.url).status_code == 200
 
+    def _download_file(self, resp):
+        assert 'Content-Disposition' in resp.headers
+        filepath = os.path.join(
+            self.download_dirpath,
+            resp.headers['Content-Disposition'].replace('attachment; filename=', '')
+        )
+        chunk = 128 * 1024
+        with open(filepath, "wb") as f:
+            while True:
+                segment = resp.raw.read(chunk)
+                if not segment:
+                    break
+                f.write(segment)
+        return filepath
+
     @check_alive
     def catalog(self):
         return requests.get(self.url + "/catalog").json()
@@ -128,6 +143,7 @@ class PandarusRemote(object):
                 collection_one, collection_two
             ))
             return
+
         first = hash_collection(collection_one)
         if not first:
             raise ValueError("Can't find collection {}".format(collection_one))
@@ -145,21 +161,42 @@ class PandarusRemote(object):
         elif resp.status_code != 200:
             raise ValueError("Server an error code: {}: {}".format(resp.status_code, resp.text))
 
-        assert 'Content-Disposition' in resp.headers
-        filepath = os.path.join(
-            self.download_dirpath,
-            resp.headers['Content-Disposition'].replace('attachment; filename=', '')
-        )
-        chunk = 128 * 1024
-        with open(filepath, "wb") as f:
-            while True:
-                segment = resp.raw.read(chunk)
-                if not segment:
-                    break
-                f.write(segment)
-
-        # Create Intersection
+        filepath = self._download_file(resp)
         return import_from_pandarus(filepath)
+
+    @check_alive
+    def intersection_as_new_geocollection(self, collection_one, collection_two, new_name):
+        if new_name in geocollections:
+            print("Skipping creation of existing geocollection")
+            return
+
+        first = hash_collection(collection_one)
+        if not first:
+            raise ValueError("Can't find collection {}".format(collection_one))
+        second = hash_collection(collection_two)
+        if not second:
+            raise ValueError("Can't find collection {}".format(collection_two))
+
+        resp = requests.post(
+            self.url + "/intersection-file",
+            data={'first': first, 'second': second},
+            stream=True
+        )
+        if resp.status_code == 404:
+            raise NotYetCalculated("Not yet calculated; Run `.calculate_intersection` first.")
+        elif resp.status_code != 200:
+            raise ValueError("Server an error code: {}: {}".format(resp.status_code, resp.text))
+
+        filepath = self._download_file(resp)
+
+        geocollections[new_name] = {
+            'filepath': filepath,
+            'field': 'id',
+            'url': self.url + "/intersection-file",
+            'is intersection': True,
+            'first': collection_one,
+            'second': collection_two
+        }
 
     @check_alive
     def calculate_intersection(self, collection_one, collection_two):

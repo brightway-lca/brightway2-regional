@@ -25,12 +25,6 @@ class Intersections(CompoundJSONDict):
 
 
 @python_2_unicode_compatible
-class Areas(CompoundJSONDict):
-    """Areas of all spatial elements in a geo- or topocollection"""
-    filename = "areas.json"
-
-
-@python_2_unicode_compatible
 class RestOfWorlds(CompoundJSONDict):
     """Definitions of Rest-of-World locations by what they exclude.
 
@@ -75,7 +69,6 @@ class ExtensionTables(SerializedDict):
     filename = "extension-tables.json"
 
 
-areas = Areas()
 extension_tables = ExtensionTables()
 geocollections = Geocollections()
 intersections = Intersections()

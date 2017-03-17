@@ -37,10 +37,8 @@ from constructive_geometries import ConstructiveGeometries
 cg = ConstructiveGeometries()
 
 from .hashing import sha256
-from .area import Area
 from .intersection import Intersection
 from .meta import (
-    areas,
     extension_tables,
     topocollections,
     geocollections,

@@ -3,8 +3,6 @@ from __future__ import print_function, unicode_literals
 from eight import *
 
 from . import (
-    areas,
-    Area,
     geocollections,
     Intersection,
     intersections,
@@ -19,21 +17,6 @@ import pandas as pd
 import pprint
 import pyprind
 import pickle
-
-
-def area_merge(data, mapping):
-    merged, reverse_mapping = {}, {}
-    for k, v in mapping.items():
-        for face_id in v:
-            reverse_mapping[face_id] = reverse_mapping.get(face_id, []) + [k]
-
-    for label, area in data:
-        if label not in reverse_mapping:
-            continue
-        for feature in reverse_mapping[label]:
-            merged[feature] = merged.get(feature, 0) + area
-
-    return list(merged.items())
 
 
 def relabel(data, first, second=None):
