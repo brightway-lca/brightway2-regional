@@ -44,6 +44,7 @@ MOCK_MODULES = [
   'rasterio',
   'scipy.sparse',
   'voluptuous',
+  'wrapt',
 ]
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
