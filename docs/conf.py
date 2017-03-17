@@ -37,7 +37,7 @@ MOCK_MODULES = [
   'bw2data.utils',
   'bw2data.validate',
   'constructive_geometries',
-  'fiona'
+  'fiona',
   'future.utils',
   'numpy',
   'pandas',
