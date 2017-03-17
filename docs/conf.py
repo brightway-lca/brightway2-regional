@@ -35,6 +35,7 @@ MOCK_MODULES = [
   'bw2data.ia_data_store',
   'bw2data.serialization',
   'bw2data.utils',
+  'bw2data.validate',
   'constructive_geometries',
   'fiona'
   'future.utils',
