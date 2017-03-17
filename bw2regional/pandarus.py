@@ -96,74 +96,7 @@ def import_from_pandarus(fp):
     """
     assert os.path.isfile(fp)
     metadata, data = load_file(fp)
-    is_area = len(metadata) == 1
-    if is_area:
-        return handle_area(metadata, data, fp)
-    else:
-        return handle_intersection(metadata, data, fp)
 
-
-def handle_area(metadata, data, fp):
-    assert 'first' in metadata, "Invalid metadata in file"
-    collections = get_possible_collections(metadata['first']['sha256'])
-    kinds = {x[1] for x in collections}
-
-    if kinds == {'topocollection'}:
-        return handle_topographical_area(metadata, data, collections, filepath)
-    elif kinds == {'geocollection'}:
-        assert len(collections) == 1, "Too many geocollections"
-        collection = collections.pop()[0]
-    else:
-        raise ValueError("Areas with mixed topocollections and "
-            "geocollections are not supported")
-
-    assert collection not in areas, "Area already exists for {}".format(collection)
-
-    dataset = relabel(data, collection)
-    area = Area(collection)
-    area.register(filepath=fp)
-    area.write(dataset)
-
-    return collection
-
-
-def handle_topographical_area(metadata, data, collections, filepath):
-    collections = [x[0] for x in collections]
-    topo_data = [Topography(name).load() for name in collections]
-    topo_geocollections = [
-        topocollections[name]['geocollection']
-        for name in collections
-    ]
-
-    for name in topo_geocollections:
-        assert name not in areas, "Area for {} already exists".format(name)
-
-    # Split data into topography-specific sections
-    included_labels = [
-        {face for faces in topo_dataset.values() for face in faces}
-        for topo_dataset in topo_data
-    ]
-    data = [
-        [(x, y) for x, y in data if x in labels]
-        for labels in included_labels
-    ]
-
-    # Squash topographies to geocollections
-    data = [
-        area_merge(dataset, mapping)
-        for dataset, mapping in zip(data, topo_data)
-    ]
-
-    for name, dataset in zip(topo_geocollections, data):
-        dataset = relabel(dataset, name)
-        area = Area(name)
-        area.register(filepath=filepath)
-        area.write(dataset)
-
-    return topo_geocollections
-
-
-def handle_intersection(metadata, data, fp):
     # Check metadata
     assert 'first' in metadata and 'second' in metadata, "Invalid metadata in file"
 

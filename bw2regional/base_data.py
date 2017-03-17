@@ -131,8 +131,8 @@ def bw2regionalsetup():
     }
     Topography('ecoinvent').write(ecoinvent_topo_data)
 
-    if remote.alive:
-        print("Retrieving and processing intersections")
-        remote.intersection('world', 'gdp-weighted-pop-density')
-    else:
-        print("Skipping creation of intersections - pandarus_remote server is down")
+    # if remote.alive:
+    #     print("Retrieving and processing intersections")
+    #     remote.intersection('world', 'gdp-weighted-pop-density')
+    # else:
+    #     print("Skipping creation of intersections - pandarus_remote server is down")

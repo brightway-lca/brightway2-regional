@@ -9,7 +9,7 @@ from . import (
     import_from_pandarus,
     topocollections,
 )
-from .utils import hash_collection, get_spatial_dataset_kind
+from .utils import hash_collection
 import os
 import requests
 import time
@@ -106,18 +106,12 @@ class PandarusRemote(object):
         if collection_hash in {obj[1] for obj in self.catalog()['files']}:
             raise AlreadyExists
 
-        try:
-            kind = metadata['kind']
-        except KeyError:
-            kind = get_spatial_dataset_kind(metadata['filepath'])
-
         url = self.url + "/upload"
         data = {
             'layer': metadata.get('layer') or '',
             'field': metadata.get('field') or '',
             'band': metadata.get('band') or '',
             'sha256': collection_hash,
-            'kind': kind,
             'name': os.path.basename(metadata['filepath']),
         }
         files = {'file': open(metadata['filepath'], 'rb')}
@@ -187,62 +181,6 @@ class PandarusRemote(object):
         resp = requests.post(
             self.url + "/calculate-intersection",
             data={'first': first, 'second': second},
-        )
-        if resp.status_code == 409:
-            raise AlreadyExists
-        elif resp.status_code != 200:
-            raise ValueError("Server returned an error code: {}: {}".format(
-                resp.status_code, resp.text))
-        else:
-            print("Calculation job submitted.")
-            return PendingJob(self.url + resp.text)
-
-    @check_alive
-    def area(self, collection):
-        first = hash_collection(collection)
-        if not first:
-            raise ValueError("Can't find collection {}".format(collection))
-
-        resp = requests.post(
-            self.url + "/area",
-            data={'first': first},
-            stream=True
-        )
-        if resp.status_code == 404:
-            raise NotYetCalculated("Not yet calculated; Run `.calculate_area` first.")
-        elif resp.status_code != 200:
-            raise ValueError("Server an error code: {}: {}".format(resp.status_code, resp.text))
-
-        assert 'Content-Disposition' in resp.headers
-        filepath = os.path.join(
-            self.download_dirpath,
-            resp.headers['Content-Disposition'].replace('attachment; filename=', '')
-        )
-        chunk = 128 * 1024
-        with open(filepath, "wb") as f:
-            while True:
-                segment = resp.raw.read(chunk)
-                if not segment:
-                    break
-                f.write(segment)
-
-        # Create Area
-        return import_from_pandarus(filepath)
-
-    @check_alive
-    def calculate_area(self, collection):
-        first = hash_collection(collection)
-        if not first:
-            raise ValueError("Can't find collection {}".format(collection))
-
-        catalog = {obj[1] for obj in self.catalog()['files']}
-        if first not in catalog:
-            print("Uploading collection {}".format(collection))
-            self.upload(collection)
-
-        resp = requests.post(
-            self.url + "/calculate-area",
-            data={'first': first},
         )
         if resp.status_code == 409:
             raise AlreadyExists
