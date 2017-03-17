@@ -1,4 +1,4 @@
-from .base import BW2RegionalTest
+from bw2regional.tests import BW2RegionalTest
 from bw2calc import LCA
 from bw2data import Database, Method, geomapping
 from bw2regional.errors import MissingIntersection, SiteGenericMethod, UnprocessedDatabase

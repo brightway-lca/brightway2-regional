@@ -1,4 +1,4 @@
-from .base import BW2RegionalTest
+from bw2regional.tests import BW2RegionalTest
 from bw2data import Database, Method, databases, methods, geomapping
 from bw2regional.errors import GeocollectionsMismatch
 from bw2regional.lca import OneSpatialScaleLCA as LCA
