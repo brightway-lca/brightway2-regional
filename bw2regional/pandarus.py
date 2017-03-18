@@ -17,10 +17,6 @@ import pandas as pd
 import pprint
 import pyprind
 import pickle
-try:
-    import fiona
-except ImportError:
-    fiona = None
 
 
 def relabel(data, first, second):
@@ -37,35 +33,6 @@ def load_file(filepath):
     except:
         obj = JsonWrapper.load(filepath)
     return obj['metadata'], obj['data']
-
-
-def intersections_from_intersection(geocollection):
-    """Process an intersections spatial dataset to create two intersections data files."""
-    if fiona is None:
-        raise ImportError("fiona is required for this function")
-
-    meta = geocollections[geocollection]
-    fp, field, first, second = meta['file'], meta['field'], [], []
-
-    with fiona.open(fp) as source:
-        for feat in source:
-            first.append((
-                feat['properties'][field],
-                feat['properties']['from'],
-                feat['properties']['measure']
-            ))
-            second.append((
-                feat['properties'][field],
-                feat['properties']['to'],
-                feat['properties']['measure']
-            ))
-    import_from_pandarus(
-        data=first,
-        metadata={
-            'first': geocollection,
-            'second': meta['from']
-        }
-    )
 
 
 def get_possible_collections(kwargs):
