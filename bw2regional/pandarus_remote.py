@@ -6,8 +6,11 @@ from bw2data import projects
 from . import (
     geocollections,
     intersections,
-    import_from_pandarus,
     topocollections,
+)
+from .pandarus import (
+    import_from_pandarus,
+    import_xt_from_rasterstats,
 )
 from .utils import hash_collection
 import os
@@ -198,12 +201,51 @@ class PandarusRemote(object):
             'first': collection_one,
             'second': collection_two
         }
+        third = hash_collection(new_name)
+
+        # Download two new intersections
+        resp = requests.post(
+            self.url + "/intersection",
+            data={'first': third, 'second': first},
+            stream=True
+        )
+        if resp.status_code != 200:
+            raise ValueError("Server an error code: {}: {}".format(resp.status_code, resp.text))
+
+        filepath = self._download_file(resp)
+        import_from_pandarus(filepath)
+
+        resp = requests.post(
+            self.url + "/intersection",
+            data={'first': third, 'second': second},
+            stream=True
+        )
+        if resp.status_code != 200:
+            raise ValueError("Server an error code: {}: {}".format(resp.status_code, resp.text))
+
+        filepath = self._download_file(resp)
+        import_from_pandarus(filepath)
 
     @check_alive
-    def rasterstats(self, gc, raster_fp):
+    def rasterstats_as_xt(self, vector, raster, name):
         """"""
-        # Get
-        pass
+        first = hash_collection(vector)
+        if not first:
+            raise ValueError("Can't find collection {}".format(vector))
+        second = hash_collection(raster)
+        if not second:
+            raise ValueError("Can't find collection {}".format(raster))
+
+        resp = requests.post(
+            self.url + "/rasterstats",
+            data={'vector': first, 'raster': second},
+        )
+        if resp.status_code != 200:
+            raise ValueError("Server returned an error code: {}: {}".format(
+                resp.status_code, resp.text))
+
+        filepath = self._download_file(resp)
+        return import_xt_from_rasterstats(filepath, name)
 
     @check_alive
     def calculate_rasterstats(self, vector, raster):

@@ -8,6 +8,7 @@ from . import (
     intersections,
     topocollections,
     Topography,
+    ExtensionTable,
 )
 from bw2data import JsonWrapper, geomapping, projects
 from bw2data.utils import MAX_INT_32, numpy_string
@@ -63,7 +64,7 @@ def get_possible_collections(kwargs):
     return possibles
 
 
-def import_from_pandarus(fp=None, data=None, metadata=None):
+def import_from_pandarus(fp):
     """Load output file from Pandarus job.
 
     This function will:
@@ -74,11 +75,8 @@ def import_from_pandarus(fp=None, data=None, metadata=None):
     * If ``first`` is a topocollection, make sure the appropriate ``Topology`` exists, and squash the pandarus results to the linked geocollection(s).
 
     """
-    if fp is not None:
-        assert os.path.isfile(fp)
-        metadata, data = load_file(fp)
-    else:
-        assert metadata is not None and data is not None
+    assert os.path.isfile(fp)
+    metadata, data = load_file(fp)
 
     # Check metadata
     assert 'first' in metadata and 'second' in metadata, "Invalid metadata in file"
@@ -232,3 +230,24 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
             pickle.dump(arrays, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     return [(n, other_geocollection) for n in topo_geocollections]
+
+
+def import_xt_from_rasterstats(fp, name, **kwargs):
+    assert 'vector' in metadata and 'raster' in metadata, "Invalid metadata in file"
+    metadata, data = load_file(fp)
+
+    vector = get_possible_collections(metadata['vector'])
+    assert len(vector) == 1, "Must intersect with exactly one geocollection"
+
+    vector = vector[0]
+
+    assert vector[1] != 'topocollection'
+
+    xt = ExtensionTable(name)
+    xt.register(**{
+        "filepath": fp,
+        "vector": metadata['vector'],
+        "raster": metadata['raster']
+    }.update(**kwargs))
+    xt.write([(row[1]['mean'], (vector[0], row[0])) for row in data])
+    return xt
