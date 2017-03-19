@@ -73,7 +73,6 @@ class PandarusRemote(object):
         self.url = url or "https://pandarus.brightwaylca.org"
         if self.url[-1] == "/":
             self.url = self.url[:-1]
-        self.download_dirpath = projects.request_directory("regional")
 
     @property
     def alive(self):
@@ -81,8 +80,10 @@ class PandarusRemote(object):
 
     def _download_file(self, resp):
         assert 'Content-Disposition' in resp.headers
+        download_dirpath = projects.request_directory("regional")
+
         filepath = os.path.join(
-            self.download_dirpath,
+            download_dirpath,
             resp.headers['Content-Disposition'].replace('attachment; filename=', '')
         )
         chunk = 128 * 1024
@@ -197,6 +198,42 @@ class PandarusRemote(object):
             'first': collection_one,
             'second': collection_two
         }
+
+    @check_alive
+    def rasterstats(self, gc, raster_fp):
+        """"""
+        # Get
+        pass
+
+    @check_alive
+    def calculate_rasterstats(self, vector, raster):
+        first = hash_collection(vector)
+        if not first:
+            raise ValueError("Can't find collection {}".format(vector))
+        second = hash_collection(raster)
+        if not second:
+            raise ValueError("Can't find collection {}".format(raster))
+
+        catalog = {obj[1] for obj in self.catalog()['files']}
+        if first not in catalog:
+            print("Uploading collection {}".format(vector))
+            self.upload(vector)
+        if second not in catalog:
+            print("Uploading collection {}".format(raster))
+            self.upload(raster)
+
+        resp = requests.post(
+            self.url + "/calculate-rasterstats",
+            data={'vector': first, 'raster': second},
+        )
+        if resp.status_code == 409:
+            raise AlreadyExists
+        elif resp.status_code != 200:
+            raise ValueError("Server returned an error code: {}: {}".format(
+                resp.status_code, resp.text))
+        else:
+            print("Calculation job submitted.")
+            return PendingJob(self.url + resp.text)
 
     @check_alive
     def calculate_intersection(self, collection_one, collection_two):
