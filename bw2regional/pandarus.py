@@ -19,12 +19,9 @@ import pyprind
 import pickle
 
 
-def relabel(data, first, second=None):
+def relabel(data, first, second):
     """Add geocollection names to geo identifiers"""
-    if second is None:
-        return [((first, a), b) for a, b in data]
-    else:
-        return [((first, a), (second, b), c) for a, b, c in data]
+    return [((first, a), (second, b), c) for a, b, c in data]
 
 
 def load_file(filepath):
@@ -66,7 +63,7 @@ def get_possible_collections(kwargs):
     return possibles
 
 
-def import_from_pandarus(fp):
+def import_from_pandarus(fp=None, data=None, metadata=None):
     """Load output file from Pandarus job.
 
     This function will:
@@ -77,8 +74,11 @@ def import_from_pandarus(fp):
     * If ``first`` is a topocollection, make sure the appropriate ``Topology`` exists, and squash the pandarus results to the linked geocollection(s).
 
     """
-    assert os.path.isfile(fp)
-    metadata, data = load_file(fp)
+    if fp is not None:
+        assert os.path.isfile(fp)
+        metadata, data = load_file(fp)
+    else:
+        assert metadata is not None and data is not None
 
     # Check metadata
     assert 'first' in metadata and 'second' in metadata, "Invalid metadata in file"

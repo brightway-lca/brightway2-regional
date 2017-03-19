@@ -1,4 +1,4 @@
-from .base import BW2RegionalTest
+from bw2regional.tests import BW2RegionalTest
 from bw2data import geomapping
 from bw2regional.intersection import Intersection
 from voluptuous import Invalid

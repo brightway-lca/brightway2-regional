@@ -1,4 +1,4 @@
-from .base import BW2RegionalTest
+from bw2regional.tests import BW2RegionalTest
 from bw2data import Database, Method, databases, methods
 from bw2regional.intersection import Intersection
 from bw2regional.lca import TwoSpatialScalesWithGenericLoadingLCA as LCA

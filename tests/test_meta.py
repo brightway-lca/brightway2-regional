@@ -1,4 +1,4 @@
-from .base import data_dir, BW2RegionalTest
+from bw2regional.tests import BW2RegionalTest
 from bw2regional import (
     geocollections,
     Intersection,
@@ -6,6 +6,8 @@ from bw2regional import (
     loadings,
 )
 import os
+
+data_dir = os.path.join(os.path.dirname(__file__), "data")
 
 
 class GeocollectionsTestCase(BW2RegionalTest):
@@ -16,7 +18,7 @@ class GeocollectionsTestCase(BW2RegionalTest):
         self.assertTrue(isinstance(str(geocollections), str))
         self.assertEqual(
             str(geocollections),
-            "Brightway2 serialized dictionary with 0 entries"
+            "Geocollections dictionary with 0 objects"
         )
 
     def test_vector_test_data(self):
@@ -39,7 +41,7 @@ class IntersectionsTestCase(BW2RegionalTest):
         self.assertTrue(isinstance(str(intersections), str))
         self.assertEqual(
             str(intersections),
-            "Brightway2 serialized dictionary with 0 entries"
+            "Intersections dictionary with 0 objects"
         )
 
     def test_load_test_data_1(self):
@@ -79,7 +81,7 @@ class LoadingsTestCase(BW2RegionalTest):
         self.assertTrue(isinstance(str(loadings), str))
         self.assertEqual(
             str(loadings),
-            "Brightway2 serialized dictionary with 0 entries"
+            "Loadings dictionary with 0 objects"
         )
 
     # TODO: Test data loading
