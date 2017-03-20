@@ -201,30 +201,9 @@ class PandarusRemote(object):
             'first': collection_one,
             'second': collection_two
         }
-        third = hash_collection(new_name)
 
-        # Download two new intersections
-        resp = requests.post(
-            self.url + "/intersection",
-            data={'first': third, 'second': first},
-            stream=True
-        )
-        if resp.status_code != 200:
-            raise ValueError("Server an error code: {}: {}".format(resp.status_code, resp.text))
-
-        filepath = self._download_file(resp)
-        import_from_pandarus(filepath)
-
-        resp = requests.post(
-            self.url + "/intersection",
-            data={'first': third, 'second': second},
-            stream=True
-        )
-        if resp.status_code != 200:
-            raise ValueError("Server an error code: {}: {}".format(resp.status_code, resp.text))
-
-        filepath = self._download_file(resp)
-        import_from_pandarus(filepath)
+        self.intersection(new_name, collection_one)
+        self.intersection(new_name, collection_two)
 
     @check_alive
     def rasterstats_as_xt(self, vector, raster, name):
