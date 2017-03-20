@@ -243,21 +243,25 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
 
 
 def import_xt_from_rasterstats(fp, name, **kwargs):
-    assert 'vector' in metadata and 'raster' in metadata, "Invalid metadata in file"
     metadata, data = load_file(fp)
+    assert 'vector' in metadata and 'raster' in metadata, "Invalid metadata in file"
 
     vector = get_possible_collections(metadata['vector'])
     assert len(vector) == 1, "Must intersect with exactly one geocollection"
 
-    vector = vector[0]
+    vector = list(vector)[0]
 
     assert vector[1] != 'topocollection'
 
     xt = ExtensionTable(name)
-    xt.register(**{
+    md = {
         "filepath": fp,
         "vector": metadata['vector'],
         "raster": metadata['raster']
-    }.update(**kwargs))
-    xt.write([(row[1]['mean'], (vector[0], row[0])) for row in data])
+    }
+    md.update(**kwargs)
+    xt.register(**md)
+    xt.write([(row[1]['mean'], (vector[0], row[0]))
+              for row in data
+              if row[1]['mean'] is not None])
     return xt

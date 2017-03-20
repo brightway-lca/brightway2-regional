@@ -218,6 +218,7 @@ class PandarusRemote(object):
         resp = requests.post(
             self.url + "/rasterstats",
             data={'vector': first, 'raster': second},
+            stream=True
         )
         if resp.status_code != 200:
             raise ValueError("Server returned an error code: {}: {}".format(
