@@ -137,7 +137,7 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
         geomapping.add({(lbl, y) for x, y, z in data})
         data = pd.DataFrame(
             [(x, geomapping[(lbl, y)], z) for x, y, z in data],
-            columns=['id', 'feature', 'area']
+            columns=['topo_id', 'feature_mapped_id', 'area']
         )
     elif second_labels == {'topocollection'}:
         assert len(first_collections) == 1, "Must intersect with exactly one geocollection"
@@ -146,7 +146,7 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
         geomapping.add({(lbl, x) for x, y, z in data})
         data = pd.DataFrame(
             [(y, geomapping[(lbl, x)], z) for x, y, z in data],
-            columns=['id', 'feature', 'area']
+            columns=['topo_id', 'feature_mapped_id', 'area']
         )
         metadata['first'], metadata['second'] = metadata['second'], metadata['first']
         first_collections, second_collections = second_collections, first_collections
@@ -154,7 +154,7 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
         raise ValueError("Intersections between mixed topocollections and "
             "geocollections are not supported")
 
-    grouped_data = data.groupby(['id'])
+    grouped_data = data.groupby(['topo_id'])
     topo_geocollections = [
         topocollections[name]['geocollection']
         for name, kind in first_collections
@@ -181,21 +181,31 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
     for name, mapping in zip(topo_geocollections, topo_data):
         print("Merging topographical faces for geocollection {}".format(name))
         arrays = []
-        valid_topo_ids = data['id'].unique()
+        valid_topo_ids = data['topo_id'].unique()
 
         for key in pyprind.prog_bar(mapping):
             try:
-                # Magic
-                temp = pd.concat((grouped_data.get_group(topo_id)
-                                  for topo_id in mapping[key]
-                                  if topo_id in valid_topo_ids)).groupby('feature').sum()
-                array = np.empty(len(temp), dtype=dtype)
-                array['geo_inv'] = key
-                array['geo_ia'] = temp.index.values
-                array['amount'] = temp['area'].values
-                arrays.append(array)
-            except ValueError:
+                # Get list of dataframes, one per face id, all
+                # from a given region
+                all_intersections_for_a_region = [
+                    grouped_data.get_group(topo_id)
+                    for topo_id in mapping[key]
+                    if topo_id in valid_topo_ids
+                ]
+            except KeyError:
                 continue
+
+            if not all_intersections_for_a_region:
+                continue
+
+            temp = pd.concat(all_intersections_for_a_region).groupby('feature_mapped_id').sum()
+            array = np.empty(len(temp), dtype=dtype)
+            array['geo_inv'] = key
+            array['geo_ia'] = temp.index.values
+            array['amount'] = temp['area'].values
+            arrays.append(array)
+
+        assert arrays, "Empty intersection"
 
         arrays = np.hstack(arrays)
         arrays['row'] = MAX_INT_32
