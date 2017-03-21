@@ -14,8 +14,10 @@ from .meta import (
     topocollections,
 )
 from bw2data import Method, methods, projects
+from scipy import sparse
 import copy
 import fiona
+import numpy as np
 import os
 import rasterio
 import shutil
@@ -224,3 +226,39 @@ def reset_geo_meta():
     geocollections.__init__()
     topocollections.__init__()
     extension_tables.__init__()
+
+
+def filter_rows(matrix, row_indices, exclude=True):
+    """Filter a sparse matrix, either excluding or taking only the rows in ``row_indices``.
+
+    * ``matrix``: A Scipy sparse matrix.
+    * ``row_indices``: An iterable of integer row indices
+    * ``exclude``: Boolean. If true, exclude rows in ``row_indices``. Otherwise, include only rows in ``row_indices``.
+
+    Returns a sparse matrix.
+    """
+    matrix = matrix.tocoo()
+    indices = np.array(row_indices)
+    row_mask = np.in1d(matrix.row, indices, invert=exclude)
+    return sparse.coo_matrix((
+            matrix.data[row_mask],
+            (matrix.row[row_mask], matrix.col[row_mask])
+        ), matrix.shape).tocsr()
+
+
+def filter_columns(matrix, col_indices, exclude=True):
+    """Filter a sparse matrix, either excluding or taking only the columns in ``col_indices``.
+
+    * ``matrix``: A Scipy sparse matrix.
+    * ``col_indices``: An iterable of integer column indices
+    * ``exclude``: Boolean. If true, exclude rows in ``row_indices``. Otherwise, include only rows in ``row_indices``.
+
+    Returns a sparse matrix.
+    """
+    matrix = matrix.tocoo()
+    indices = np.array(col_indices)
+    col_mask = np.in1d(matrix.col, indices, invert=exclude)
+    return sparse.coo_matrix((
+            matrix.data[col_mask],
+            (matrix.row[col_mask], matrix.col[col_mask])
+        ), matrix.shape).tocsr()

@@ -5,7 +5,7 @@ from eight import *
 from ..errors import MissingIntersection
 from ..intersection import Intersection
 from ..meta import extension_tables, intersections
-from ..utils import get_pandarus_map
+from ..utils import get_pandarus_map, filter_columns, filter_rows
 from ..xtables import ExtensionTable
 from .base_class import RegionalizationBase
 from bw2calc.lca import LCA
@@ -35,17 +35,19 @@ class ExtensionTablesLCA(RegionalizationBase):
 
         **L** is the extension table
 
-        The idea of extension tables is rather flexible, and this class supports the following calculation scenarios:
+        The idea of extension tables is rather flexible, and this class supports limiting activities and flows with the ``limitations`` object:
 
-        #. Apply the extension table to one or more activities and one or more biosphere flows.
-            * Limit the activities by passing ``xactivities=[a list]``.
-            * Limit the flows by passing ``xflows=[a list]``.
-        #. Apply the extension table to one or more activities and all biosphere flows.
-            * Limit the activities by passing ``xactivities=[a list]``.
-        #. Apply the extension table to all activities and one or more biosphere flows.
-            * Limit the flows by passing ``xflows=[a list]``.
-        #. Apply the extension table to all activities and all biosphere flows.
-            * Don't pass any special arguments.
+        .. code-block:: python
+
+            limitations = {
+                'activities': list of activities to include/exclude,
+                'activities mode': 'exclude',  # or 'include',
+                'flows': list of flows to include/exclude,
+                'flows mode': 'exclude',  # or 'include'
+
+            }
+
+        The ``limitations`` object can have activities, flows, or both. An ``exclude`` mode means that these activities or flows are removed from the regionalized matrices; an ``include`` mode means that only the specified activities and flows are kept. The default mode is ``include``.
 
         """
         try:
@@ -56,8 +58,14 @@ class ExtensionTablesLCA(RegionalizationBase):
         super(ExtensionTablesLCA, self).__init__(*args, **kwargs)
         self.xtable = ExtensionTable(xtable)
         self.xtable_meta = extension_tables[xtable]
-        self.xactivities = kwargs.get("xactivities", None)
-        self.xflows = kwargs.get("xflows", None)
+        self.limitations = kwargs.get("limitations", {})
+
+        if 'activities mode' in self.limitations:
+            if self.limitations['activities mode'] not in ('exclude, include'):
+                raise ValueError("`activities mode` must be either `exclude` or `include`.")
+        if 'flows mode' in self.limitations:
+            if self.limitations['flows mode'] not in ('exclude, include'):
+                raise ValueError("`flows mode` must be either `exclude` or `include`.")
 
         self.inventory_geocollections = self.get_inventory_geocollections()
         self.ia_geocollections = self.get_ia_geocollections()
@@ -188,6 +196,14 @@ If you know these intersections are not needed, you can create empty intersectio
         self.inv_mapping_params, self.inv_spatial_dict, \
             self.inv_mapping_matrix = \
             self.get_inventory_mapping_matrix()
+
+        if 'activities' in self.limitations:
+            self.inv_mapping_matrix = filter_rows(
+                self.inv_mapping_matrix,
+                [self.inv_mapping_params[x] for x in self.limitations['activities']],
+                exclude=self.limitations.get('activities mode', None) == 'exclude'
+            )
+
         self.distribution_params, self.xtable_spatial_dict, \
             self.distribution_matrix = \
             self.build_distribution_matrix()
@@ -196,6 +212,14 @@ If you know these intersections are not needed, you can create empty intersectio
             self.build_distribution_normalization_matrix()
         self.reg_cf_params, self.ia_spatial_dict, self.reg_cf_matrix = \
             self.get_regionalized_characterization_matrix(builder)
+
+        if 'flows' in self.limitations:
+            self.reg_cf_matrix = filter_columns(
+                self.reg_cf_matrix,
+                [self.ref_cf_params[x] for x in self.limitations['flows']],
+                exclude=self.limitations.get('flows mode', None) == 'exclude'
+            )
+
         self.geo_transform_params, self.geo_transform_matrix = \
             self.get_geo_transform_matrix(builder)
         self.geo_transform_normalization_matrix = self.build_geo_transform_normalization_matrix()
