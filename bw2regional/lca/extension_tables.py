@@ -52,13 +52,14 @@ class ExtensionTablesLCA(RegionalizationBase):
         """
         try:
             xtable = kwargs.pop('xtable')
+            limitations = kwargs.pop('limitations', {})
         except:
             raise ValueError("``xtable`` kwarg required")
         assert xtable in extension_tables
         super(ExtensionTablesLCA, self).__init__(*args, **kwargs)
         self.xtable = ExtensionTable(xtable)
         self.xtable_meta = extension_tables[xtable]
-        self.limitations = kwargs.get("limitations", {})
+        self.limitations = limitations
 
         if 'activities mode' in self.limitations:
             if self.limitations['activities mode'] not in ('exclude, include'):
@@ -200,7 +201,7 @@ If you know these intersections are not needed, you can create empty intersectio
         if 'activities' in self.limitations:
             self.inv_mapping_matrix = filter_rows(
                 self.inv_mapping_matrix,
-                [self.inv_mapping_params[x] for x in self.limitations['activities']],
+                [self.activity_dict[x] for x in self.limitations['activities']],
                 exclude=self.limitations.get('activities mode', None) == 'exclude'
             )
 
@@ -216,7 +217,7 @@ If you know these intersections are not needed, you can create empty intersectio
         if 'flows' in self.limitations:
             self.reg_cf_matrix = filter_columns(
                 self.reg_cf_matrix,
-                [self.ref_cf_params[x] for x in self.limitations['flows']],
+                [self.biosphere_dict[x] for x in self.limitations['flows']],
                 exclude=self.limitations.get('flows mode', None) == 'exclude'
             )
 
