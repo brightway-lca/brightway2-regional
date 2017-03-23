@@ -10,7 +10,7 @@ requirements=[
     "eight",
     "fiona",
     "pandas",
-    "pandarus>=1.0.RC1",
+    "pandarus>=1.0",
     "requests",
     "stats_arrays",
     "voluptuous",
