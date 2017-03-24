@@ -192,7 +192,7 @@ def get_spatial_dataset_kind(filepath):
                 return "vector"
         except:
             pass
-    with rasterio.drivers():
+    with rasterio.Env():
         try:
             with rasterio.open(filepath) as source:
                 assert source.meta
