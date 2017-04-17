@@ -225,7 +225,7 @@ class PandarusRemote(object):
                 resp.status_code, resp.text))
 
         filepath = self._download_file(resp)
-        return import_xt_from_rasterstats(filepath, name)
+        return import_xt_from_rasterstats(filepath, name, vector)
 
     @check_alive
     def calculate_rasterstats(self, vector, raster):

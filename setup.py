@@ -10,7 +10,7 @@ requirements=[
     "eight",
     "fiona",
     "pandas",
-    "pandarus>=1.0.RC1",
+    "pandarus>=1.0",
     "requests",
     "stats_arrays",
     "voluptuous",
@@ -21,14 +21,14 @@ rtd_requirements = ["eight", "requests"]
 
 setup(
     name='bw2regional',
-    version="0.3",
+    version="0.4.2",
     packages=["bw2regional", "bw2regional.lca"],
     author="Chris Mutel",
     author_email="cmutel@gmail.com",
-    license=open('LICENSE.txt').read(),
+    license=open('LICENSE.txt', encoding='utf-8').read(),
     url="https://bitbucket.org/cmutel/brightway2-regional",
     install_requires=[] if os.environ.get('READTHEDOCS') else requirements,
-    long_description=open('README.rst').read(),
+    long_description=open('README.rst', encoding='utf-8').read(),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: End Users/Desktop',

@@ -242,7 +242,7 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
     return [(n, other_geocollection) for n in topo_geocollections]
 
 
-def import_xt_from_rasterstats(fp, name, **kwargs):
+def import_xt_from_rasterstats(fp, name, gc, **kwargs):
     metadata, data = load_file(fp)
     assert 'vector' in metadata and 'raster' in metadata, "Invalid metadata in file"
 
@@ -257,7 +257,8 @@ def import_xt_from_rasterstats(fp, name, **kwargs):
     md = {
         "filepath": fp,
         "vector": metadata['vector'],
-        "raster": metadata['raster']
+        "raster": metadata['raster'],
+        'geocollection': gc,
     }
     md.update(**kwargs)
     xt.register(**md)
