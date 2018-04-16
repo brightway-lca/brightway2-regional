@@ -28,7 +28,7 @@ def bw2regionalsetup():
     See :ref:`basedata` for more information."""
 
     # print("Downloading and creating Rest-of-the-World definitions")
-    # url = "http://geography.ecoinvent.org/report/files/rows-ecoinvent.json"
+    # url = "https://geography.ecoinvent.org/files/rows-ecoinvent.json"
     # resp = requests.get(url)
     # row_data = json.loads(resp.content.decode('utf8'))
     # restofworlds.data = {("RoW", k): tuple(v) for k, v in row_data}
@@ -37,7 +37,7 @@ def bw2regionalsetup():
     # 'filepath': download_file(
     #     "rows.gpkg",
     #     "regional",
-    #     url="http://geography.ecoinvent.org/report/files/"
+    #     url="https://geography.ecoinvent.org/files/"
     # ),
     # 'field': 'name',
 
@@ -50,7 +50,7 @@ def bw2regionalsetup():
         'filepath': download_file(
             "countries.gpkg",
             "regional",
-            url="http://geography.ecoinvent.org/report/files/"
+            url="https://geography.ecoinvent.org/files/"
         ),
         'field': 'isotwolettercode',
     }
@@ -58,7 +58,7 @@ def bw2regionalsetup():
         'filepath': download_file(
             "all-ecoinvent.gpkg",
             "regional",
-            url="http://geography.ecoinvent.org/report/files/"
+            url="https://geography.ecoinvent.org/files/"
         ),
         'field': 'shortname',
     }
@@ -111,7 +111,7 @@ def bw2regionalsetup():
     # row_topofilepath = download_file(
     #     "rows-topomapping.json",
     #     "regional",
-    #     url="http://geography.ecoinvent.org/report/files/"
+    #     url="https://geography.ecoinvent.org/files/"
     # )
     # topo_data = json.load(open(row_topofilepath))
     # assert topocollections['RoW']['sha256'] == topo_data['metadata']['sha256'], \
