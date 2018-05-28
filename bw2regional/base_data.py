@@ -22,117 +22,77 @@ import requests
 import warnings
 
 
-def bw2regionalsetup():
+def bw2regionalsetup(*args, overwrite=False):
     """Import base data needed for regionalization.
 
-    See :ref:`basedata` for more information."""
+    Inputs (``args``) are geocollections to install, given individually. Default is ``ecoinvent`` and ``world``.
 
-    # print("Downloading and creating Rest-of-the-World definitions")
-    # url = "https://geography.ecoinvent.org/files/rows-ecoinvent.json"
-    # resp = requests.get(url)
-    # row_data = json.loads(resp.content.decode('utf8'))
-    # restofworlds.data = {("RoW", k): tuple(v) for k, v in row_data}
-    # restofworlds.flush()
-    # geocollections['RoW'] = {}
-    # 'filepath': download_file(
-    #     "rows.gpkg",
-    #     "regional",
-    #     url="https://geography.ecoinvent.org/files/"
-    # ),
-    # 'field': 'name',
+    ``overwrite`` controls whether existing geocollections will be replaced."""
+    # TODO: add RoWs to available_geocollections
+    available_geocollections = {'ecoinvent', 'world'}
+    if not args:
+        args = available_geocollections
+    for gc in args:
+        if (gc == 'world') and ('world' not in geocollections or overwrite):
+            create_world()
+        elif (gc == 'ecoinvent') and ('ecoinvent' not in geocollections or overwrite):
+            create_ecoinvent()
+        else:
+            raise ValueError("{} not recognized geocollection".format(gc))
 
-    if geocollections:
-        print("Geocollections already present!!! No setup is needed")
-        return
 
-    print("Downloading and creating world geocollections")
+def create_world():
+    print("Downloading and creating ``world`` geocollection with countries")
     geocollections['world'] = {
         'filepath': download_file(
             "countries.gpkg",
             "regional",
             url="https://geography.ecoinvent.org/files/"
         ),
-        'field': 'isotwolettercode',
+        'field': "isotwolettercode"
     }
+    print("Downloading and creating ``world`` topocollection")
+    topocollections['world'] = {
+        'geocollection': 'world',
+        'filepath': cg.faces_fp,
+        'field': 'id'
+    }
+    print("Adding world topology")
+    world_topo_data = {
+        k: v for k, v in cg.data.items()
+        if k != '__all__' and len(k) == 2
+    }
+    Topography('world').write(dict(world_topo_data))
+
+
+def create_ecoinvent():
+    print("Downloading and creating ``ecoinvent`` geocollection with ecoinvent-specific locations")
     geocollections['ecoinvent'] = {
         'filepath': download_file(
             "all-ecoinvent.gpkg",
             "regional",
             url="https://geography.ecoinvent.org/files/"
         ),
-        'field': 'shortname',
+        'field': 'shortname'
     }
-    # topocollections['RoW'] = {
-    #     'geocollection': 'RoW',
-    #     'filepath': cg.faces_fp,
-    #     'field': 'id'
-    # }
+    print("Downloading and creating ``ecoinvent`` topocollection")
     topocollections['world'] = {
-        'geocollection': 'world',
-        'filepath': cg.faces_fp,
-        'field': 'id'
-    }
-    topocollections['ecoinvent'] = {
         'geocollection': 'ecoinvent',
         'filepath': cg.faces_fp,
         'field': 'id'
     }
-
-    # print("Adding GDP-weighted population density map")
-    # geocollections['gdp-weighted-pop-density'] = {
-    #     'filepath': download_file(
-    #         "gdpweighted-compressed.tiff",
-    #         "regional",
-    #     )
-    # }
-    # print("Adding crop intensity maps")
-    # geocollections['crops'] = {
-    #     'filepath': download_file(
-    #         "cropland-compressed.tiff",
-    #         "regional",
-    #     )
-    # }
-
-    # print("Creating GDP-weighted population density extension table")
-    # xt = ExtensionTable('gdp-weighted-pop-density')
-    # xt.register(geocollection='gdp-weighted-pop-density')
-    # xt.import_from_map()
-
-    print("Adding world topology")
-    world_topo_data = {
-        k: v
-        for k, v in cg.data.items()
-        if k != '__all__'
-        and len(k) == 2
-    }
-    Topography('world').write(dict(world_topo_data))
-
-    # print("Adding RoW topology")
-    # row_topofilepath = download_file(
-    #     "rows-topomapping.json",
-    #     "regional",
-    #     url="https://geography.ecoinvent.org/files/"
-    # )
-    # topo_data = json.load(open(row_topofilepath))
-    # assert topocollections['RoW']['sha256'] == topo_data['metadata']['sha256'], \
-    #     "Mismatch between topological faces and RoW mapping"
-    # row_topo_data = {
-    #     ("RoW", x[0]): x[1]
-    #     for x in topo_data['data']
-    # }
-    # Topography('RoW').write(row_topo_data)
-
     print("Adding ecoinvent-specific topology")
     ecoinvent_topo_data = {
-        ("ecoinvent", k): v
-        for k, v in cg.data.items()
-        if k != '__all__'
-        and len(k) != 2
+        ("ecoinvent", k): v for k, v in cg.data.items()
+        if k != '__all__' and len(k) != 2
     }
     Topography('ecoinvent').write(ecoinvent_topo_data)
 
-    # if remote.alive:
-    #     print("Retrieving and processing intersections")
-    #     remote.intersection('world', 'gdp-weighted-pop-density')
-    # else:
-    #     print("Skipping creation of intersections - pandarus_remote server is down")
+
+
+
+# if remote.alive:
+#     print("Retrieving and processing intersections")
+#     remote.intersection('world', 'gdp-weighted-pop-density')
+# else:
+#     print("Skipping creation of intersections - pandarus_remote server is down")
