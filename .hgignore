@@ -11,3 +11,4 @@ cover
 bw2regional.egg-info
 dev
 .cache
+.ipynb_checkpoints
