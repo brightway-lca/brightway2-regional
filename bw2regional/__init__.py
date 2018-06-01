@@ -8,7 +8,6 @@ __all__ = (
     "extension_tables",
     "ExtensionTable",
     "ExtensionTablesLCA",
-    "fix_ecoinvent_database",
     "geocollections",
     "get_spatial_dataset_kind",
     "hash_collection",
@@ -16,6 +15,7 @@ __all__ = (
     "import_regionalized_cfs",
     "Intersection",
     "intersections",
+    "label_activity_geocollections",
     "Loading",
     "loadings",
     "OneSpatialScaleLCA",
@@ -23,7 +23,6 @@ __all__ = (
     "remote",
     "reset_all_geo",
     "reset_geo_meta",
-    "restofworlds",
     "sha256",
     "topocollections",
     "Topography",
@@ -44,7 +43,6 @@ from .meta import (
     geocollections,
     intersections,
     loadings,
-    restofworlds,
 )
 from .lca import (
     ExtensionTablesLCA,
@@ -67,7 +65,7 @@ from .xtables import ExtensionTable
 from .pandarus import import_from_pandarus
 from .pandarus_remote import remote, PandarusRemote
 from .base_data import bw2regionalsetup
-from .ecoinvent import fix_ecoinvent_database
+from .databases import label_activity_geocollections
 
 
 from bw2data import config
