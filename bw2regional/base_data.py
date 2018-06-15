@@ -96,7 +96,7 @@ def create_RoW():
         warnings.warn("Inconsistent `rower` and `constructive_geometries` packages. Skipping 'RoW' creation")
         return
 
-    print("Downloading and creating `rower` 'RoW' geo/topocollections")
+    print("Creating `rower` 'RoW' geo/topocollections")
     geocollections['RoW'] = {}
     topocollections['RoW'] = {
         'geocollection': 'RoW',
@@ -110,7 +110,7 @@ def create_RoW():
 def bw2regionalsetup(*args, overwrite=False):
     """Import base data needed for regionalization.
 
-    Inputs (``args``) are geocollections to install, given individually. Default is ``ecoinvent`` and ``world``.
+    Inputs (``args``) are geocollections to install, given individually. Default is ``ecoinvent``, ``RoW``, and ``world``.
 
     ``overwrite`` controls whether existing geocollections will be replaced."""
     available_geocollections = {'ecoinvent', 'world', 'RoW'}
