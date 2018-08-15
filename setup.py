@@ -21,7 +21,7 @@ rtd_requirements = ["eight", "requests"]
 
 setup(
     name='bw2regional',
-    version="0.4.2",
+    version="0.5",
     packages=["bw2regional", "bw2regional.lca"],
     author="Chris Mutel",
     author_email="cmutel@gmail.com",

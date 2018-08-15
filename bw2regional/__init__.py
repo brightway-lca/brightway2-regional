@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*
-__version__ = (0, 4, 2)
+__version__ = (0, 5)
 
 __all__ = (
     "bw2regionalsetup",
     "cg",
     "create_empty_intersection",
+    "divide_by_area",
     "extension_tables",
     "ExtensionTable",
     "ExtensionTablesLCA",
@@ -66,6 +67,7 @@ from .pandarus import import_from_pandarus
 from .pandarus_remote import remote, PandarusRemote
 from .base_data import bw2regionalsetup
 from .databases import label_activity_geocollections
+from .density import divide_by_area
 
 
 from bw2data import config
