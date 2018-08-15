@@ -148,12 +148,9 @@ class PandarusRemote(object):
             ))
             return
 
-        first = hash_collection(collection_one)
-        if not first:
-            raise ValueError("Can't find collection {}".format(collection_one))
-        second = hash_collection(collection_two)
-        if not second:
-            raise ValueError("Can't find collection {}".format(collection_two))
+        catalog = self.catalog()
+        first = self.hash_and_upload(collection_one, catalog)
+        second = self.hash_and_upload(collection_two, catalog)
 
         resp = requests.post(
             self.url + "/intersection",
@@ -162,8 +159,7 @@ class PandarusRemote(object):
         )
         if resp.status_code == 404:
             raise NotYetCalculated("Not yet calculated; Run `.calculate_intersection` first.")
-        elif resp.status_code != 200:
-            raise ValueError("Server an error code: {}: {}".format(resp.status_code, resp.text))
+        self.handle_errors(resp)
 
         filepath = self._download_file(resp)
         return import_from_pandarus(filepath)
@@ -174,12 +170,9 @@ class PandarusRemote(object):
             print("Skipping creation of existing geocollection")
             return
 
-        first = hash_collection(collection_one)
-        if not first:
-            raise ValueError("Can't find collection {}".format(collection_one))
-        second = hash_collection(collection_two)
-        if not second:
-            raise ValueError("Can't find collection {}".format(collection_two))
+        catalog = self.catalog()
+        first = self.hash_and_upload(collection_one, catalog)
+        second = self.hash_and_upload(collection_two, catalog)
 
         resp = requests.post(
             self.url + "/intersection-file",
@@ -188,8 +181,7 @@ class PandarusRemote(object):
         )
         if resp.status_code == 404:
             raise NotYetCalculated("Not yet calculated; Run `.calculate_intersection` first.")
-        elif resp.status_code != 200:
-            raise ValueError("Server an error code: {}: {}".format(resp.status_code, resp.text))
+        self.handle_errors(resp)
 
         filepath = self._download_file(resp)
 
@@ -208,84 +200,66 @@ class PandarusRemote(object):
     @check_alive
     def rasterstats_as_xt(self, vector, raster, name):
         """"""
-        first = hash_collection(vector)
-        if not first:
-            raise ValueError("Can't find collection {}".format(vector))
-        second = hash_collection(raster)
-        if not second:
-            raise ValueError("Can't find collection {}".format(raster))
+        catalog = self.catalog()
+        first = self.hash_and_upload(vector, catalog)
+        second = self.hash_and_upload(raster, catalog)
 
         resp = requests.post(
             self.url + "/rasterstats",
             data={'vector': first, 'raster': second},
             stream=True
         )
-        if resp.status_code != 200:
-            raise ValueError("Server returned an error code: {}: {}".format(
-                resp.status_code, resp.text))
+        self.handle_errors(resp)
 
         filepath = self._download_file(resp)
         return import_xt_from_rasterstats(filepath, name, vector)
 
     @check_alive
     def calculate_rasterstats(self, vector, raster):
-        first = hash_collection(vector)
-        if not first:
-            raise ValueError("Can't find collection {}".format(vector))
-        second = hash_collection(raster)
-        if not second:
-            raise ValueError("Can't find collection {}".format(raster))
-
-        catalog = {obj[1] for obj in self.catalog()['files']}
-        if first not in catalog:
-            print("Uploading collection {}".format(vector))
-            self.upload(vector)
-        if second not in catalog:
-            print("Uploading collection {}".format(raster))
-            self.upload(raster)
+        catalog = self.catalog()
+        first = self.hash_and_upload(vector, catalog)
+        second = self.hash_and_upload(raster, catalog)
 
         resp = requests.post(
             self.url + "/calculate-rasterstats",
             data={'vector': first, 'raster': second},
         )
-        if resp.status_code == 409:
-            raise AlreadyExists
-        elif resp.status_code != 200:
-            raise ValueError("Server returned an error code: {}: {}".format(
-                resp.status_code, resp.text))
-        else:
-            print("Calculation job submitted.")
-            return PendingJob(self.url + resp.text)
+        self.handle_errors(resp)
+
+        print("Calculation job submitted.")
+        return PendingJob(self.url + resp.text)
 
     @check_alive
     def calculate_intersection(self, collection_one, collection_two):
-        first = hash_collection(collection_one)
-        if not first:
-            raise ValueError("Can't find collection {}".format(collection_one))
-        second = hash_collection(collection_two)
-        if not second:
-            raise ValueError("Can't find collection {}".format(collection_two))
-
-        catalog = {obj[1] for obj in self.catalog()['files']}
-        if first not in catalog:
-            print("Uploading collection {}".format(collection_one))
-            self.upload(collection_one)
-        if second not in catalog:
-            print("Uploading collection {}".format(collection_two))
-            self.upload(collection_two)
+        catalog = self.catalog()
+        first = self.hash_and_upload(collection_one, catalog)
+        second = self.hash_and_upload(collection_two, catalog)
 
         resp = requests.post(
             self.url + "/calculate-intersection",
             data={'first': first, 'second': second},
         )
-        if resp.status_code == 409:
+        self.handle_errors(resp)
+
+        print("Calculation job submitted.")
+        return PendingJob(self.url + resp.text)
+
+    def hash_and_upload(self, collection, catalog=None):
+        hashes = {obj[1] for obj in (catalog or self.catalog())['files']}
+        hashed = hash_collection(collection)
+        if not hashed:
+            raise ValueError("Can't find collection {}".format(collection))
+        if hashed not in hashes:
+            self.upload(collection)
+        return hashed
+
+    def handle_errors(self, response):
+        if response.status_code == 409:
             raise AlreadyExists
-        elif resp.status_code != 200:
+        elif response.status_code != 200:
             raise ValueError("Server returned an error code: {}: {}".format(
                 resp.status_code, resp.text))
-        else:
-            print("Calculation job submitted.")
-            return PendingJob(self.url + resp.text)
+
 
 
 remote = PandarusRemote()
