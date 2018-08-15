@@ -59,6 +59,9 @@ def import_regionalized_cfs(geocollection, method, mapping, overwrite=True,
         raise TypeError("Must pass bw2data Method instance (got %s: %s" % (type(method), method))
     assert geocollection in geocollections
 
+    if geocollections[geocollection]['kind'] != "vector":
+        raise ValueError("Geocollection must be a vector")
+
     if global_cfs is None:
         global_cfs = []
 
@@ -75,33 +78,18 @@ def import_regionalized_cfs(geocollection, method, mapping, overwrite=True,
         **filter_fiona_metadata(metadata)
     )
 
-    if map_obj.vector:
-        id_field = geocollections[geocollection].get('field')
-        if not id_field:
-            raise ValueError("Geocollection must specify ``field`` field name for unique feature ids")
+    id_field = geocollections[geocollection].get('field')
+    if not id_field:
+        raise ValueError("Geocollection must specify ``field`` field name for unique feature ids")
 
-        for feature in map_obj:
-            for field in mapping:
-                for flow in mapping[field]:
-                    data.append((
-                        flow,                                                 # Biosphere flow
-                        float(feature['properties'][field]) * scaling_factor, # CF value
-                        (geocollection, feature['properties'][id_field])      # Spatial unit
-                    ))
-
-    else:
-        # TODO: Does this respect raster band in mapping?
-        for feature in map_obj:
-            for band_index in mapping:
-                for flow in mapping[band_index]:
-                    data.append((
-                        # Biosphere flow
-                        flow,
-                        # CF value
-                        feature['value'] * scaling_factor,
-                        # Spatial unit
-                        (geocollection, feature['label'])
-                    ))
+    for feature in map_obj:
+        for field in mapping:
+            for flow in mapping[field]:
+                data.append((
+                    flow,                                                 # Biosphere flow
+                    float(feature['properties'][field]) * scaling_factor, # CF value
+                    (geocollection, feature['properties'][id_field])      # Spatial unit
+                ))
 
     method.write(data + global_cfs)
 
