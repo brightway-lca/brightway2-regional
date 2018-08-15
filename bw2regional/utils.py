@@ -22,6 +22,12 @@ import rasterio
 import shutil
 
 
+def filter_fiona_metadata(dct):
+    """Include only valid Fiona keywords for opening a feature collection"""
+    valid_keys = {"crs", "driver", "schema", "layer", "vfs"}
+    return {k: v for k, v in dct.items() if k in valid_keys}
+
+
 def import_regionalized_cfs(geocollection, method, mapping, overwrite=True,
                             global_cfs=None, scaling_factor=1):
     """Import data from a geospatial dataset (i.e. raster or vector data) into a ``Method``.
@@ -64,7 +70,10 @@ def import_regionalized_cfs(geocollection, method, mapping, overwrite=True,
     else:
         data = method.load()
 
-    map_obj = Map(**metadata)
+    map_obj = Map(
+        metadata.pop("filepath"),
+        **filter_fiona_metadata(metadata)
+    )
 
     if map_obj.vector:
         id_field = geocollections[geocollection].get('field')

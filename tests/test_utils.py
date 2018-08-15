@@ -54,3 +54,10 @@ def test_filter_columns_exclusive(M):
         (0, 0, 200, 0,   400)
     ))
     assert np.allclose(filter_columns(M, [0, 1]).todense(), expected)
+
+def test_filter_fiona_metadata():
+    given = {"crs": 1, "driver": 2, "description": 3, "filepath": 4}
+    expected = {"crs": 1, "driver": 2}
+    result = filter_fiona_metadata(given)
+    assert result == expected
+    assert result is not given
