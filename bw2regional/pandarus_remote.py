@@ -258,7 +258,7 @@ class PandarusRemote(object):
             raise AlreadyExists
         elif response.status_code != 200:
             raise ValueError("Server returned an error code: {}: {}".format(
-                resp.status_code, resp.text))
+                response.status_code, response.text))
 
 
 
