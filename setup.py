@@ -12,6 +12,7 @@ requirements=[
     "pandas",
     "pandarus>=1.0",
     "requests",
+    'rower',
     "stats_arrays",
     "voluptuous",
     "wrapt",

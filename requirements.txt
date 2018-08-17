@@ -9,6 +9,7 @@ nose
 numpy>=1.6
 pandarus>=1.0.RC1
 requests>=1.1.0
+rower
 scipy
 stats_arrays>=0.2.2
 voluptuous

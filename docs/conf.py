@@ -42,6 +42,7 @@ MOCK_MODULES = [
   'numpy',
   'pandas',
   'rasterio',
+  'rower',
   'scipy.sparse',
   'voluptuous',
   'wrapt',
