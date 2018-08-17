@@ -1,6 +1,8 @@
-# 0.5.1 (XXX)
+# 0.5.1 (2018-08-17)
 
 - Fix passing invalid fields to `fiona.open`
+- Everything other than inputs to rasterstats must be vector files
+- Small bug fixes and simplifications
 
 # 0.5 (2017-06-15)
 
