@@ -1,9 +1,15 @@
 from bw2regional import geocollections
 from bw2regional.lca.base_class import RegionalizationBase
+from collections import defaultdict
 from functools import partial
 import fiona
+import hashlib
 import numpy as np
 import os
+try:
+    from shapely.geometry import shape
+except ImportError:
+    shape = None
 
 
 def _generic_exporter(lca, geocollection, filepath,
@@ -77,3 +83,54 @@ as_xt_spatial_scale = partial(
     spatial_dict="xtable_spatial_dict",
     spatial_func="results_xtable_spatial_scale"
 )
+
+
+def _hash_feature(feature):
+    """Calculate SHA256 hash of feature geometry as WKT"""
+    if shape is None:
+        raise ImportError("Shapely is not installed")
+    geom = shape(feature['geometry'])
+    return hashlib.sha256(geom.to_wkt().encode('utf-8')).hexdigest()
+
+
+def add_two_geojson_results(first, second, output_filepath,
+                            first_column_name="score_abs", second_column_name="score_abs",
+                            score_column_absolute="score_abs", score_column_relative="score_rel", cutoff=1e-4):
+    """Sum results from two regionalized LCA calculations on the same spatial scale."""
+    results, features = defaultdict(float), {}
+
+    # TODO: Might need to make this nicer/more robust
+    if not output_filepath.endswith(".geojson"):
+        output_filepath += ".geojson"
+
+    with fiona.open(first, 'r') as obj:
+        meta = obj.meta
+
+        for feature in obj:
+            hashed = _hash_feature(feature)
+            features[hashed] = feature
+            results[hashed] += feature['properties'][first_column_name]
+
+    with fiona.open(second, 'r') as obj:
+        for feature in obj:
+            hashed = _hash_feature(feature)
+            features[hashed] = feature
+            results[hashed] += feature['properties'][second_column_name]
+
+    total = sum(results.values())
+
+    meta['driver'] = 'GeoJSON'
+    meta['schema']['properties'].update({
+        score_column_absolute: "float",
+        score_column_relative: "float"
+    })
+
+    with fiona.open(output_filepath, 'w', **meta) as sink:
+        for k, feature in features.items():
+            score = results[k]
+            if abs(score) < abs(total * cutoff):
+                continue
+
+            feature['properties'][score_column_absolute] = score
+            feature['properties'][score_column_relative] = abs(score / total)
+            sink.write(feature)
