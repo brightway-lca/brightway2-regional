@@ -71,10 +71,7 @@ from .density import divide_by_area
 
 
 from bw2data import config
-config.metadata.extend([
-    extension_tables,
-    geocollections,
-    topocollections,
-    intersections,
-    loadings,
-])
+
+config.metadata.extend(
+    [extension_tables, geocollections, topocollections, intersections, loadings]
+)

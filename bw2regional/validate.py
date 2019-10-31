@@ -16,7 +16,7 @@ def uncertainty_list(obj):
         _maybe_uncertainty(obj[0])
         _loading_value(obj[1])
     except:
-        raise Invalid(u"%s is not a valid loading value" % obj)
+        raise Invalid("%s is not a valid loading value" % obj)
     return obj
 
 
@@ -26,7 +26,7 @@ def float_as_last(obj):
         assert len(obj) == 3
         assert isinstance(obj[2], (float, int))
     except:
-        raise Invalid(u"%s is not a valid intersection value" % obj)
+        raise Invalid("%s is not a valid intersection value" % obj)
     return obj
 
 
@@ -37,7 +37,7 @@ def xtable_data(obj):
         assert isinstance(obj[1][0], str)
         assert isinstance(obj[1][1], (str, int))
     except:
-        raise Invalid(u"%s is not a valid xtable value" % obj)
+        raise Invalid("%s is not a valid xtable value" % obj)
     return obj
 
 

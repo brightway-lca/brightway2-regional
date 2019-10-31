@@ -2,11 +2,7 @@
 from __future__ import print_function, unicode_literals, division
 from eight import *
 
-from ..errors import (
-    MissingIntersection,
-    SiteGenericMethod,
-    UnprocessedDatabase,
-)
+from ..errors import MissingIntersection, SiteGenericMethod, UnprocessedDatabase
 from ..intersection import Intersection
 from ..meta import intersections
 from ..utils import get_pandarus_map, get_pandarus_map_for_method
@@ -21,7 +17,9 @@ import numpy as np
 class RegionalizationBase(LCA):
     def __init__(self, demand, *args, **kwargs):
         super(RegionalizationBase, self).__init__(demand, *args, **kwargs)
-        self.databases = set.union(*[Database(key[0]).find_graph_dependents() for key in demand])
+        self.databases = set.union(
+            *[Database(key[0]).find_graph_dependents() for key in demand]
+        )
 
     def get_inventory_geocollections(self):
         """Get the set of all needed inventory geocollections.
@@ -32,18 +30,17 @@ class RegionalizationBase(LCA):
             if "geocollections" not in databases[database]:
                 missing.append(database)
             else:
-                present.update(set(databases[database]['geocollections']))
+                present.update(set(databases[database]["geocollections"]))
         if missing:
             raise UnprocessedDatabase(
-                u"Database(s) {} don't specify their geocollections.".format(
-                missing)
+                "Database(s) {} don't specify their geocollections.".format(missing)
             )
         return present
 
     def get_ia_geocollections(self):
         """Retrieve the geocollections linked to the impact assessment method"""
         try:
-            return set(methods[self.method]['geocollections'])
+            return set(methods[self.method]["geocollections"])
         except:
             raise SiteGenericMethod
 
@@ -58,30 +55,29 @@ class RegionalizationBase(LCA):
             * ``inv_mapping_matrix``: The matrix **M**
 
         """
-        inv_mapping_params, _, inv_spatial_dict, inv_mapping_matrix = \
-            builder.build(
-                paths=[Database(x).filepath_geomapping() for x in self.databases],
-                data_label="amount",
-                row_id_label="activity",
-                row_index_label="row",
-                col_id_label="geo",
-                col_index_label="col",
-                row_dict=self._activity_dict,
-            )
+        inv_mapping_params, _, inv_spatial_dict, inv_mapping_matrix = builder.build(
+            paths=[Database(x).filepath_geomapping() for x in self.databases],
+            data_label="amount",
+            row_id_label="activity",
+            row_index_label="row",
+            col_id_label="geo",
+            col_index_label="col",
+            row_dict=self._activity_dict,
+        )
         return (inv_mapping_params, inv_spatial_dict, inv_mapping_matrix)
 
     def needed_intersections(self):
         """Figure out which ``Intersection`` objects are needed bsed on ``self.inventory_geocollections`` and ``self.ia_geocollections``.
 
         Raise ``MissingIntersection`` if an intersection is required, but not available."""
-        required = list(itertools.product(
-            self.inventory_geocollections,
-            self.ia_geocollections
-        ))
+        required = list(
+            itertools.product(self.inventory_geocollections, self.ia_geocollections)
+        )
         for obj in required:
             if obj not in intersections:
                 raise MissingIntersection(
-                    u"Intersection {} needed but not found".format(obj))
+                    "Intersection {} needed but not found".format(obj)
+                )
         return required
 
     def get_geo_transform_matrix(self, builder=MatrixBuilder):
@@ -94,20 +90,19 @@ class RegionalizationBase(LCA):
             * ``geo_transform_matrix``: The matrix **G**
 
         """
-        geo_transform_params, _, _, geo_transform_matrix = \
-            builder.build(
-                paths=[
-                    Intersection(name).filepath_processed()
-                    for name in self.needed_intersections()
-                ],
-                data_label="amount",
-                row_id_label="geo_inv",
-                row_index_label="row",
-                col_id_label="geo_ia",
-                col_index_label="col",
-                row_dict=self.inv_spatial_dict,
-                col_dict=self.ia_spatial_dict
-            )
+        geo_transform_params, _, _, geo_transform_matrix = builder.build(
+            paths=[
+                Intersection(name).filepath_processed()
+                for name in self.needed_intersections()
+            ],
+            data_label="amount",
+            row_id_label="geo_inv",
+            row_index_label="row",
+            col_id_label="geo_ia",
+            col_index_label="col",
+            row_dict=self.inv_spatial_dict,
+            col_dict=self.ia_spatial_dict,
+        )
         return geo_transform_params, geo_transform_matrix
 
     def get_regionalized_characterization_matrix(self, builder=MatrixBuilder):
@@ -121,16 +116,15 @@ class RegionalizationBase(LCA):
             * ``reg_cf_matrix``: The matrix **R**
 
         """
-        reg_cf_params, ia_spatial_dict, _, reg_cf_matrix = \
-            builder.build(
-                paths=[Method(self.method).filepath_processed()],
-                data_label="amount",
-                row_id_label="geo",
-                row_index_label="row",
-                col_id_label="flow",
-                col_index_label="col",
-                col_dict=self._biosphere_dict,
-            )
+        reg_cf_params, ia_spatial_dict, _, reg_cf_matrix = builder.build(
+            paths=[Method(self.method).filepath_processed()],
+            data_label="amount",
+            row_id_label="geo",
+            row_index_label="row",
+            col_id_label="flow",
+            col_index_label="col",
+            col_dict=self._biosphere_dict,
+        )
         return (reg_cf_params, ia_spatial_dict, reg_cf_matrix)
 
     def get_loading_matrix(self, builder=MatrixBuilder):
@@ -143,15 +137,14 @@ class RegionalizationBase(LCA):
             * ``loading_matrix``: The matrix **L**
 
         """
-        loading_params, _, _, loading_matrix = \
-            builder.build(
-                paths=[self.loading.filepath_processed()],
-                data_label="amount",
-                row_id_label="geo",
-                row_index_label="row",
-                row_dict=self.ia_spatial_dict,
-                one_d=True
-            )
+        loading_params, _, _, loading_matrix = builder.build(
+            paths=[self.loading.filepath_processed()],
+            data_label="amount",
+            row_id_label="geo",
+            row_index_label="row",
+            row_dict=self.ia_spatial_dict,
+            one_d=True,
+        )
         return (loading_params, loading_matrix)
 
     def fix_spatial_dictionaries(self):
@@ -163,14 +156,17 @@ class RegionalizationBase(LCA):
             # Already reversed - should be idempotent
             return False
         rev_geomapping = {v: k for k, v in geomapping.items()}
-        self.inv_spatial_dict = {rev_geomapping[k]: v for k, v
-            in self.inv_spatial_dict.items()}
+        self.inv_spatial_dict = {
+            rev_geomapping[k]: v for k, v in self.inv_spatial_dict.items()
+        }
         if hasattr(self, "ia_spatial_dict"):
-            self.ia_spatial_dict = {rev_geomapping[k]: v for k, v
-                in self.ia_spatial_dict.items()}
+            self.ia_spatial_dict = {
+                rev_geomapping[k]: v for k, v in self.ia_spatial_dict.items()
+            }
         if hasattr(self, "xtable_spatial_dict"):
-            self.xtable_spatial_dict = {rev_geomapping[k]: v for k, v
-                in self.xtable_spatial_dict.items()}
+            self.xtable_spatial_dict = {
+                rev_geomapping[k]: v for k, v in self.xtable_spatial_dict.items()
+            }
         self._mapped_spatial_dict = True
 
     def _results_new_scale(self, matrix, flow):
@@ -184,11 +180,9 @@ class RegionalizationBase(LCA):
         else:
             # using matrix.sum() converts to dense numpy matrix
             nc = matrix.shape[0]
-            summer = csr_matrix((
-                np.ones(nc),
-                np.arange(nc),
-                np.array((0, nc), dtype=int)
-            ))
+            summer = csr_matrix(
+                (np.ones(nc), np.arange(nc), np.array((0, nc), dtype=int))
+            )
             matrix = summer * matrix
         return matrix
 

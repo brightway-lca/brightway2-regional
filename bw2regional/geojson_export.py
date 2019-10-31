@@ -6,18 +6,23 @@ import fiona
 import hashlib
 import numpy as np
 import os
+
 try:
     from shapely.geometry import shape
 except ImportError:
     shape = None
 
 
-def _generic_exporter(lca, geocollection, filepath,
-                      spatial_dict, spatial_func,
-                      score_column_absolute="score_abs",
-                      score_column_relative="score_rel", cutoff=1e-3,
-
-                     ):
+def _generic_exporter(
+    lca,
+    geocollection,
+    filepath,
+    spatial_dict,
+    spatial_func,
+    score_column_absolute="score_abs",
+    score_column_relative="score_rel",
+    cutoff=1e-3,
+):
     assert isinstance(lca, RegionalizationBase)
     assert geocollection in geocollections
     assert hasattr(lca, spatial_dict)
@@ -37,30 +42,34 @@ def _generic_exporter(lca, geocollection, filepath,
 
     if geocollection == "world":
         # Special case; "world" is just a string, not a tuple
-        results = {spatial_key: vector[index]
-                   for spatial_key, index in getattr(lca, spatial_dict).items()
-                   if abs(vector[index]) >= cut}
+        results = {
+            spatial_key: vector[index]
+            for spatial_key, index in getattr(lca, spatial_dict).items()
+            if abs(vector[index]) >= cut
+        }
     else:
-        results = {spatial_key[1]: vector[index]
-                   for spatial_key, index in getattr(lca, spatial_dict).items()
-                   if abs(vector[index]) >= cut}
+        results = {
+            spatial_key[1]: vector[index]
+            for spatial_key, index in getattr(lca, spatial_dict).items()
+            if abs(vector[index]) >= cut
+        }
 
-
-    with fiona.drivers():
+    with fiona.Env():
         with fiona.open(geocollections[geocollection]["filepath"]) as source:
             meta = source.meta
-            meta['driver'] = 'GeoJSON'
-            meta['schema']['properties'].update({
-                score_column_absolute: "float",
-                score_column_relative: "float"
-            })
+            meta["driver"] = "GeoJSON"
+            meta["schema"]["properties"].update(
+                {score_column_absolute: "float", score_column_relative: "float"}
+            )
 
-            with fiona.open(filepath, 'w', **meta) as sink:
+            with fiona.open(filepath, "w", **meta) as sink:
                 for feature in source:
                     try:
-                        score = results[feature['properties'][field]]
-                        feature['properties'][score_column_absolute] = score
-                        feature['properties'][score_column_relative] = abs(score / total)
+                        score = results[feature["properties"][field]]
+                        feature["properties"][score_column_absolute] = score
+                        feature["properties"][score_column_relative] = abs(
+                            score / total
+                        )
                         sink.write(feature)
                     except KeyError:
                         continue
@@ -69,19 +78,19 @@ def _generic_exporter(lca, geocollection, filepath,
 as_inv_spatial_scale = partial(
     _generic_exporter,
     spatial_dict="inv_spatial_dict",
-    spatial_func="results_inv_spatial_scale"
+    spatial_func="results_inv_spatial_scale",
 )
 
 as_ia_spatial_scale = partial(
     _generic_exporter,
     spatial_dict="ia_spatial_dict",
-    spatial_func="results_ia_spatial_scale"
+    spatial_func="results_ia_spatial_scale",
 )
 
 as_xt_spatial_scale = partial(
     _generic_exporter,
     spatial_dict="xtable_spatial_dict",
-    spatial_func="results_xtable_spatial_scale"
+    spatial_func="results_xtable_spatial_scale",
 )
 
 
@@ -89,13 +98,20 @@ def _hash_feature(feature):
     """Calculate SHA256 hash of feature geometry as WKT"""
     if shape is None:
         raise ImportError("Shapely is not installed")
-    geom = shape(feature['geometry'])
-    return hashlib.sha256(geom.to_wkt().encode('utf-8')).hexdigest()
+    geom = shape(feature["geometry"])
+    return hashlib.sha256(geom.to_wkt().encode("utf-8")).hexdigest()
 
 
-def add_two_geojson_results(first, second, output_filepath,
-                            first_column_name="score_abs", second_column_name="score_abs",
-                            score_column_absolute="score_abs", score_column_relative="score_rel", cutoff=1e-4):
+def add_two_geojson_results(
+    first,
+    second,
+    output_filepath,
+    first_column_name="score_abs",
+    second_column_name="score_abs",
+    score_column_absolute="score_abs",
+    score_column_relative="score_rel",
+    cutoff=1e-4,
+):
     """Sum results from two regionalized LCA calculations on the same spatial scale."""
     results, features = defaultdict(float), {}
 
@@ -103,34 +119,33 @@ def add_two_geojson_results(first, second, output_filepath,
     if not output_filepath.endswith(".geojson"):
         output_filepath += ".geojson"
 
-    with fiona.open(first, 'r') as obj:
+    with fiona.open(first, "r") as obj:
         meta = obj.meta
 
         for feature in obj:
             hashed = _hash_feature(feature)
             features[hashed] = feature
-            results[hashed] += feature['properties'][first_column_name]
+            results[hashed] += feature["properties"][first_column_name]
 
-    with fiona.open(second, 'r') as obj:
+    with fiona.open(second, "r") as obj:
         for feature in obj:
             hashed = _hash_feature(feature)
             features[hashed] = feature
-            results[hashed] += feature['properties'][second_column_name]
+            results[hashed] += feature["properties"][second_column_name]
 
     total = sum(results.values())
 
-    meta['driver'] = 'GeoJSON'
-    meta['schema']['properties'].update({
-        score_column_absolute: "float",
-        score_column_relative: "float"
-    })
+    meta["driver"] = "GeoJSON"
+    meta["schema"]["properties"].update(
+        {score_column_absolute: "float", score_column_relative: "float"}
+    )
 
-    with fiona.open(output_filepath, 'w', **meta) as sink:
+    with fiona.open(output_filepath, "w", **meta) as sink:
         for k, feature in features.items():
             score = results[k]
             if abs(score) < abs(total * cutoff):
                 continue
 
-            feature['properties'][score_column_absolute] = score
-            feature['properties'][score_column_relative] = abs(score / total)
+            feature["properties"][score_column_absolute] = score
+            feature["properties"][score_column_relative] = abs(score / total)
             sink.write(feature)

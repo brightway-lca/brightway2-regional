@@ -39,14 +39,16 @@ class TwoSpatialScalesWithGenericLoadingLCA(RegionalizationBase):
         self.ia_geocollections = self.get_ia_geocollections()
 
     def load_lcia_data(self, builder=MatrixBuilder):
-        self.inv_mapping_params, self.inv_spatial_dict, self.inv_mapping_matrix = \
-            self.get_inventory_mapping_matrix(builder)
-        self.reg_cf_params, self.ia_spatial_dict, self.reg_cf_matrix = \
-            self.get_regionalized_characterization_matrix(builder)
-        self.geo_transform_params, self.geo_transform_matrix = \
-            self.get_geo_transform_matrix(builder)
-        self.loading_params, self.loading_matrix = \
-            self.get_loading_matrix(builder)
+        self.inv_mapping_params, self.inv_spatial_dict, self.inv_mapping_matrix = self.get_inventory_mapping_matrix(
+            builder
+        )
+        self.reg_cf_params, self.ia_spatial_dict, self.reg_cf_matrix = self.get_regionalized_characterization_matrix(
+            builder
+        )
+        self.geo_transform_params, self.geo_transform_matrix = self.get_geo_transform_matrix(
+            builder
+        )
+        self.loading_params, self.loading_matrix = self.get_loading_matrix(builder)
         self.normalization_matrix = self.build_normalization_matrix()
 
     def build_normalization_matrix(self):
@@ -56,10 +58,12 @@ class TwoSpatialScalesWithGenericLoadingLCA(RegionalizationBase):
             \textbf{N}_{i,i} = \left[ \sum_{j} \left( \textbf{GL} \right)_{i,j} \right]^{-1}
 
         """
-        vector = np.array((self.geo_transform_matrix * self.loading_matrix).sum(axis=1)).T
+        vector = np.array(
+            (self.geo_transform_matrix * self.loading_matrix).sum(axis=1)
+        ).T
         mask = vector > 0
         vector[mask] = 1 / vector[mask]
-        return diags(vector, [0], format='csr', dtype=np.float32)
+        return diags(vector, [0], format="csr", dtype=np.float32)
 
     def lcia_calculation(self):
         """Do regionalized LCA calculation.
@@ -68,30 +72,30 @@ class TwoSpatialScalesWithGenericLoadingLCA(RegionalizationBase):
 
         """
         self.characterized_inventory = (
-            self.inv_mapping_matrix   *
-            self.normalization_matrix *
-            self.geo_transform_matrix *
-            self.loading_matrix       *
-            self.reg_cf_matrix
-            ).T.multiply(self.inventory)
+            self.inv_mapping_matrix
+            * self.normalization_matrix
+            * self.geo_transform_matrix
+            * self.loading_matrix
+            * self.reg_cf_matrix
+        ).T.multiply(self.inventory)
 
     def results_ia_spatial_scale(self):
         if not hasattr(self, "characterized_inventory"):
             raise ValueError("Must do lcia calculation first")
         return self.reg_cf_matrix.T.multiply(
-            self.inventory            *
-            self.inv_mapping_matrix   *
-            self.normalization_matrix *
-            self.geo_transform_matrix *
-            self.loading_matrix)
+            self.inventory
+            * self.inv_mapping_matrix
+            * self.normalization_matrix
+            * self.geo_transform_matrix
+            * self.loading_matrix
+        )
 
     def results_inv_spatial_scale(self):
         if not hasattr(self, "characterized_inventory"):
             raise ValueError("Must do lcia calculation first")
         return (
-            self.normalization_matrix *
-            self.geo_transform_matrix *
-            self.loading_matrix       *
-            self.reg_cf_matrix).T.multiply(
-            self.inventory            *
-            self.inv_mapping_matrix)
+            self.normalization_matrix
+            * self.geo_transform_matrix
+            * self.loading_matrix
+            * self.reg_cf_matrix
+        ).T.multiply(self.inventory * self.inv_mapping_matrix)

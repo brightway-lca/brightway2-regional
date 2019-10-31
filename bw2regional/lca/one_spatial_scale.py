@@ -27,10 +27,13 @@ class OneSpatialScaleLCA(RegionalizationBase):
             raise ValueError("Must pass valid `method` name")
         self.inventory_geocollections = self.get_inventory_geocollections()
         self.ia_geocollections = self.get_ia_geocollections()
-        missing = self.ia_geocollections.difference(
-            self.inventory_geocollections)
+        missing = self.ia_geocollections.difference(self.inventory_geocollections)
         if missing:
-            raise GeocollectionsMismatch("{} geocollection(s) needed by IA method but not in inventory".format(missing))
+            raise GeocollectionsMismatch(
+                "{} geocollection(s) needed by IA method but not in inventory".format(
+                    missing
+                )
+            )
 
     def get_regionalized_characterization_matrix(self, builder=MatrixBuilder):
         """Get regionalized characterization matrix, **R**, which gives location- and biosphere flow-specific characterization factors. Rows are inventory spatial units, and columns are biosphere flows.
@@ -42,24 +45,25 @@ class OneSpatialScaleLCA(RegionalizationBase):
             * ``reg_cf_matrix``: The matrix **R**
 
         """
-        reg_cf_params, _, _, reg_cf_matrix = \
-            builder.build(
-                paths=[Method(self.method).filepath_processed()],
-                data_label="amount",
-                row_id_label="geo",
-                row_index_label="row",
-                col_id_label="flow",
-                col_index_label="col",
-                row_dict=self.inv_spatial_dict,
-                col_dict=self._biosphere_dict,
-            )
+        reg_cf_params, _, _, reg_cf_matrix = builder.build(
+            paths=[Method(self.method).filepath_processed()],
+            data_label="amount",
+            row_id_label="geo",
+            row_index_label="row",
+            col_id_label="flow",
+            col_index_label="col",
+            row_dict=self.inv_spatial_dict,
+            col_dict=self._biosphere_dict,
+        )
         return (reg_cf_params, reg_cf_matrix)
 
     def load_lcia_data(self, builder=MatrixBuilder):
-        self.inv_mapping_params, self.inv_spatial_dict, self.inv_mapping_matrix = \
-            self.get_inventory_mapping_matrix(builder)
-        self.reg_cf_params, self.reg_cf_matrix = \
-            self.get_regionalized_characterization_matrix(builder)
+        self.inv_mapping_params, self.inv_spatial_dict, self.inv_mapping_matrix = self.get_inventory_mapping_matrix(
+            builder
+        )
+        self.reg_cf_params, self.reg_cf_matrix = self.get_regionalized_characterization_matrix(
+            builder
+        )
 
     def lcia_calculation(self):
         """Do regionalized LCA calculation.
@@ -68,9 +72,8 @@ class OneSpatialScaleLCA(RegionalizationBase):
 
         """
         self.characterized_inventory = (
-            self.inv_mapping_matrix *
-            self.reg_cf_matrix
-            ).T.multiply(self.inventory)
+            self.inv_mapping_matrix * self.reg_cf_matrix
+        ).T.multiply(self.inventory)
 
     def results_ia_spatial_scale(self):
         raise NotImplementedError("No separate IA spatial scale")
@@ -78,7 +81,4 @@ class OneSpatialScaleLCA(RegionalizationBase):
     def results_inv_spatial_scale(self):
         if not hasattr(self, "characterized_inventory"):
             raise ValueError("Must do lcia calculation first")
-        return self.reg_cf_matrix.T.multiply(
-            self.inventory * self.inv_mapping_matrix
-            )
-
+        return self.reg_cf_matrix.T.multiply(self.inventory * self.inv_mapping_matrix)

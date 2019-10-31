@@ -22,4 +22,3 @@ def bw2test(wrapped, instance, args, kwargs):
     intersections.__init__()
     loadings.__init__()
     return wrapped(*args, **kwargs)
-

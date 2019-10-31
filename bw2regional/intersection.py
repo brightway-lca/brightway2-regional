@@ -14,13 +14,14 @@ import warnings
 
 class Intersection(ImpactAssessmentDataStore):
     """"""
+
     _metadata = intersections
     validator = intersection_validator
     dtype_fields = [
-            (numpy_string('geo_inv'), np.uint32),
-            (numpy_string('geo_ia'), np.uint32),
-            (numpy_string('row'), np.uint32),
-            (numpy_string('col'), np.uint32),
+        ("geo_inv", np.uint32),
+        ("geo_ia", np.uint32),
+        ("row", np.uint32),
+        ("col", np.uint32),
     ]
 
     def add_mappings(self, data):
@@ -31,12 +32,7 @@ class Intersection(ImpactAssessmentDataStore):
         geomapping.add({x[1] for x in data})
 
     def process_data(self, row):
-        return (
-            geomapping[row[0]],
-            geomapping[row[1]],
-            MAX_INT_32,
-            MAX_INT_32,
-            ), row[2]
+        return (geomapping[row[0]], geomapping[row[1]], MAX_INT_32, MAX_INT_32), row[2]
 
     def create_reversed_intersection(self):
         """Create (B, A) intersection from (A, B)."""

@@ -53,18 +53,19 @@ class Topography(DataStore):
         topo.write(json.load(open(os.path.join(data_dir, "test_topo_mapping.json"))))
 
     """
+
     _metadata = topocollections
 
     @property
     def geocollection(self):
-        return self.metadata['geocollection']
+        return self.metadata["geocollection"]
 
     def add_mappings(self, data):
         geocollection = self.geocollection
         geomapping.add(data)
 
     def write(self, data):
-        self.metadata['empty'] = False
+        self.metadata["empty"] = False
         self._metadata.flush()
         self.add_mappings(data)
         super(Topography, self).write(data)

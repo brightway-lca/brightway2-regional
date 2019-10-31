@@ -28,8 +28,9 @@ def filter_fiona_metadata(dct):
     return {k: v for k, v in dct.items() if k in valid_keys}
 
 
-def import_regionalized_cfs(geocollection, method, mapping, overwrite=True,
-                            global_cfs=None, scaling_factor=1):
+def import_regionalized_cfs(
+    geocollection, method, mapping, overwrite=True, global_cfs=None, scaling_factor=1
+):
     """Import data from a geospatial dataset (i.e. raster or vector data) into a ``Method``.
 
     A ``Method`` can have both site-generic and regionalized characterization factors.
@@ -56,10 +57,12 @@ def import_regionalized_cfs(geocollection, method, mapping, overwrite=True,
     except:
         raise ImportError("`pandarus` is required for this function")
     if not isinstance(method, Method):
-        raise TypeError("Must pass bw2data Method instance (got %s: %s" % (type(method), method))
+        raise TypeError(
+            "Must pass bw2data Method instance (got %s: %s" % (type(method), method)
+        )
     assert geocollection in geocollections
 
-    if geocollections[geocollection]['kind'] != "vector":
+    if geocollections[geocollection]["kind"] != "vector":
         raise ValueError("Geocollection must be a vector")
 
     if global_cfs is None:
@@ -73,28 +76,33 @@ def import_regionalized_cfs(geocollection, method, mapping, overwrite=True,
     else:
         data = method.load()
 
-    map_obj = Map(
-        metadata.pop("filepath"),
-        **filter_fiona_metadata(metadata)
-    )
+    map_obj = Map(metadata.pop("filepath"), **filter_fiona_metadata(metadata))
 
-    id_field = geocollections[geocollection].get('field')
+    id_field = geocollections[geocollection].get("field")
     if not id_field:
-        raise ValueError("Geocollection must specify ``field`` field name for unique feature ids")
+        raise ValueError(
+            "Geocollection must specify ``field`` field name for unique feature ids"
+        )
 
     for feature in map_obj:
         for field in mapping:
             for flow in mapping[field]:
-                data.append((
-                    flow,                                                 # Biosphere flow
-                    float(feature['properties'][field]) * scaling_factor, # CF value
-                    (geocollection, feature['properties'][id_field])      # Spatial unit
-                ))
+                data.append(
+                    (
+                        flow,  # Biosphere flow
+                        float(feature["properties"][field])
+                        * scaling_factor,  # CF value
+                        (
+                            geocollection,
+                            feature["properties"][id_field],
+                        ),  # Spatial unit
+                    )
+                )
 
     method.write(data + global_cfs)
 
     if overwrite:
-        methods[method.name]['geocollections'] = [geocollection]
+        methods[method.name]["geocollections"] = [geocollection]
         methods.flush()
 
 
@@ -106,14 +114,12 @@ def get_pandarus_map(geocollection):
     if geocollection not in geocollections:
         raise ValueError("Geocollection %s not registered" % geocollection)
     geocollection = geocollections[geocollection]
-    if not geocollection.get(u'filepath'):
+    if not geocollection.get("filepath"):
         raise MissingSpatialSourceData("No filepath given for geocollection")
     metadata = {
-        k:v for k, v in geocollection.items()
-        if v is not None
-        and k != u'filepath'
+        k: v for k, v in geocollection.items() if v is not None and k != "filepath"
     }
-    return Map(geocollection['filepath'], **metadata)
+    return Map(geocollection["filepath"], **metadata)
 
 
 def get_pandarus_map_for_method(method, geocollection=None):
@@ -121,26 +127,26 @@ def get_pandarus_map_for_method(method, geocollection=None):
         from pandarus import Map
     except:
         raise ImportError("`pandarus` is required for this function")
-    if not methods[method].get('geocollections', []):
+    if not methods[method].get("geocollections", []):
         raise SiteGenericMethod
-    elif len(methods[method]['geocollections']) > 1 and geocollection is None:
+    elif len(methods[method]["geocollections"]) > 1 and geocollection is None:
         raise ValueError("Must specify geocollection for this LCIA method")
     assert method in methods, "Unknown LCIA method"
     method_data = methods[method]
     geocollection = geocollections[
-        geocollection or methods[method]['geocollections'][0]
+        geocollection or methods[method]["geocollections"][0]
     ]
-    if not geocollection.get('filepath'):
+    if not geocollection.get("filepath"):
         raise MissingSpatialSourceData("No filepath given for geocollection")
     metadata = {
-        'band': method_data.get('band'),
-        'layer': geocollection.get('layer'),
-        'field': geocollection.get('field'),
-        'vfs': geocollection.get('vfs'),
-        'encoding': geocollection.get('encoding'),
+        "band": method_data.get("band"),
+        "layer": geocollection.get("layer"),
+        "field": geocollection.get("field"),
+        "vfs": geocollection.get("vfs"),
+        "encoding": geocollection.get("encoding"),
     }
-    metadata = {k:v for k, v in metadata.items() if v is not None}
-    return Map(geocollection['filepath'], **metadata)
+    metadata = {k: v for k, v in metadata.items() if v is not None}
+    return Map(geocollection["filepath"], **metadata)
 
 
 def hash_collection(name):
@@ -149,19 +155,19 @@ def hash_collection(name):
     Prefers topocollection if available.
     """
     if name in topocollections:
-        if 'sha256' in topocollections[name]:
-            return topocollections[name]['sha256']
+        if "sha256" in topocollections[name]:
+            return topocollections[name]["sha256"]
         try:
-            assert os.path.isfile(topocollections[name]['filepath'])
-            return sha256(topocollections[name]['filepath'])
+            assert os.path.isfile(topocollections[name]["filepath"])
+            return sha256(topocollections[name]["filepath"])
         except KeyError:
             pass
     if name in geocollections:
-        if 'sha256' in geocollections[name]:
-            return geocollections[name]['sha256']
+        if "sha256" in geocollections[name]:
+            return geocollections[name]["sha256"]
         try:
-            assert os.path.isfile(geocollections[name]['filepath'])
-            return sha256(geocollections[name]['filepath'])
+            assert os.path.isfile(geocollections[name]["filepath"])
+            return sha256(geocollections[name]["filepath"])
         except KeyError:
             pass
     return False
@@ -181,7 +187,7 @@ def get_spatial_dataset_kind(filepath):
     Returns one of "vector", "raster", None.
 
     """
-    with fiona.drivers():
+    with fiona.Env():
         try:
             with fiona.open(filepath) as source:
                 assert source.meta
@@ -234,10 +240,10 @@ def filter_rows(matrix, row_indices, exclude=True):
     matrix = matrix.tocoo()
     indices = np.array(row_indices)
     row_mask = np.in1d(matrix.row, indices, invert=exclude)
-    return sparse.coo_matrix((
-            matrix.data[row_mask],
-            (matrix.row[row_mask], matrix.col[row_mask])
-        ), matrix.shape).tocsr()
+    return sparse.coo_matrix(
+        (matrix.data[row_mask], (matrix.row[row_mask], matrix.col[row_mask])),
+        matrix.shape,
+    ).tocsr()
 
 
 def filter_columns(matrix, col_indices, exclude=True):
@@ -252,7 +258,7 @@ def filter_columns(matrix, col_indices, exclude=True):
     matrix = matrix.tocoo()
     indices = np.array(col_indices)
     col_mask = np.in1d(matrix.col, indices, invert=exclude)
-    return sparse.coo_matrix((
-            matrix.data[col_mask],
-            (matrix.row[col_mask], matrix.col[col_mask])
-        ), matrix.shape).tocsr()
+    return sparse.coo_matrix(
+        (matrix.data[col_mask], (matrix.row[col_mask], matrix.col[col_mask])),
+        matrix.shape,
+    ).tocsr()

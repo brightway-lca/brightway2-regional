@@ -3,15 +3,8 @@ from __future__ import print_function, unicode_literals
 from eight import *
 
 from bw2data import projects
-from . import (
-    geocollections,
-    intersections,
-    topocollections,
-)
-from .pandarus import (
-    import_from_pandarus,
-    import_xt_from_rasterstats,
-)
+from . import geocollections, intersections, topocollections
+from .pandarus import import_from_pandarus, import_xt_from_rasterstats
 from .utils import hash_collection
 import os
 import requests
@@ -21,21 +14,25 @@ import wrapt
 
 class RemoteError(Exception):
     """Can't reach pandarus-remote web service"""
+
     pass
 
 
 class NotYetCalculated(Exception):
     """Resource hasn't been calculated yet"""
+
     pass
 
 
 class AlreadyExists(Exception):
     """Resource has already been calculated"""
+
     pass
 
 
 class PendingJob(object):
     """A calculation job enqueued on a remote server"""
+
     def __init__(self, url):
         self.url = url
 
@@ -50,7 +47,7 @@ class PendingJob(object):
     def poll(self, interval=10):
         try:
             while True:
-                if self.status not in {'failed', 'finished', 'forgotten'}:
+                if self.status not in {"failed", "finished", "forgotten"}:
                     time.sleep(interval)
                 else:
                     break
@@ -82,12 +79,12 @@ class PandarusRemote(object):
         return requests.get(self.url).status_code == 200
 
     def _download_file(self, resp):
-        assert 'Content-Disposition' in resp.headers
+        assert "Content-Disposition" in resp.headers
         download_dirpath = projects.request_directory("regional")
 
         filepath = os.path.join(
             download_dirpath,
-            resp.headers['Content-Disposition'].replace('attachment; filename=', '')
+            resp.headers["Content-Disposition"].replace("attachment; filename=", ""),
         )
         chunk = 128 * 1024
         with open(filepath, "wb") as f:
@@ -115,25 +112,25 @@ class PandarusRemote(object):
         else:
             raise ValueError("Unknown geocollection {}".format(collection))
 
-        assert 'filepath' in metadata, "Can't find file for this collection"
+        assert "filepath" in metadata, "Can't find file for this collection"
 
         try:
-            collection_hash = metadata['sha256']
+            collection_hash = metadata["sha256"]
         except KeyError:
             collection_hash = hash_collection(collection)
 
-        if collection_hash in {obj[1] for obj in self.catalog()['files']}:
+        if collection_hash in {obj[1] for obj in self.catalog()["files"]}:
             raise AlreadyExists
 
         url = self.url + "/upload"
         data = {
-            'layer': metadata.get('layer') or '',
-            'field': metadata.get('field') or '',
-            'band': metadata.get('band') or '',
-            'sha256': collection_hash,
-            'name': os.path.basename(metadata['filepath']),
+            "layer": metadata.get("layer") or "",
+            "field": metadata.get("field") or "",
+            "band": metadata.get("band") or "",
+            "sha256": collection_hash,
+            "name": os.path.basename(metadata["filepath"]),
         }
-        files = {'file': open(metadata['filepath'], 'rb')}
+        files = {"file": open(metadata["filepath"], "rb")}
         resp = requests.post(url, data=data, files=files)
         if resp.status_code == 200:
             return resp.json()
@@ -143,9 +140,11 @@ class PandarusRemote(object):
     @check_alive
     def intersection(self, collection_one, collection_two):
         if (collection_one, collection_two) in intersections:
-            print("Skipping existing intersection: ({}, {})".format(
-                collection_one, collection_two
-            ))
+            print(
+                "Skipping existing intersection: ({}, {})".format(
+                    collection_one, collection_two
+                )
+            )
             return
 
         catalog = self.catalog()
@@ -154,18 +153,22 @@ class PandarusRemote(object):
 
         resp = requests.post(
             self.url + "/intersection",
-            data={'first': first, 'second': second},
-            stream=True
+            data={"first": first, "second": second},
+            stream=True,
         )
         if resp.status_code == 404:
-            raise NotYetCalculated("Not yet calculated; Run `.calculate_intersection` first.")
+            raise NotYetCalculated(
+                "Not yet calculated; Run `.calculate_intersection` first."
+            )
         self.handle_errors(resp)
 
         filepath = self._download_file(resp)
         return import_from_pandarus(filepath)
 
     @check_alive
-    def intersection_as_new_geocollection(self, collection_one, collection_two, new_name):
+    def intersection_as_new_geocollection(
+        self, collection_one, collection_two, new_name
+    ):
         if new_name in geocollections:
             print("Skipping creation of existing geocollection")
             return
@@ -176,26 +179,46 @@ class PandarusRemote(object):
 
         resp = requests.post(
             self.url + "/intersection-file",
-            data={'first': first, 'second': second},
-            stream=True
+            data={"first": first, "second": second},
+            stream=True,
         )
         if resp.status_code == 404:
-            raise NotYetCalculated("Not yet calculated; Run `.calculate_intersection` first.")
+            raise NotYetCalculated(
+                "Not yet calculated; Run `.calculate_intersection` first."
+            )
         self.handle_errors(resp)
 
         filepath = self._download_file(resp)
 
         geocollections[new_name] = {
-            'filepath': filepath,
-            'field': 'id',
-            'url': self.url + "/intersection-file",
-            'is intersection': True,
-            'first': collection_one,
-            'second': collection_two
+            "filepath": filepath,
+            "field": "id",
+            "url": self.url + "/intersection-file",
+            "is intersection": True,
+            "first": collection_one,
+            "second": collection_two,
         }
 
-        self.intersection(new_name, collection_one)
-        self.intersection(new_name, collection_two)
+        try:
+            self.intersection(new_name, collection_one)
+        except NotYetCalculated:
+            self.calculate_intersection(new_name, collection_one)
+            print(
+                """Remote is calculating intersection, run the following when done:
+                  remote.intersection("{}", "{}"")""".format(
+                    new_name, collection_one
+                )
+            )
+        try:
+            self.intersection(new_name, collection_two)
+        except NotYetCalculated:
+            self.calculate_intersection(new_name, collection_two)
+            print(
+                """Remote is calculating intersection, run the following when done:
+                  remote.intersection("{}", "{}"")""".format(
+                    new_name, collection_two
+                )
+            )
 
     @check_alive
     def rasterstats_as_xt(self, vector, raster, name):
@@ -206,8 +229,8 @@ class PandarusRemote(object):
 
         resp = requests.post(
             self.url + "/rasterstats",
-            data={'vector': first, 'raster': second},
-            stream=True
+            data={"vector": first, "raster": second},
+            stream=True,
         )
         self.handle_errors(resp)
 
@@ -222,7 +245,7 @@ class PandarusRemote(object):
 
         resp = requests.post(
             self.url + "/calculate-rasterstats",
-            data={'vector': first, 'raster': second},
+            data={"vector": first, "raster": second},
         )
         self.handle_errors(resp)
 
@@ -237,7 +260,7 @@ class PandarusRemote(object):
 
         resp = requests.post(
             self.url + "/calculate-intersection",
-            data={'first': first, 'second': second},
+            data={"first": first, "second": second},
         )
         self.handle_errors(resp)
 
@@ -245,7 +268,7 @@ class PandarusRemote(object):
         return PendingJob(self.url + resp.text)
 
     def hash_and_upload(self, collection, catalog=None):
-        hashes = {obj[1] for obj in (catalog or self.catalog())['files']}
+        hashes = {obj[1] for obj in (catalog or self.catalog())["files"]}
         hashed = hash_collection(collection)
         if not hashed:
             raise ValueError("Can't find collection {}".format(collection))
@@ -257,9 +280,11 @@ class PandarusRemote(object):
         if response.status_code == 409:
             raise AlreadyExists
         elif response.status_code != 200:
-            raise ValueError("Server returned an error code: {}: {}".format(
-                response.status_code, response.text))
-
+            raise ValueError(
+                "Server returned an error code: {}: {}".format(
+                    response.status_code, response.text
+                )
+            )
 
 
 remote = PandarusRemote()
