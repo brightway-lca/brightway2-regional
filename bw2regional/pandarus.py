@@ -11,12 +11,10 @@ from . import (
     ExtensionTable,
 )
 from bw2data import JsonWrapper, geomapping, projects
-from bw2data.utils import MAX_INT_32, numpy_string
+from bw2data.utils import MAX_INT_32
 import numpy as np
 import os
 import pandas as pd
-import pprint
-import pyprind
 import pickle
 
 
@@ -171,11 +169,18 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
         )
 
     dtype = [
-        (numpy_string('geo_inv'), np.uint32),
-        (numpy_string('geo_ia'), np.uint32),
-        (numpy_string('amount'), float),
-        (numpy_string('row'), np.uint32),
-        (numpy_string('col'), np.uint32),
+        ('geo_inv', np.uint32),
+        ('geo_ia', np.uint32),
+        ('row', np.uint32),
+        ('col', np.uint32),
+        ('uncertainty_type', np.uint8),
+        ('amount', np.float32),
+        ('loc', np.float32),
+        ('scale', np.float32),
+        ('shape', np.float32),
+        ('minimum', np.float32),
+        ('maximum', np.float32),
+        ('negative', np.bool),
     ]
 
     for name, mapping in zip(topo_geocollections, topo_data):
@@ -183,7 +188,7 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
         arrays = []
         valid_topo_ids = data['topo_id'].unique()
 
-        for key in pyprind.prog_bar(mapping):
+        for key in mapping:
             try:
                 # Get list of dataframes, one per face id, all
                 # from a given region
@@ -210,6 +215,13 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
         arrays = np.hstack(arrays)
         arrays['row'] = MAX_INT_32
         arrays['col'] = MAX_INT_32
+        arrays['uncertainty_type'] = 0
+        arrays['loc'] = arrays['amount']
+        arrays['scale'] = np.NaN
+        arrays['shape'] = np.NaN
+        arrays['minimum'] = np.NaN
+        arrays['maximum'] = np.NaN
+        arrays['negative'] = False
 
         print("Creating intersection ({}, {})".format(name, other_geocollection))
         intersection = Intersection((name, other_geocollection))
@@ -224,13 +236,13 @@ def handle_topographical_intersection(metadata, data, first_collections, second_
 
         intersection = Intersection((other_geocollection, name))
         intersection.register(filepath=filepath)
-        arrays.dtype.names = (
-            numpy_string('geo_inv'),
-            numpy_string('geo_ia'),
-            numpy_string('amount'),
-            numpy_string('row'),
-            numpy_string('col'),
-        )
+        # arrays.dtype.names = (
+        #     numpy_string('geo_inv'),
+        #     numpy_string('geo_ia'),
+        #     numpy_string('amount'),
+        #     numpy_string('row'),
+        #     numpy_string('col'),
+        # )
         filepath = os.path.join(
             projects.dir,
             "processed",

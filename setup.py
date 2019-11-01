@@ -22,14 +22,15 @@ rtd_requirements = ["eight", "requests"]
 
 setup(
     name="bw2regional",
-    version="0.5.1",
+    version="0.5.2",
     packages=["bw2regional", "bw2regional.lca"],
     author="Chris Mutel",
     author_email="cmutel@gmail.com",
     license=open("LICENSE.txt", encoding="utf-8").read(),
     url="https://bitbucket.org/cmutel/brightway2-regional",
     install_requires=[] if os.environ.get("READTHEDOCS") else requirements,
-    long_description=open("README.rst", encoding="utf-8").read(),
+    long_description=open("README.md", encoding="utf-8").read(),
+    long_description_content_type="text/markdown",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: End Users/Desktop",

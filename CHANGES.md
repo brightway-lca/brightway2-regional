@@ -1,8 +1,9 @@
-# 0.5.2 (DEV)
+# 0.5.2 (2019-01-01)
 
 * Code reformatting with Black
 * Update for `fiona` upstream changes
 * Better messages for when remote calculation is needed (instead of just erroring)
+* FIx incompatibility in datatypes between intersection and intersection from pandarus creation
 
 # 0.5.1 (2018-08-17)
 
