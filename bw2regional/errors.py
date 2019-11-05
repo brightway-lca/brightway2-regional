@@ -45,3 +45,9 @@ class IncompleteSpatialDefinition(BW2RegionalizationError):
     """Given metadata is not enough to understand a spatial data source"""
 
     pass
+
+
+class WindowsPathCharacterLimit(BW2RegionalizationError):
+    """Windows has an absolute limit of 255 characters in a filepath"""
+
+    pass

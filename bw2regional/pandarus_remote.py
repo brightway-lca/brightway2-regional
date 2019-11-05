@@ -2,13 +2,15 @@
 from __future__ import print_function, unicode_literals
 from eight import *
 
-from bw2data import projects
+from bw2data import projects, config
 from . import geocollections, intersections, topocollections
+from .errors import WindowsPathCharacterLimit
 from .pandarus import import_from_pandarus, import_xt_from_rasterstats
 from .utils import hash_collection
 import os
 import requests
 import time
+import uuid
 import wrapt
 
 
@@ -82,10 +84,24 @@ class PandarusRemote(object):
         assert "Content-Disposition" in resp.headers
         download_dirpath = projects.request_directory("regional")
 
-        filepath = os.path.join(
+        filepath = os.path.abspath(os.path.join(
             download_dirpath,
             resp.headers["Content-Disposition"].replace("attachment; filename=", ""),
-        )
+        ))
+
+        if config._windows and len(str(filepath)) > 250:
+            # Windows has an absolute limit of 255 characters in a filepath
+            if len(str(os.path.abspath(download_dirpath))) > 200:
+                ERROR = """Cannot safely save files in this project directory.
+                The project name is too long: {} characters for complete directory path, should fewer than 200.
+                The directory used for downloads is: {}
+                Please start a new project with a shorter project name."""
+                raise WindowsPathCharacterLimit(ERROR.format(len(download_dirpath), download_dirpath))
+            filepath = os.path.abspath(os.path.join(
+                download_dirpath,
+                uuid.uuid4().hex + filepath.split(".")[-1],
+            ))
+
         chunk = 128 * 1024
         with open(filepath, "wb") as f:
             while True:
