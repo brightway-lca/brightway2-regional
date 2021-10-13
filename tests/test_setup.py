@@ -1,11 +1,8 @@
 from bw2data.tests import bw2test
-from bw2regional.base_data import *
+from bw2regional.base_data import (bw2regionalsetup, geocollections, topocollections, Topography)
 import bw2regional
-import json
 import os
 import pytest
-import requests
-import warnings
 
 
 def nope(*args, **kwargs):

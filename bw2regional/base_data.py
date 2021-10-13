@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals
-from eight import *
-
-
 from . import (
     cg,
     ExtensionTable,
@@ -19,7 +14,6 @@ from bw2data.utils import download_file
 import bz2
 import json
 import os
-import requests
 import rower
 import warnings
 

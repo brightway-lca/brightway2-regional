@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals
-from eight import *
-
 from .errors import SiteGenericMethod, MissingSpatialSourceData
 from .hashing import sha256
 from .intersection import Intersection

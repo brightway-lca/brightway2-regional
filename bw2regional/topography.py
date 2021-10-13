@@ -1,10 +1,5 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals
-from eight import *
-
-from .meta import topocollections, geocollections, intersections
-from .intersection import Intersection
-from bw2data import DataStore, JsonWrapper, geomapping
+from .meta import topocollections
+from bw2data import DataStore,  geomapping
 
 
 class Topography(DataStore):
@@ -61,7 +56,6 @@ class Topography(DataStore):
         return self.metadata["geocollection"]
 
     def add_mappings(self, data):
-        geocollection = self.geocollection
         geomapping.add(data)
 
     def write(self, data):

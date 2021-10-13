@@ -1,12 +1,7 @@
-# -*- coding: utf-8 -*
-from __future__ import print_function, unicode_literals
-from eight import *
-
 from .loading import Loading
 from .meta import extension_tables, geocollections
 from .utils import get_pandarus_map
 from .validate import xtable_validator
-import pyprind
 
 
 class ExtensionTable(Loading):

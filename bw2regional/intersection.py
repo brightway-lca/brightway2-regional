@@ -1,12 +1,8 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals
-from eight import *
-
 from .meta import intersections
 from .validate import intersection_validator
 from bw2data import geomapping
 from bw2data.ia_data_store import ImpactAssessmentDataStore
-from bw2data.utils import MAX_INT_32, numpy_string
+from bw2data.utils import MAX_INT_32
 import copy
 import numpy as np
 import warnings

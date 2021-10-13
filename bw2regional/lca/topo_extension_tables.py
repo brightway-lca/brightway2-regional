@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals, division
-from eight import *
-
-from ..xtables import ExtensionTable
 from .extension_tables import ExtensionTablesLCA
 from bw2calc.matrices import MatrixBuilder
 from bw2data import Database
@@ -100,7 +95,7 @@ class TopologicalExtensionTablesLCA(ExtensionTablesLCA):
         )
 
     def results_inv_spatial_scale(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def results_xtable_spatial_scale(self):
         if not hasattr(self, "characterized_inventory"):

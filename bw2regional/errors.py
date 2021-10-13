@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals
-from eight import *
-
-
 class BW2RegionalizationError(Exception):
     """Base class for BW2 regionalization errors"""
 

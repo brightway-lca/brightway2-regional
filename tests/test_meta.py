@@ -1,7 +1,6 @@
 from bw2regional.tests import BW2RegionalTest
 from bw2regional import (
     geocollections,
-    Intersection,
     intersections,
     loadings,
 )

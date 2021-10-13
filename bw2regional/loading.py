@@ -1,13 +1,9 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals
-from eight import *
-
 from .meta import loadings
 from .validate import loading_validator
 from .utils import get_pandarus_map
-from bw2data import geomapping, config
+from bw2data import geomapping
 from bw2data.data_store import ProcessedDataStore
-from bw2data.utils import MAX_INT_32, numpy_string
+from bw2data.utils import MAX_INT_32
 import numpy as np
 import os
 

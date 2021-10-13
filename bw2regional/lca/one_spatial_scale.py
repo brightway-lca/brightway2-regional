@@ -1,10 +1,5 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals
-from eight import *
-
 from ..errors import GeocollectionsMismatch
 from .base_class import RegionalizationBase
-from bw2calc.lca import LCA
 from bw2calc.matrices import MatrixBuilder
 from bw2data import methods, Method
 

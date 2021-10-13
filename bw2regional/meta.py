@@ -1,28 +1,20 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals
-from eight import *
-from future.utils import python_2_unicode_compatible
-
 from bw2data.serialization import CompoundJSONDict, PickledDict, SerializedDict
 from .hashing import sha256
 import os
 
 
-@python_2_unicode_compatible
 class Loadings(SerializedDict):
     """Metadata on regionalized LCIA weightings."""
 
     filename = "loadings.json"
 
 
-@python_2_unicode_compatible
 class Intersections(CompoundJSONDict):
     """Areal intersections between the elements of two geo- or topocollections"""
 
     filename = "intersections.json"
 
 
-@python_2_unicode_compatible
 class Geocollections(SerializedDict):
     """Metadata for spatial data sets."""
 
@@ -40,7 +32,6 @@ class Geocollections(SerializedDict):
         super(Geocollections, self).__setitem__(key, value)
 
 
-@python_2_unicode_compatible
 class Topocollections(Geocollections):
     """Mappings from geocollections to a set of topographical face ids."""
 
@@ -59,7 +50,6 @@ class Topocollections(Geocollections):
         super(Topocollections, self).__setitem__(key, value)
 
 
-@python_2_unicode_compatible
 class ExtensionTables(SerializedDict):
     """Metadata for extension tables that give loadings on a third spatial scale."""
 

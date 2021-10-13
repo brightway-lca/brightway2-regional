@@ -1,5 +1,5 @@
 from bw2regional.tests import BW2RegionalTest
-from bw2data import Database, Method, databases, methods, geomapping
+from bw2data import Database, Method, databases, methods
 from bw2regional.intersection import Intersection
 from bw2regional.lca import TwoSpatialScalesLCA as LCA
 from bw2regional.meta import intersections, loadings

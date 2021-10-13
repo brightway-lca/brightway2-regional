@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals, division
-from eight import *
-
 from .base_class import RegionalizationBase
-from bw2calc.lca import LCA
 from bw2calc.matrices import MatrixBuilder
 from bw2data import methods
 from scipy.sparse import diags

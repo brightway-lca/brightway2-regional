@@ -1,14 +1,9 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals, division
-from eight import *
-
 from ..errors import MissingIntersection
 from ..intersection import Intersection
 from ..meta import extension_tables, intersections
-from ..utils import get_pandarus_map, filter_columns, filter_rows
+from ..utils import filter_columns, filter_rows
 from ..xtables import ExtensionTable
 from .base_class import RegionalizationBase
-from bw2calc.lca import LCA
 from bw2calc.matrices import MatrixBuilder
 from scipy.sparse import diags
 import itertools
