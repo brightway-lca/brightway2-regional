@@ -4,8 +4,12 @@ import pytest
 from bw2data.tests import bw2test
 
 import bw2regional
-from bw2regional.base_data import (Topography, bw2regionalsetup,
-                                   geocollections, topocollections)
+from bw2regional.base_data import (
+    Topography,
+    bw2regionalsetup,
+    geocollections,
+    topocollections,
+)
 
 
 def nope(*args, **kwargs):

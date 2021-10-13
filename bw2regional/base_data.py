@@ -6,8 +6,7 @@ import warnings
 import rower
 from bw2data.utils import download_file
 
-from . import (ExtensionTable, Intersection, Topography, cg, geocollections,
-               import_regionalized_cfs, intersections, remote, topocollections)
+from . import Topography, cg, geocollections, topocollections
 from .hashing import sha256
 
 COUNTRIES = {

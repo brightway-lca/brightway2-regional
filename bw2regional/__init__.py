@@ -43,18 +43,32 @@ from .databases import label_activity_geocollections
 from .density import divide_by_area
 from .hashing import sha256
 from .intersection import Intersection
-from .lca import (ExtensionTablesLCA, OneSpatialScaleLCA,
-                  TopologicalExtensionTablesLCA, TwoSpatialScalesLCA,
-                  TwoSpatialScalesWithGenericLoadingLCA)
+from .lca import (
+    ExtensionTablesLCA,
+    OneSpatialScaleLCA,
+    TopologicalExtensionTablesLCA,
+    TwoSpatialScalesLCA,
+    TwoSpatialScalesWithGenericLoadingLCA,
+)
 from .loading import Loading
-from .meta import (extension_tables, geocollections, intersections, loadings,
-                   topocollections)
+from .meta import (
+    extension_tables,
+    geocollections,
+    intersections,
+    loadings,
+    topocollections,
+)
 from .pandarus import import_from_pandarus
 from .pandarus_remote import PandarusRemote, remote
 from .topography import Topography
-from .utils import (create_empty_intersection, get_spatial_dataset_kind,
-                    hash_collection, import_regionalized_cfs, reset_all_geo,
-                    reset_geo_meta)
+from .utils import (
+    create_empty_intersection,
+    get_spatial_dataset_kind,
+    hash_collection,
+    import_regionalized_cfs,
+    reset_all_geo,
+    reset_geo_meta,
+)
 from .xtables import ExtensionTable
 
 config.metadata.extend(

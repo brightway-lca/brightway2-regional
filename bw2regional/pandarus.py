@@ -6,8 +6,14 @@ import pandas as pd
 from bw2data import JsonWrapper, geomapping, projects
 from bw2data.utils import MAX_INT_32
 
-from . import (ExtensionTable, Intersection, Topography, geocollections,
-               intersections, topocollections)
+from . import (
+    ExtensionTable,
+    Intersection,
+    Topography,
+    geocollections,
+    intersections,
+    topocollections,
+)
 
 
 def relabel(data, first, second):

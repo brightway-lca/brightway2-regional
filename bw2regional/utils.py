@@ -11,8 +11,13 @@ from scipy import sparse
 from .errors import MissingSpatialSourceData, SiteGenericMethod
 from .hashing import sha256
 from .intersection import Intersection
-from .meta import (extension_tables, geocollections, intersections, loadings,
-                   topocollections)
+from .meta import (
+    extension_tables,
+    geocollections,
+    intersections,
+    loadings,
+    topocollections,
+)
 
 
 def filter_fiona_metadata(dct):

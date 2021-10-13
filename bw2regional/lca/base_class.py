@@ -6,8 +6,7 @@ from bw2calc.matrices import MatrixBuilder
 from bw2data import Database, Method, databases, geomapping, methods
 from scipy.sparse import csr_matrix
 
-from ..errors import (MissingIntersection, SiteGenericMethod,
-                      UnprocessedDatabase)
+from ..errors import MissingIntersection, SiteGenericMethod, UnprocessedDatabase
 from ..intersection import Intersection
 from ..meta import intersections
 
