@@ -47,20 +47,27 @@ class TopologicalExtensionTablesLCA(ExtensionTablesLCA):
         return diags(vector, [0], format="csr", dtype=np.float32)
 
     def load_lcia_data(self, builder=MatrixBuilder):
-        self.inv_mapping_params, self.inv_spatial_dict, self.inv_mapping_matrix = (
-            self.get_inventory_mapping_matrix()
-        )
-        self.distribution_params, self.xtable_spatial_dict, self.distribution_matrix = (
-            self.build_distribution_matrix()
-        )
+        (
+            self.inv_mapping_params,
+            self.inv_spatial_dict,
+            self.inv_mapping_matrix,
+        ) = self.get_inventory_mapping_matrix()
+        (
+            self.distribution_params,
+            self.xtable_spatial_dict,
+            self.distribution_matrix,
+        ) = self.build_distribution_matrix()
         self.xtable_params, self.xtable_matrix = self.load_xtable_matrix()
         self.topo_normalization_matrix = self.build_topo_normalization_matrix()
-        self.reg_cf_params, self.ia_spatial_dict, self.reg_cf_matrix = self.get_regionalized_characterization_matrix(
-            builder
-        )
-        self.geo_transform_params, self.geo_transform_matrix = self.get_geo_transform_matrix(
-            builder
-        )
+        (
+            self.reg_cf_params,
+            self.ia_spatial_dict,
+            self.reg_cf_matrix,
+        ) = self.get_regionalized_characterization_matrix(builder)
+        (
+            self.geo_transform_params,
+            self.geo_transform_matrix,
+        ) = self.get_geo_transform_matrix(builder)
         self.geo_transform_normalization_matrix = (
             self.build_geo_transform_normalization_matrix()
         )

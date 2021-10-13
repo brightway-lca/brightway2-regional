@@ -16,39 +16,35 @@ def test_relabel():
     relabeled = relabel(data, "foo", "bar")
     assert relabeled == [(("foo", 1), ("bar", 2), 3)]
 
+
 @bw2test
 def test_import_topo_intersection_without_error():
     def _(fn):
         return os.path.join(data_dir, fn)
 
-    geocollections['countries'] = {
-        'filepath': _("test_countries.gpkg"),
-        'field': 'name'
+    geocollections["countries"] = {
+        "filepath": _("test_countries.gpkg"),
+        "field": "name",
     }
-    geocollections['cfs'] = {
-        'filepath': _("test_raster_cfs.tif"),
-        'field': 'name'
+    geocollections["cfs"] = {"filepath": _("test_raster_cfs.tif"), "field": "name"}
+    topocollections["countries"] = {
+        "geocollection": "countries",
+        "filepath": _("test_provinces.gpkg"),
+        "field": "OBJECTID_1",
     }
-    topocollections['countries'] = {
-        'geocollection': 'countries',
-        'filepath': _("test_provinces.gpkg"),
-        'field': 'OBJECTID_1'
-    }
-    topo = Topography('countries')
+    topo = Topography("countries")
     topo.write(dict(json.load(open(_("test_topo_mapping.json")))))
     import_from_pandarus(_("intersect-topo-cfs.json.bz2"))
+
 
 @bw2test
 def test_import_intersection_without_error():
     def _(fn):
         return os.path.join(data_dir, fn)
 
-    geocollections['countries'] = {
-        'filepath': _("test_countries.gpkg"),
-        'field': 'name'
+    geocollections["countries"] = {
+        "filepath": _("test_countries.gpkg"),
+        "field": "name",
     }
-    geocollections['cfs'] = {
-        'filepath': _("test_raster_cfs.tif"),
-        'field': 'name'
-    }
+    geocollections["cfs"] = {"filepath": _("test_raster_cfs.tif"), "field": "name"}
     import_from_pandarus(_("intersect-countries-cfs.json.bz2"))

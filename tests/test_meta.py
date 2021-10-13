@@ -16,19 +16,18 @@ class GeocollectionsTestCase(BW2RegionalTest):
     def test_unicode(self):
         self.assertTrue(isinstance(str(geocollections), str))
         self.assertEqual(
-            str(geocollections),
-            "Geocollections dictionary with 0 objects"
+            str(geocollections), "Geocollections dictionary with 0 objects"
         )
 
     def test_vector_test_data(self):
-        geocollections['countries'] = {
-            'filepath': os.path.join(data_dir, "test_countries.gpkg"),
-            'field': 'name'
+        geocollections["countries"] = {
+            "filepath": os.path.join(data_dir, "test_countries.gpkg"),
+            "field": "name",
         }
 
     def test_raster_test_data(self):
-        geocollections['cfs'] = {
-            'filepath': os.path.join(data_dir, "test_raster_cfs.tif")
+        geocollections["cfs"] = {
+            "filepath": os.path.join(data_dir, "test_raster_cfs.tif")
         }
 
 
@@ -38,10 +37,7 @@ class IntersectionsTestCase(BW2RegionalTest):
 
     def test_unicode(self):
         self.assertTrue(isinstance(str(intersections), str))
-        self.assertEqual(
-            str(intersections),
-            "Intersections dictionary with 0 objects"
-        )
+        self.assertEqual(str(intersections), "Intersections dictionary with 0 objects")
 
     def test_load_test_data_1(self):
         pass
@@ -78,9 +74,6 @@ class LoadingsTestCase(BW2RegionalTest):
 
     def test_unicode(self):
         self.assertTrue(isinstance(str(loadings), str))
-        self.assertEqual(
-            str(loadings),
-            "Loadings dictionary with 0 objects"
-        )
+        self.assertEqual(str(loadings), "Loadings dictionary with 0 objects")
 
     # TODO: Test data loading

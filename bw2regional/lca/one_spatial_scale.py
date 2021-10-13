@@ -53,12 +53,15 @@ class OneSpatialScaleLCA(RegionalizationBase):
         return (reg_cf_params, reg_cf_matrix)
 
     def load_lcia_data(self, builder=MatrixBuilder):
-        self.inv_mapping_params, self.inv_spatial_dict, self.inv_mapping_matrix = self.get_inventory_mapping_matrix(
-            builder
-        )
-        self.reg_cf_params, self.reg_cf_matrix = self.get_regionalized_characterization_matrix(
-            builder
-        )
+        (
+            self.inv_mapping_params,
+            self.inv_spatial_dict,
+            self.inv_mapping_matrix,
+        ) = self.get_inventory_mapping_matrix(builder)
+        (
+            self.reg_cf_params,
+            self.reg_cf_matrix,
+        ) = self.get_regionalized_characterization_matrix(builder)
 
     def lcia_calculation(self):
         """Do regionalized LCA calculation.

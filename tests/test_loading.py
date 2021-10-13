@@ -17,9 +17,9 @@ class LoadingTestCase(BW2RegionalTest):
         lg = Loading("some loadings")
         self.assertTrue(lg.validate([]))
         self.assertTrue(lg.validate([[1, "f"]]))
-        self.assertTrue(lg.validate([[{'amount': 1}, "f"]]))
+        self.assertTrue(lg.validate([[{"amount": 1}, "f"]]))
         self.assertTrue(lg.validate([[1, ("f", "b")]]))
-        self.assertTrue(lg.validate([[{'amount': 1}, ("f", "b")]]))
+        self.assertTrue(lg.validate([[{"amount": 1}, ("f", "b")]]))
         with self.assertRaises(Invalid):
             lg.validate(())
         with self.assertRaises(Invalid):
@@ -27,7 +27,12 @@ class LoadingTestCase(BW2RegionalTest):
 
     def test_filename(self):
         s = "some loading with a crazy name"
-        r = s.replace(" ", "-") + "." + hashlib.md5(s.encode('utf-8')).hexdigest() + ".loading"
+        r = (
+            s.replace(" ", "-")
+            + "."
+            + hashlib.md5(s.encode("utf-8")).hexdigest()
+            + ".loading"
+        )
         lg = Loading("some loading with a crazy name")
         self.assertEqual(lg.filename, r)
 

@@ -9,7 +9,7 @@ import warnings
 
 
 class Intersection(ImpactAssessmentDataStore):
-    """"""
+    """ """
 
     _metadata = intersections
     validator = intersection_validator

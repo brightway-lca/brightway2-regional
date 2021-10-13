@@ -67,9 +67,10 @@ class ExtensionTablesLCA(RegionalizationBase):
 
         self.inventory_geocollections = self.get_inventory_geocollections()
         self.ia_geocollections = self.get_ia_geocollections()
-        self.xtable_geocollections, self.xtable_intersections = (
-            self.get_xtable_geodata()
-        )
+        (
+            self.xtable_geocollections,
+            self.xtable_intersections,
+        ) = self.get_xtable_geodata()
 
         self.inv_xtable_intersections = self.needed_inv_xtable_intersections()
         self.xtable_ia_intersections = self.needed_xtable_ia_intersections()
@@ -185,9 +186,11 @@ If you know these intersections are not needed, you can create empty intersectio
         return geo_transform_params, geo_transform_matrix
 
     def load_lcia_data(self, builder=MatrixBuilder):
-        self.inv_mapping_params, self.inv_spatial_dict, self.inv_mapping_matrix = (
-            self.get_inventory_mapping_matrix()
-        )
+        (
+            self.inv_mapping_params,
+            self.inv_spatial_dict,
+            self.inv_mapping_matrix,
+        ) = self.get_inventory_mapping_matrix()
 
         if "activities" in self.limitations:
             self.inv_mapping_matrix = filter_rows(
@@ -196,16 +199,20 @@ If you know these intersections are not needed, you can create empty intersectio
                 exclude=self.limitations.get("activities mode", None) == "exclude",
             )
 
-        self.distribution_params, self.xtable_spatial_dict, self.distribution_matrix = (
-            self.build_distribution_matrix()
-        )
+        (
+            self.distribution_params,
+            self.xtable_spatial_dict,
+            self.distribution_matrix,
+        ) = self.build_distribution_matrix()
         self.xtable_params, self.xtable_matrix = self.load_xtable_matrix()
         self.distribution_normalization_matrix = (
             self.build_distribution_normalization_matrix()
         )
-        self.reg_cf_params, self.ia_spatial_dict, self.reg_cf_matrix = self.get_regionalized_characterization_matrix(
-            builder
-        )
+        (
+            self.reg_cf_params,
+            self.ia_spatial_dict,
+            self.reg_cf_matrix,
+        ) = self.get_regionalized_characterization_matrix(builder)
 
         if "flows" in self.limitations:
             self.reg_cf_matrix = filter_columns(
@@ -214,9 +221,10 @@ If you know these intersections are not needed, you can create empty intersectio
                 exclude=self.limitations.get("flows mode", None) == "exclude",
             )
 
-        self.geo_transform_params, self.geo_transform_matrix = self.get_geo_transform_matrix(
-            builder
-        )
+        (
+            self.geo_transform_params,
+            self.geo_transform_matrix,
+        ) = self.get_geo_transform_matrix(builder)
         self.geo_transform_normalization_matrix = (
             self.build_geo_transform_normalization_matrix()
         )

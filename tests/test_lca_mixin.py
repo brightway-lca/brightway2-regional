@@ -1,6 +1,10 @@
 from bw2regional.tests import BW2RegionalTest
 from bw2data import Database, Method, geomapping
-from bw2regional.errors import MissingIntersection, SiteGenericMethod, UnprocessedDatabase
+from bw2regional.errors import (
+    MissingIntersection,
+    SiteGenericMethod,
+    UnprocessedDatabase,
+)
 from bw2regional.lca.base_class import RegionalizationBase
 
 
@@ -57,4 +61,3 @@ class RegionalizationBaseTestCase(BW2RegionalTest):
         rlca.fix_spatial_dictionaries()
         self.assertEqual(rlca.inv_spatial_dict, {"a": "foo"})
         self.assertEqual(rlca.ia_spatial_dict, {"b": "bar"})
-

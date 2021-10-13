@@ -10,9 +10,7 @@ class IntersectionTestCase(BW2RegionalTest):
         inter.register()
         self.assertFalse(("foo", "bar") in geomapping)
         self.assertFalse("baz" in geomapping)
-        inter.write([
-            [("foo", "bar"), "baz", 42]
-        ])
+        inter.write([[("foo", "bar"), "baz", 42]])
         self.assertTrue(("foo", "bar") in geomapping)
         self.assertTrue("baz" in geomapping)
 
@@ -20,10 +18,10 @@ class IntersectionTestCase(BW2RegionalTest):
         inter = Intersection(("foo", "bar"))
         self.assertTrue(inter.validate([]))
         self.assertTrue(inter.validate([[1, 2, 3]]))
-        self.assertTrue(inter.validate([["foo", "bar", 3.]]))
+        self.assertTrue(inter.validate([["foo", "bar", 3.0]]))
         with self.assertRaises(Invalid):
             inter.validate(())
         with self.assertRaises(Invalid):
             inter.validate([[1, 2]])
         with self.assertRaises(Invalid):
-            inter.validate([[1, 2, {'amount': 3.}]])
+            inter.validate([[1, 2, {"amount": 3.0}]])
