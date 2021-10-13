@@ -1,22 +1,14 @@
-from . import (
-    cg,
-    ExtensionTable,
-    geocollections,
-    import_regionalized_cfs,
-    Intersection,
-    intersections,
-    remote,
-    topocollections,
-    Topography,
-)
-from .hashing import sha256
-from bw2data.utils import download_file
 import bz2
 import json
 import os
-import rower
 import warnings
 
+import rower
+from bw2data.utils import download_file
+
+from . import (ExtensionTable, Intersection, Topography, cg, geocollections,
+               import_regionalized_cfs, intersections, remote, topocollections)
+from .hashing import sha256
 
 COUNTRIES = {
     "AD",

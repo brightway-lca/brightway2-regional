@@ -1,11 +1,13 @@
-from bw2regional import geocollections
-from bw2regional.lca.base_class import RegionalizationBase
+import hashlib
+import os
 from collections import defaultdict
 from functools import partial
+
 import fiona
-import hashlib
 import numpy as np
-import os
+
+from bw2regional import geocollections
+from bw2regional.lca.base_class import RegionalizationBase
 
 try:
     from shapely.geometry import shape

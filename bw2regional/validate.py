@@ -1,5 +1,5 @@
-from bw2data.validate import valid_tuple, maybe_uncertainty
-from voluptuous import Any, Schema, Invalid
+from bw2data.validate import maybe_uncertainty, valid_tuple
+from voluptuous import Any, Invalid, Schema
 
 _maybe_uncertainty = Schema(maybe_uncertainty)
 _loading_value = Schema(Any(str, valid_tuple))

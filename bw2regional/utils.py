@@ -1,21 +1,18 @@
-from .errors import SiteGenericMethod, MissingSpatialSourceData
-from .hashing import sha256
-from .intersection import Intersection
-from .meta import (
-    extension_tables,
-    geocollections,
-    intersections,
-    loadings,
-    topocollections,
-)
-from bw2data import Method, methods, projects
-from scipy import sparse
 import copy
+import os
+import shutil
+
 import fiona
 import numpy as np
-import os
 import rasterio
-import shutil
+from bw2data import Method, methods, projects
+from scipy import sparse
+
+from .errors import MissingSpatialSourceData, SiteGenericMethod
+from .hashing import sha256
+from .intersection import Intersection
+from .meta import (extension_tables, geocollections, intersections, loadings,
+                   topocollections)
 
 
 def filter_fiona_metadata(dct):

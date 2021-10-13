@@ -1,8 +1,9 @@
-from .base_class import RegionalizationBase
+import numpy as np
 from bw2calc.matrices import MatrixBuilder
 from bw2data import methods
 from scipy.sparse import diags
-import numpy as np
+
+from .base_class import RegionalizationBase
 
 
 class TwoSpatialScalesLCA(RegionalizationBase):

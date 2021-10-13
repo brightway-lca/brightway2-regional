@@ -1,7 +1,8 @@
-from bw2regional.tests import BW2RegionalTest
 from bw2data import geomapping
-from bw2regional.xtables import ExtensionTable
 from voluptuous import Invalid
+
+from bw2regional.tests import BW2RegionalTest
+from bw2regional.xtables import ExtensionTable
 
 
 class XtablesTestCase(BW2RegionalTest):

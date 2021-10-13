@@ -36,41 +36,26 @@ from constructive_geometries import ConstructiveGeometries
 
 cg = ConstructiveGeometries()
 
-from .hashing import sha256
-from .intersection import Intersection
-from .meta import (
-    extension_tables,
-    topocollections,
-    geocollections,
-    intersections,
-    loadings,
-)
-from .lca import (
-    ExtensionTablesLCA,
-    OneSpatialScaleLCA,
-    TopologicalExtensionTablesLCA,
-    TwoSpatialScalesLCA,
-    TwoSpatialScalesWithGenericLoadingLCA,
-)
-from .loading import Loading
-from .topography import Topography
-from .utils import (
-    create_empty_intersection,
-    get_spatial_dataset_kind,
-    hash_collection,
-    import_regionalized_cfs,
-    reset_all_geo,
-    reset_geo_meta,
-)
-from .xtables import ExtensionTable
-from .pandarus import import_from_pandarus
-from .pandarus_remote import remote, PandarusRemote
+from bw2data import config
+
 from .base_data import bw2regionalsetup
 from .databases import label_activity_geocollections
 from .density import divide_by_area
-
-
-from bw2data import config
+from .hashing import sha256
+from .intersection import Intersection
+from .lca import (ExtensionTablesLCA, OneSpatialScaleLCA,
+                  TopologicalExtensionTablesLCA, TwoSpatialScalesLCA,
+                  TwoSpatialScalesWithGenericLoadingLCA)
+from .loading import Loading
+from .meta import (extension_tables, geocollections, intersections, loadings,
+                   topocollections)
+from .pandarus import import_from_pandarus
+from .pandarus_remote import PandarusRemote, remote
+from .topography import Topography
+from .utils import (create_empty_intersection, get_spatial_dataset_kind,
+                    hash_collection, import_regionalized_cfs, reset_all_geo,
+                    reset_geo_meta)
+from .xtables import ExtensionTable
 
 config.metadata.extend(
     [extension_tables, geocollections, topocollections, intersections, loadings]

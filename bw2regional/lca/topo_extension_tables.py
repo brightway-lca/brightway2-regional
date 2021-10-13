@@ -1,8 +1,9 @@
-from .extension_tables import ExtensionTablesLCA
+import numpy as np
 from bw2calc.matrices import MatrixBuilder
 from bw2data import Database
 from scipy.sparse import diags
-import numpy as np
+
+from .extension_tables import ExtensionTablesLCA
 
 
 class TopologicalExtensionTablesLCA(ExtensionTablesLCA):

@@ -1,9 +1,10 @@
-from affine import Affine
-from bw2regional.density import divide_by_area, get_area, get_column_array
-import numpy as np
 import os
-import rasterio
 
+import numpy as np
+import rasterio
+from affine import Affine
+
+from bw2regional.density import divide_by_area, get_area, get_column_array
 
 AREAS = (
     np.array(

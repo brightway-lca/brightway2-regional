@@ -1,17 +1,13 @@
-from . import (
-    geocollections,
-    Intersection,
-    intersections,
-    topocollections,
-    Topography,
-    ExtensionTable,
-)
+import os
+import pickle
+
+import numpy as np
+import pandas as pd
 from bw2data import JsonWrapper, geomapping, projects
 from bw2data.utils import MAX_INT_32
-import numpy as np
-import os
-import pandas as pd
-import pickle
+
+from . import (ExtensionTable, Intersection, Topography, geocollections,
+               intersections, topocollections)
 
 
 def relabel(data, first, second):

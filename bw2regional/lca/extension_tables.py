@@ -1,13 +1,15 @@
+import itertools
+
+import numpy as np
+from bw2calc.matrices import MatrixBuilder
+from scipy.sparse import diags
+
 from ..errors import MissingIntersection
 from ..intersection import Intersection
 from ..meta import extension_tables, intersections
 from ..utils import filter_columns, filter_rows
 from ..xtables import ExtensionTable
 from .base_class import RegionalizationBase
-from bw2calc.matrices import MatrixBuilder
-from scipy.sparse import diags
-import itertools
-import numpy as np
 
 
 class ExtensionTablesLCA(RegionalizationBase):

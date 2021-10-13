@@ -1,9 +1,10 @@
-from bw2regional.tests import BW2RegionalTest
-from bw2data import Database, Method, databases, methods, geomapping
+import numpy as np
+from bw2data import Database, Method, databases, geomapping, methods
+
 from bw2regional.errors import GeocollectionsMismatch
 from bw2regional.lca import OneSpatialScaleLCA as LCA
 from bw2regional.meta import intersections, loadings
-import numpy as np
+from bw2regional.tests import BW2RegionalTest
 
 
 class OneSpatialScaleLCATestCase(BW2RegionalTest):

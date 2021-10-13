@@ -1,5 +1,6 @@
-from .meta import topocollections
 from bw2data import DataStore, geomapping
+
+from .meta import topocollections
 
 
 class Topography(DataStore):

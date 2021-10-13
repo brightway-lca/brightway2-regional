@@ -1,10 +1,7 @@
-from bw2regional.tests import BW2RegionalTest
-from bw2regional import (
-    geocollections,
-    intersections,
-    loadings,
-)
 import os
+
+from bw2regional import geocollections, intersections, loadings
+from bw2regional.tests import BW2RegionalTest
 
 data_dir = os.path.join(os.path.dirname(__file__), "data")
 

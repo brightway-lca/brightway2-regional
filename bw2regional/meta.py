@@ -1,6 +1,8 @@
-from bw2data.serialization import CompoundJSONDict, PickledDict, SerializedDict
-from .hashing import sha256
 import os
+
+from bw2data.serialization import CompoundJSONDict, PickledDict, SerializedDict
+
+from .hashing import sha256
 
 
 class Loadings(SerializedDict):

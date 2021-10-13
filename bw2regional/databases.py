@@ -1,8 +1,10 @@
-from . import geocollections, Topography, topocollections
-from .base_data import COUNTRIES
-from bw2data import databases, Database
-import pyprind
 import warnings
+
+import pyprind
+from bw2data import Database, databases
+
+from . import Topography, geocollections, topocollections
+from .base_data import COUNTRIES
 
 
 def label_activity_geocollections(name):

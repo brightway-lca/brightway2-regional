@@ -1,8 +1,10 @@
-from bw2regional.tests import BW2RegionalTest
-from bw2data import geomapping
-from bw2regional.loading import Loading
-from voluptuous import Invalid
 import hashlib
+
+from bw2data import geomapping
+from voluptuous import Invalid
+
+from bw2regional.loading import Loading
+from bw2regional.tests import BW2RegionalTest
 
 
 class LoadingTestCase(BW2RegionalTest):

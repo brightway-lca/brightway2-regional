@@ -1,7 +1,8 @@
-from bw2regional.meta import geocollections, intersections, loadings
+import wrapt
 from bw2data import config, projects
 from bw2data.tests import BW2DataTest
-import wrapt
+
+from bw2regional.meta import geocollections, intersections, loadings
 
 
 class BW2RegionalTest(BW2DataTest):

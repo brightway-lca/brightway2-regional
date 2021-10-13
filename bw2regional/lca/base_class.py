@@ -1,12 +1,15 @@
-from ..errors import MissingIntersection, SiteGenericMethod, UnprocessedDatabase
-from ..intersection import Intersection
-from ..meta import intersections
+import itertools
+
+import numpy as np
 from bw2calc.lca import LCA
 from bw2calc.matrices import MatrixBuilder
-from bw2data import databases, methods, geomapping, Method, Database
+from bw2data import Database, Method, databases, geomapping, methods
 from scipy.sparse import csr_matrix
-import itertools
-import numpy as np
+
+from ..errors import (MissingIntersection, SiteGenericMethod,
+                      UnprocessedDatabase)
+from ..intersection import Intersection
+from ..meta import intersections
 
 
 class RegionalizationBase(LCA):

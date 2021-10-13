@@ -1,7 +1,8 @@
-from bw2regional.utils import *
-from scipy.sparse import dok_matrix
 import numpy as np
 import pytest
+from scipy.sparse import dok_matrix
+
+from bw2regional.utils import *
 
 
 @pytest.fixture

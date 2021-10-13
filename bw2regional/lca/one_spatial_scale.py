@@ -1,7 +1,8 @@
+from bw2calc.matrices import MatrixBuilder
+from bw2data import Method, methods
+
 from ..errors import GeocollectionsMismatch
 from .base_class import RegionalizationBase
-from bw2calc.matrices import MatrixBuilder
-from bw2data import methods, Method
 
 
 class OneSpatialScaleLCA(RegionalizationBase):

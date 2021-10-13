@@ -1,9 +1,10 @@
+import numpy as np
+from bw2calc.matrices import MatrixBuilder
+from scipy.sparse import diags
+
 from ..loading import Loading
 from ..meta import loadings
 from .base_class import RegionalizationBase
-from bw2calc.matrices import MatrixBuilder
-from scipy.sparse import diags
-import numpy as np
 
 
 class TwoSpatialScalesWithGenericLoadingLCA(RegionalizationBase):

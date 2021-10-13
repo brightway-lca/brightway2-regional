@@ -1,11 +1,13 @@
-from .meta import intersections
-from .validate import intersection_validator
+import copy
+import warnings
+
+import numpy as np
 from bw2data import geomapping
 from bw2data.ia_data_store import ImpactAssessmentDataStore
 from bw2data.utils import MAX_INT_32
-import copy
-import numpy as np
-import warnings
+
+from .meta import intersections
+from .validate import intersection_validator
 
 
 class Intersection(ImpactAssessmentDataStore):

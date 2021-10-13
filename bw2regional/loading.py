@@ -1,11 +1,13 @@
-from .meta import loadings
-from .validate import loading_validator
-from .utils import get_pandarus_map
+import os
+
+import numpy as np
 from bw2data import geomapping
 from bw2data.data_store import ProcessedDataStore
 from bw2data.utils import MAX_INT_32
-import numpy as np
-import os
+
+from .meta import loadings
+from .utils import get_pandarus_map
+from .validate import loading_validator
 
 
 class Loading(ProcessedDataStore):
