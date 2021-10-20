@@ -3,31 +3,33 @@ import os
 
 
 requirements = [
-    "brightway2",
-    "bw2calc>=1.2",
-    "bw2data>=2.0",
+    "bw2calc>=2.0.dev2",
+    "bw2data>=4.0.dev7",
     "constructive_geometries",
-    "eight",
     "fiona",
     "pandas",
     "pandarus>=1.0",
+    "rasterio",
     "requests",
-    "rower",
-    "stats_arrays",
+    "shapely",
     "voluptuous",
     "wrapt",
 ]
 
-rtd_requirements = ["eight", "requests"]
+v_temp = {}
+with open("bw2regional/version.py") as fp:
+    exec(fp.read(), v_temp)
+version = ".".join((str(x) for x in v_temp["version"]))
+
 
 setup(
     name="bw2regional",
-    version="0.5.2",
+    version=version,
     packages=["bw2regional", "bw2regional.lca"],
     author="Chris Mutel",
     author_email="cmutel@gmail.com",
-    license=open("LICENSE.txt", encoding="utf-8").read(),
-    url="https://bitbucket.org/cmutel/brightway2-regional",
+    license="NewBSD 3-clause; LICENSE.txt",
+    url="https://github.com/brightway-lca/brightway2-regional",
     install_requires=[] if os.environ.get("READTHEDOCS") else requirements,
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",

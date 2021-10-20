@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*
-__version__ = (0, 5, 2)
-
 __all__ = (
-    "bw2regionalsetup",
     "cg",
+    "create_ecoinvent_collections",
     "create_empty_intersection",
+    "create_restofworlds_collections",
+    "create_world_collections",
     "divide_by_area",
     "extension_tables",
     "ExtensionTable",
@@ -27,10 +26,11 @@ __all__ = (
     "sha256",
     "topocollections",
     "Topography",
-    "TopologicalExtensionTablesLCA",
     "TwoSpatialScalesLCA",
     "TwoSpatialScalesWithGenericLoadingLCA",
 )
+
+from .version import version as __version__
 
 from constructive_geometries import ConstructiveGeometries
 
@@ -38,18 +38,8 @@ cg = ConstructiveGeometries()
 
 from bw2data import config
 
-from .base_data import bw2regionalsetup
-from .databases import label_activity_geocollections
-from .density import divide_by_area
-from .hashing import sha256
+from .topography import Topography
 from .intersection import Intersection
-from .lca import (
-    ExtensionTablesLCA,
-    OneSpatialScaleLCA,
-    TopologicalExtensionTablesLCA,
-    TwoSpatialScalesLCA,
-    TwoSpatialScalesWithGenericLoadingLCA,
-)
 from .loading import Loading
 from .meta import (
     extension_tables,
@@ -58,9 +48,19 @@ from .meta import (
     loadings,
     topocollections,
 )
+from .xtables import ExtensionTable
+
+from .databases import label_activity_geocollections
+from .density import divide_by_area
+from .hashing import sha256
+from .lca import (
+    ExtensionTablesLCA,
+    OneSpatialScaleLCA,
+    TwoSpatialScalesLCA,
+    TwoSpatialScalesWithGenericLoadingLCA,
+)
 from .pandarus import import_from_pandarus
 from .pandarus_remote import PandarusRemote, remote
-from .topography import Topography
 from .utils import (
     create_empty_intersection,
     get_spatial_dataset_kind,
@@ -69,7 +69,7 @@ from .utils import (
     reset_all_geo,
     reset_geo_meta,
 )
-from .xtables import ExtensionTable
+from .base_data import create_ecoinvent_collections, create_world_collections, create_restofworlds_collections
 
 config.metadata.extend(
     [extension_tables, geocollections, topocollections, intersections, loadings]

@@ -4,7 +4,6 @@ import pickle
 import numpy as np
 import pandas as pd
 from bw2data import JsonWrapper, geomapping, projects
-from bw2data.utils import MAX_INT_32
 
 from . import (
     ExtensionTable,
@@ -14,6 +13,9 @@ from . import (
     intersections,
     topocollections,
 )
+from .utils import create_certain_datapackage
+
+from bw_processing import INDICES_DTYPE
 
 
 def relabel(data, first, second):
@@ -184,24 +186,9 @@ def handle_topographical_intersection(
             other_geocollection, name
         )
 
-    dtype = [
-        ("geo_inv", np.uint32),
-        ("geo_ia", np.uint32),
-        ("row", np.uint32),
-        ("col", np.uint32),
-        ("uncertainty_type", np.uint8),
-        ("amount", np.float32),
-        ("loc", np.float32),
-        ("scale", np.float32),
-        ("shape", np.float32),
-        ("minimum", np.float32),
-        ("maximum", np.float32),
-        ("negative", np.bool),
-    ]
-
     for name, mapping in zip(topo_geocollections, topo_data):
         print("Merging topographical faces for geocollection {}".format(name))
-        arrays = []
+        indices_arrays, data_arrays = [], []
         valid_topo_ids = data["topo_id"].unique()
 
         for key in mapping:
@@ -224,24 +211,16 @@ def handle_topographical_intersection(
                 .groupby("feature_mapped_id")
                 .sum()
             )
-            array = np.empty(len(temp), dtype=dtype)
-            array["geo_inv"] = key
-            array["geo_ia"] = temp.index.values
-            array["amount"] = temp["area"].values
-            arrays.append(array)
+            index_array = np.empty(len(temp), dtype=INDICES_DTYPE)
+            index_array["row"] = key
+            index_array["col"] = temp.index.values
+            indices_arrays.append(index_array)
+            data_arrays.append(np.ndarray(temp["area"].values))
 
-        assert arrays, "Empty intersection"
+        assert indices_arrays, "Empty intersection"
 
-        arrays = np.hstack(arrays)
-        arrays["row"] = MAX_INT_32
-        arrays["col"] = MAX_INT_32
-        arrays["uncertainty_type"] = 0
-        arrays["loc"] = arrays["amount"]
-        arrays["scale"] = np.NaN
-        arrays["shape"] = np.NaN
-        arrays["minimum"] = np.NaN
-        arrays["maximum"] = np.NaN
-        arrays["negative"] = False
+        indices_arrays = np.hstack(indices_arrays)
+        data_arrays = np.hstack(data_arrays)
 
         print("Creating intersection ({}, {})".format(name, other_geocollection))
         intersection = Intersection((name, other_geocollection))
@@ -252,15 +231,10 @@ def handle_topographical_intersection(
         with open(filepath, "wb") as f:
             pickle.dump(arrays, f, protocol=pickle.HIGHEST_PROTOCOL)
 
+        # TODO: Flip row and column?
+
         intersection = Intersection((other_geocollection, name))
         intersection.register(filepath=filepath)
-        # arrays.dtype.names = (
-        #     numpy_string('geo_inv'),
-        #     numpy_string('geo_ia'),
-        #     numpy_string('amount'),
-        #     numpy_string('row'),
-        #     numpy_string('col'),
-        # )
         filepath = os.path.join(
             projects.dir, "processed", intersection.filename + ".npy"
         )

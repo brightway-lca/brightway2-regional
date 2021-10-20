@@ -1,14 +1,16 @@
 import itertools
+from functools import partial
 
 import numpy as np
 from bw2calc.lca import LCA
-from bw2calc.matrices import MatrixBuilder
-from bw2data import Database, Method, databases, geomapping, methods
+from bw2data import Database, Method, databases, methods
 from scipy.sparse import csr_matrix
+import matrix_utils as mu
 
 from ..errors import MissingIntersection, SiteGenericMethod, UnprocessedDatabase
 from ..intersection import Intersection
 from ..meta import intersections
+from ..utils import dp
 
 
 class RegionalizationBase(LCA):
@@ -38,30 +40,27 @@ class RegionalizationBase(LCA):
         """Retrieve the geocollections linked to the impact assessment method"""
         try:
             return set(methods[self.method]["geocollections"])
-        except:
+        except KeyError:
             raise SiteGenericMethod
 
-    def get_inventory_mapping_matrix(self, builder=MatrixBuilder):
+    def create_inventory_mapping_matrix(self):
         """Get inventory mapping matrix, **M**, which maps inventory activities to inventory locations. Rows are inventory activities and columns are inventory spatial units.
 
-        Uses ``self._activity_dict`` and ``self.databases``.
+        Uses ``self.technosphere_mm.row_mapper`` and ``self.databases``.
 
-        Returns:
-            * ``inv_mapping_params``: Parameter array with row/col of inventory activities/locations
-            * ``inv_spatial_dict``: Dictionary linking inventory locations to matrix columns
-            * ``inv_mapping_matrix``: The matrix **M**
+        Creates ``self.inv_mapping_mm``, ``self.inv_mapping_matrix``, and ``self.dicts.inv_spatial``/
 
         """
-        inv_mapping_params, _, inv_spatial_dict, inv_mapping_matrix = builder.build(
-            paths=[Database(x).filepath_geomapping() for x in self.databases],
-            data_label="amount",
-            row_id_label="activity",
-            row_index_label="row",
-            col_id_label="geo",
-            col_index_label="col",
-            row_dict=self._activity_dict,
+        self.inv_mapping_mm = mu.MappedMatrix(
+            packages=[dp(Database(x).filepath_processed()) for x in self.databases],
+            matrix="inv_geomapping_matrix",
+            use_arrays=self.use_arrays,
+            use_distributions=self.use_distributions,
+            seed_override=self.seed_override,
+            row_mapper=self.technosphere_mm.col_mapper,
         )
-        return (inv_mapping_params, inv_spatial_dict, inv_mapping_matrix)
+        self.inv_mapping_matrix = self.inv_mapping_mm.matrix
+        self.dicts.inv_spatial = partial(self.inv_mapping_mm.col_mapper.to_dict)
 
     def needed_intersections(self):
         """Figure out which ``Intersection`` objects are needed bsed on ``self.inventory_geocollections`` and ``self.ia_geocollections``.
@@ -77,7 +76,7 @@ class RegionalizationBase(LCA):
                 )
         return required
 
-    def get_geo_transform_matrix(self, builder=MatrixBuilder):
+    def create_geo_transform_matrix(self):
         """Get geographic transform matrix **G**, which gives the intersecting areas of inventory and impact assessment spatial units. Rows are inventory spatial units, and columns are impact assessment spatial units.
 
         Uses ``self.inv_spatial_dict`` and ``self.ia_spatial_dict``.
@@ -87,23 +86,24 @@ class RegionalizationBase(LCA):
             * ``geo_transform_matrix``: The matrix **G**
 
         """
-        geo_transform_params, _, _, geo_transform_matrix = builder.build(
-            paths=[
-                Intersection(name).filepath_processed()
+        self.geo_transform_mm = mu.MappedMatrix(
+            packages=[
+                dp(Intersection(name).filepath_processed())
                 for name in self.needed_intersections()
             ],
-            data_label="amount",
-            row_id_label="geo_inv",
-            row_index_label="row",
-            col_id_label="geo_ia",
-            col_index_label="col",
-            row_dict=self.inv_spatial_dict,
-            col_dict=self.ia_spatial_dict,
+            matrix="intersection_matrix",
+            use_arrays=self.use_arrays,
+            use_distributions=self.use_distributions,
+            seed_override=self.seed_override,
+            col_mapper=self.reg_cf_mm.row_mapper,
+            row_mapper=self.inv_mapping_mm.col_mapper,
         )
-        return geo_transform_params, geo_transform_matrix
+        self.geo_transform_matrix = self.geo_transform_mm.matrix
 
-    def get_regionalized_characterization_matrix(self, builder=MatrixBuilder):
-        """Get regionalized characterization matrix, **R**, which gives location- and biosphere flow-specific characterization factors. Rows are impact assessment spatial units, and columns are biosphere flows.
+    def create_regionalized_characterization_matrix(self, row_mapper=None):
+        """Get regionalized characterization matrix, **R**, which gives location- and biosphere flow-specific characterization factors.
+
+        Rows are impact assessment spatial units, and columns are biosphere flows. However, we build it transverse and transpose it, as the characterization matrix indices are provided that way.
 
         Uses ``self._biosphere_dict`` and ``self.method``.
 
@@ -113,61 +113,61 @@ class RegionalizationBase(LCA):
             * ``reg_cf_matrix``: The matrix **R**
 
         """
-        reg_cf_params, ia_spatial_dict, _, reg_cf_matrix = builder.build(
-            paths=[Method(self.method).filepath_processed()],
-            data_label="amount",
-            row_id_label="geo",
-            row_index_label="row",
-            col_id_label="flow",
-            col_index_label="col",
-            col_dict=self._biosphere_dict,
+        self.reg_cf_mm = mu.MappedMatrix(
+            packages=[dp(Method(self.method).filepath_processed())],
+            matrix="characterization_matrix",
+            use_arrays=self.use_arrays,
+            use_distributions=self.use_distributions,
+            seed_override=self.seed_override,
+            col_mapper=self.biosphere_mm.row_mapper,
+            row_mapper=row_mapper,
+            transpose=True,
         )
-        return (reg_cf_params, ia_spatial_dict, reg_cf_matrix)
+        self.reg_cf_matrix = self.reg_cf_mm.matrix
+        if row_mapper is None:
+            self.dicts.ia_spatial = partial(self.reg_cf_mm.row_mapper.to_dict)
 
-    def get_loading_matrix(self, builder=MatrixBuilder):
-        """Get regionalized loading matrix, **L**, which gives location-specific background loading factors. Rows are impact assessment spatial units, and columns are biosphere flows.
+    def create_loading_matrix(self):
+        """Get diagonal regionalized loading matrix, **L**, which gives location-specific background loading factors. Dimensions are impact assessment spatial units.
 
-        Uses ``self.inv_spatial_dict`` and ``self.ia_spatial_dict``.
-
-        Returns:
-            * ``loading_params``: Parameter array with row/col of IA locations/biosphere flows
-            * ``loading_matrix``: The matrix **L**
+        Uses ``self.dicts.ia_spatial``.
 
         """
-        loading_params, _, _, loading_matrix = builder.build(
-            paths=[self.loading.filepath_processed()],
-            data_label="amount",
-            row_id_label="geo",
-            row_index_label="row",
-            row_dict=self.ia_spatial_dict,
-            one_d=True,
+        self.loading_mm = mu.MappedMatrix(
+            packages=[dp(self.loading.filepath_processed())],
+            matrix="loading_matrix",
+            use_arrays=self.use_arrays,
+            use_distributions=self.use_distributions,
+            seed_override=self.seed_override,
+            diagonal=True,
+            row_mapper=self.reg_cf_mm.row_mapper,
         )
-        return (loading_params, loading_matrix)
+        self.loading_matrix = self.loading_mm.matrix
 
-    def fix_spatial_dictionaries(self):
-        """Fix inventory and IA spatial dictionaries."""
-        if not hasattr(self, "inv_spatial_dict"):
-            # No LCIA performed yet
-            return
-        if getattr(self, "_mapped_spatial_dict", False):
-            # Already reversed - should be idempotent
-            return False
-        rev_geomapping = {v: k for k, v in geomapping.items()}
-        self.inv_spatial_dict = {
-            rev_geomapping[k]: v for k, v in self.inv_spatial_dict.items()
-        }
-        if hasattr(self, "ia_spatial_dict"):
-            self.ia_spatial_dict = {
-                rev_geomapping[k]: v for k, v in self.ia_spatial_dict.items()
-            }
-        if hasattr(self, "xtable_spatial_dict"):
-            self.xtable_spatial_dict = {
-                rev_geomapping[k]: v for k, v in self.xtable_spatial_dict.items()
-            }
-        self._mapped_spatial_dict = True
+    # def fix_spatial_dictionaries(self):
+    #     """Fix inventory and IA spatial dictionaries."""
+    #     if not hasattr(self, "inv_spatial_dict"):
+    #         # No LCIA performed yet
+    #         return
+    #     if getattr(self, "_mapped_spatial_dict", False):
+    #         # Already reversed - should be idempotent
+    #         return False
+    #     rev_geomapping = {v: k for k, v in geomapping.items()}
+    #     self.inv_spatial_dict = {
+    #         rev_geomapping[k]: v for k, v in self.inv_spatial_dict.items()
+    #     }
+    #     if hasattr(self, "ia_spatial_dict"):
+    #         self.ia_spatial_dict = {
+    #             rev_geomapping[k]: v for k, v in self.ia_spatial_dict.items()
+    #         }
+    #     if hasattr(self, "xtable_spatial_dict"):
+    #         self.xtable_spatial_dict = {
+    #             rev_geomapping[k]: v for k, v in self.xtable_spatial_dict.items()
+    #         }
+    #     self._mapped_spatial_dict = True
 
     def _results_new_scale(self, matrix, flow):
-        self.fix_spatial_dictionaries()
+        # self.fix_spatial_dictionaries()
         if flow is not None:
             try:
                 row_index = self.biosphere_dict[flow]

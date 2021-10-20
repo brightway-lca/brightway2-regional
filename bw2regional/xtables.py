@@ -7,6 +7,7 @@ from .validate import xtable_validator
 class ExtensionTable(Loading):
     _metadata = extension_tables
     validator = xtable_validator
+    matrix = "xtable_matrix"
 
     @property
     def filename(self):
@@ -18,9 +19,8 @@ class ExtensionTable(Loading):
     def import_from_map(self):
         geocollection = extension_tables[self.name].get("geocollection")
         xt_field = extension_tables[self.name].get("xt_field")
-        band = extension_tables[self.name].get("band")
-
-        # TODO: Handle raster bands here
+        # TODO: Handle raster band
+        # band = extension_tables[self.name].get("band")
 
         if not geocollection:
             raise ValueError("No geocollection for this extension table")

@@ -3,7 +3,6 @@ import json
 import os
 import warnings
 
-import rower
 from bw2data.utils import download_file
 
 from . import Topography, cg, geocollections, topocollections
@@ -252,7 +251,7 @@ COUNTRIES = {
 }
 
 
-def create_world():
+def create_world_collections():
     print("Downloading and creating 'world' geocollection with countries")
     geocollections["world"] = {
         "filepath": download_file(
@@ -269,7 +268,8 @@ def create_world():
     Topography("world").write(topo_data)
 
 
-def create_ecoinvent():
+# TODO: Update for ecoinvent 3.7 & 3.8
+def create_ecoinvent_collections():
     print(
         "Downloading and creating 'ecoinvent' geocollection with ecoinvent-specific locations"
     )
@@ -294,7 +294,7 @@ def create_ecoinvent():
     Topography("ecoinvent").write(topo_data)
 
 
-def create_RoW():
+def create_restofworlds_collections():
     filepath = os.path.join(
         rower.DATAPATH, "ecoinvent generic", "rows-topomapping.json.bz2"
     )
@@ -316,20 +316,3 @@ def create_RoW():
     }
     topo_data = {("RoW", k): v for k, v in rower_data["data"]}
     Topography("RoW").write(topo_data)
-
-
-def bw2regionalsetup(*args, overwrite=False):
-    """Import base data needed for regionalization.
-
-    Inputs (``args``) are geocollections to install, given individually. Default is ``ecoinvent``, ``RoW``, and ``world``.
-
-    ``overwrite`` controls whether existing geocollections will be replaced."""
-    available_geocollections = {"ecoinvent", "world", "RoW"}
-    mapping = {"world": create_world, "ecoinvent": create_ecoinvent, "RoW": create_RoW}
-    for gc in args or available_geocollections:
-        try:
-            func = mapping[gc]
-            if gc not in geocollections or overwrite:
-                func()
-        except KeyError:
-            raise ValueError("{} not recognized geocollection".format(gc))

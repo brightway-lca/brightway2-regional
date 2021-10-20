@@ -1,5 +1,4 @@
-from bw2calc.matrices import MatrixBuilder
-from bw2data import Method, methods
+from bw2data import methods
 
 from ..errors import GeocollectionsMismatch
 from .base_class import RegionalizationBase
@@ -31,38 +30,9 @@ class OneSpatialScaleLCA(RegionalizationBase):
                 )
             )
 
-    def get_regionalized_characterization_matrix(self, builder=MatrixBuilder):
-        """Get regionalized characterization matrix, **R**, which gives location- and biosphere flow-specific characterization factors. Rows are inventory spatial units, and columns are biosphere flows.
-
-        Uses ``self.inv_spatial_dict``, ``self._biosphere_dict`` and ``self.method``.
-
-        Returns:
-            * ``reg_cf_params``: Parameter array with row/col of IA locations/biosphere flows
-            * ``reg_cf_matrix``: The matrix **R**
-
-        """
-        reg_cf_params, _, _, reg_cf_matrix = builder.build(
-            paths=[Method(self.method).filepath_processed()],
-            data_label="amount",
-            row_id_label="geo",
-            row_index_label="row",
-            col_id_label="flow",
-            col_index_label="col",
-            row_dict=self.inv_spatial_dict,
-            col_dict=self._biosphere_dict,
-        )
-        return (reg_cf_params, reg_cf_matrix)
-
-    def load_lcia_data(self, builder=MatrixBuilder):
-        (
-            self.inv_mapping_params,
-            self.inv_spatial_dict,
-            self.inv_mapping_matrix,
-        ) = self.get_inventory_mapping_matrix(builder)
-        (
-            self.reg_cf_params,
-            self.reg_cf_matrix,
-        ) = self.get_regionalized_characterization_matrix(builder)
+    def load_lcia_data(self):
+        self.create_inventory_mapping_matrix()
+        self.create_regionalized_characterization_matrix(self.inv_mapping_mm.col_mapper)
 
     def lcia_calculation(self):
         """Do regionalized LCA calculation.

@@ -6,7 +6,7 @@ from bw2regional.tests import BW2RegionalTest
 
 
 class IntersectionTestCase(BW2RegionalTest):
-    def test_add_mappings(self):
+    def test_add_geomappings(self):
         inter = Intersection(("foo", "bar"))
         inter.register()
         self.assertFalse(("foo", "bar") in geomapping)

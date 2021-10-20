@@ -139,7 +139,7 @@ Intersections
 
 Data for the geographic transform matrix **G** is stored in Intersection objects. In Brightway2, areal intersection data is represented by the ``Intersection`` object, and the metadata store is ``intersections``. Each combination of geocollections should be a separate ``Intersection`` object.
 
-Intersection data is calculated using `pandarus <https://bitbucket.org/cmutel/pandarus>`_. Conversion from the pandarus data format  is done with the utility function :ref:`load-from-pandarus`.
+Intersection data is calculated using `pandarus <https://github.com/cmutel/pandarus>`_. Conversion from the pandarus data format  is done with the utility function :ref:`load-from-pandarus`.
 
 Metadata
 --------

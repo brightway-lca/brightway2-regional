@@ -8,7 +8,7 @@ from bw2regional.tests import BW2RegionalTest
 
 
 class LoadingTestCase(BW2RegionalTest):
-    def test_add_mappings(self):
+    def test_add_geomappings(self):
         lg = Loading("some loadings")
         lg.register()
         self.assertFalse(("foo", "bar") in geomapping)
@@ -32,7 +32,7 @@ class LoadingTestCase(BW2RegionalTest):
         r = (
             s.replace(" ", "-")
             + "."
-            + hashlib.md5(s.encode("utf-8")).hexdigest()
+            + hashlib.md5(s.encode("utf-8")).hexdigest()[:8]
             + ".loading"
         )
         lg = Loading("some loading with a crazy name")

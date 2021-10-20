@@ -1,5 +1,4 @@
 import numpy as np
-from bw2calc.matrices import MatrixBuilder
 from bw2data import methods
 from scipy.sparse import diags
 
@@ -29,21 +28,10 @@ class TwoSpatialScalesLCA(RegionalizationBase):
         self.inventory_geocollections = self.get_inventory_geocollections()
         self.ia_geocollections = self.get_ia_geocollections()
 
-    def load_lcia_data(self, builder=MatrixBuilder):
-        (
-            self.inv_mapping_params,
-            self.inv_spatial_dict,
-            self.inv_mapping_matrix,
-        ) = self.get_inventory_mapping_matrix(builder)
-        (
-            self.reg_cf_params,
-            self.ia_spatial_dict,
-            self.reg_cf_matrix,
-        ) = self.get_regionalized_characterization_matrix(builder)
-        (
-            self.geo_transform_params,
-            self.geo_transform_matrix,
-        ) = self.get_geo_transform_matrix(builder)
+    def load_lcia_data(self):
+        self.create_inventory_mapping_matrix()
+        self.create_regionalized_characterization_matrix()
+        self.create_geo_transform_matrix()
         self.normalization_matrix = self.build_normalization_matrix()
 
     def build_normalization_matrix(self):

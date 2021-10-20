@@ -1,7 +1,7 @@
 Regionalization in Brightway2
 =============================
 
-``bw2regional`` is a separate library that extends the `Brightway LCA framework <https://brightwaylca.org>`__ to do regionalized LCA calculations.
+``bw2regional`` is a separate library that extends the `Brightway LCA framework <https://brightway.dev>`__ to do regionalized LCA calculations.
 
 .. image:: images/mnglr.png
     :align: center
@@ -17,7 +17,7 @@ bw2regional supports the following regionalization calculations:
 
 In addition to making regionalized LCA calculations, maps of regionalized impact can be exported from methods 2-4.
 
-Each separate spatial scale is stored as a ``geocollection``. The relationships between spatial scales (i.e. how much area of unit *a* in spatial scale *1* intersects unit *b* in spatial scale *2*) is stored as an ``Intersection``. Areal intersection calculations are done using the separate utility `pandarus <https://bitbucket.org/cmutel/pandarus>`__, a library for matching spatial data sets and calculating their mutual intersected areas. Impact assessment methods store characterization factors per biosphere flow and spatial unit. Each organization unit is described in more detail below.
+Each separate spatial scale is stored as a ``geocollection``. The relationships between spatial scales (i.e. how much area of unit *a* in spatial scale *1* intersects unit *b* in spatial scale *2*) is stored as an ``Intersection``. Areal intersection calculations are done using the separate utility `pandarus <https://github.com/cmutel/pandarus>`__, a library for matching spatial data sets and calculating their mutual intersected areas. Impact assessment methods store characterization factors per biosphere flow and spatial unit. Each organization unit is described in more detail below.
 
 ``bw2regional`` is part of a family of software libraries - see :ref:`libraries` for more information.
 
@@ -121,7 +121,7 @@ Development
 
 bw2regional is developed by `Chris Mutel <http://chris.mutel.org/>`_, previously during his work as a postdoctoral assistant in the `Ecological Systems Design group <http://www.ifu.ethz.ch/ESD/index_EN>`__ at ETH Zürich, and currently as a scientist in the `Technology Assessment group <http://www.psi.ch/ta/>`__ at the Paul Scherrer Institute.
 
-Source code is available on `bitbucket <https://bitbucket.org/cmutel/brightway2-regional>`__.
+Source code is available on `bitbucket <https://github.com/brightway-lca/brightway2-regional>`__.
 
 Indices and tables
 ==================

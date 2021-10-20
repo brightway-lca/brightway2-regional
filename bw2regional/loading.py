@@ -1,12 +1,11 @@
 import os
 
 import numpy as np
-from bw2data import geomapping
+from bw2data import geomapping, projects
 from bw2data.data_store import ProcessedDataStore
-from bw2data.utils import MAX_INT_32
 
 from .meta import loadings
-from .utils import get_pandarus_map
+from .utils import get_pandarus_map, create_certain_datapackage
 from .validate import loading_validator
 
 
@@ -15,14 +14,15 @@ class Loading(ProcessedDataStore):
 
     _metadata = loadings
     validator = loading_validator
-    dtype_fields = [(numpy_string("geo"), np.uint32), (numpy_string("row"), np.uint32)]
+    matrix = "loading_matrix"
 
-    def add_mappings(self, data):
+    def add_geomappings(self, data):
         """In theory, this shouldn't do anything, as all spatial units should be in defined by the method."""
         geomapping.add({obj[1] for obj in data})
 
-    def process_data(self, row):
-        return (geomapping[row[1]], MAX_INT_32), row[0]
+    def process(self, **extra_metadata):
+        data = self.load()
+        create_certain_datapackage([(geomapping[line[1]], 0) for line in data], [line[0] for line in data], self, **extra_metadata)
 
     @property
     def filename(self):

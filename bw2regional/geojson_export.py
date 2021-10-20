@@ -5,14 +5,11 @@ from functools import partial
 
 import fiona
 import numpy as np
+from shapely.geometry import shape
 
 from bw2regional import geocollections
 from bw2regional.lca.base_class import RegionalizationBase
 
-try:
-    from shapely.geometry import shape
-except ImportError:
-    shape = None
 
 
 def _generic_exporter(
@@ -98,8 +95,6 @@ as_xt_spatial_scale = partial(
 
 def _hash_feature(feature):
     """Calculate SHA256 hash of feature geometry as WKT"""
-    if shape is None:
-        raise ImportError("Shapely is not installed")
     geom = shape(feature["geometry"])
     return hashlib.sha256(geom.to_wkt().encode("utf-8")).hexdigest()
 

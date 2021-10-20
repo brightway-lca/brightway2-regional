@@ -1,6 +1,8 @@
 import copy
 import os
 import shutil
+from bw_processing import load_datapackage
+from fs.zipfs import ZipFS
 
 import fiona
 import numpy as np
@@ -10,7 +12,6 @@ from scipy import sparse
 
 from .errors import MissingSpatialSourceData, SiteGenericMethod
 from .hashing import sha256
-from .intersection import Intersection
 from .meta import (
     extension_tables,
     geocollections,
@@ -18,6 +19,9 @@ from .meta import (
     loadings,
     topocollections,
 )
+
+from bw_processing import INDICES_DTYPE, clean_datapackage_name, create_datapackage
+from fs.zipfs import ZipFS
 
 
 def filter_fiona_metadata(dct):
@@ -173,6 +177,7 @@ def hash_collection(name):
 
 def create_empty_intersection(name):
     """Shortcut to create Intersection object with no data"""
+    from .intersection import Intersection
     inter = Intersection(name)
     inter.register()
     inter.write([])
@@ -260,3 +265,27 @@ def filter_columns(matrix, col_indices, exclude=True):
         (matrix.data[col_mask], (matrix.row[col_mask], matrix.col[col_mask])),
         matrix.shape,
     ).tocsr()
+
+
+def create_certain_datapackage(indices, data, data_store, **extra_metadata):
+    data_array = np.array(data)
+    indices_array = np.array(indices, dtype=INDICES_DTYPE)
+
+    dp = create_datapackage(
+        fs=ZipFS(str(data_store.filepath_processed()), write=True),
+        name=clean_datapackage_name(str(data_store.name)),
+        sum_intra_duplicates=True,
+        sum_inter_duplicates=False,
+    )
+    dp.add_persistent_vector(
+        matrix=data_store.matrix,
+        name=clean_datapackage_name(str(data_store.name) + " matrix data"),
+        indices_array=indices_array,
+        data_array=data_array,
+        **extra_metadata
+    )
+    dp.finalize_serialization()
+
+
+def dp(fp):
+    return load_datapackage(ZipFS(fp))

@@ -65,12 +65,12 @@ def check_alive(wrapped, instance, args, kwargs):
 
 
 class PandarusRemote(object):
-    """Interaction with `pandarus_remote <https://bitbucket.org/cmutel/pandarus_remote>`__ web service.
+    """Interaction with `pandarus_remote <https://github.com/cmutel/pandarus_remote>`__ web service.
 
-    Default URL is `https://pandarus.brightwaylca.org`."""
+    Default URL is `https://pandarus.brightway.dev`."""
 
     def __init__(self, url=None):
-        self.url = url or "https://pandarus.brightwaylca.org"
+        self.url = url or "https://pandarus.brightway.dev"
         if self.url[-1] == "/":
             self.url = self.url[:-1]
 

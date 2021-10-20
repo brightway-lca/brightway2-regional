@@ -14,7 +14,7 @@ def label_activity_geocollections(name):
     assert name in databases, "{} not found".format(name)
     assert (
         "world" in geocollections
-    ), "Please run `bw2regionalsetup` before this function"
+    ), "Please run `create_world_collections` first"
 
     ecoinvent = (
         {x[1] for x in Topography("ecoinvent").load()}
@@ -30,26 +30,26 @@ def label_activity_geocollections(name):
     if searchable:
         db.make_unsearchable()
 
-    geocollections = set()
+    found_geocollections = set()
 
     locations = {x["location"] for x in db}
     assert "RoW" not in locations, "`RoW` found; use `rower` to label Rest-of-Worlds"
 
     for act in pyprind.prog_bar(db):
         if isinstance(act["location"], tuple):
-            geocollections.add(act["location"][0])
+            found_geocollections.add(act["location"][0])
         elif act["location"] in COUNTRIES:
-            geocollections.add("world")
+            found_geocollections.add("world")
         elif act["location"] == "GLO":
-            geocollections.add("world")
+            found_geocollections.add("world")
         elif act["location"] in RoWs:
             act["location"] = ("RoW", act["location"])
             act.save()
-            geocollections.add("RoW")
+            found_geocollections.add("RoW")
         elif act["location"] in ecoinvent:
             act["location"] = ("ecoinvent", act["location"])
             act.save()
-            geocollections.add("ecoinvent")
+            found_geocollections.add("ecoinvent")
         else:
             warnings.warn(
                 (
@@ -63,5 +63,5 @@ def label_activity_geocollections(name):
     db.process()
 
     db.metadata["regionalized"] = True
-    db.metadata["geocollections"] = sorted(geocollections)
+    db.metadata["geocollections"] = sorted(found_geocollections)
     databases.flush()

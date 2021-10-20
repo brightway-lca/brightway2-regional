@@ -56,11 +56,11 @@ class Topography(DataStore):
     def geocollection(self):
         return self.metadata["geocollection"]
 
-    def add_mappings(self, data):
+    def add_geomappings(self, data):
         geomapping.add(data)
 
     def write(self, data):
         self.metadata["empty"] = False
         self._metadata.flush()
-        self.add_mappings(data)
+        self.add_geomappings(data)
         super(Topography, self).write(data)

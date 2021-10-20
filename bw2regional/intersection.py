@@ -1,13 +1,12 @@
 import copy
 import warnings
 
-import numpy as np
 from bw2data import geomapping
 from bw2data.ia_data_store import ImpactAssessmentDataStore
-from bw2data.utils import MAX_INT_32
 
 from .meta import intersections
 from .validate import intersection_validator
+from .utils import create_certain_datapackage
 
 
 class Intersection(ImpactAssessmentDataStore):
@@ -15,22 +14,14 @@ class Intersection(ImpactAssessmentDataStore):
 
     _metadata = intersections
     validator = intersection_validator
-    dtype_fields = [
-        ("geo_inv", np.uint32),
-        ("geo_ia", np.uint32),
-        ("row", np.uint32),
-        ("col", np.uint32),
-    ]
+    matrix = "intersection_matrix"
 
-    def add_mappings(self, data):
+    def add_geomappings(self, data):
         """Add all geographic units in both geocollections to ``geomapping``, the master location list.
 
         Called automatically when data is written."""
         geomapping.add({x[0] for x in data})
         geomapping.add({x[1] for x in data})
-
-    def process_data(self, row):
-        return (geomapping[row[0]], geomapping[row[1]], MAX_INT_32, MAX_INT_32), row[2]
 
     def create_reversed_intersection(self):
         """Create (B, A) intersection from (A, B)."""
@@ -44,3 +35,7 @@ class Intersection(ImpactAssessmentDataStore):
             new_obj.write(new_data)
 
         return new_obj
+
+    def process(self, **extra_metadata):
+        data = self.load()
+        create_certain_datapackage([(geomapping[line[0]], geomapping[line[1]]) for line in data], [line[2] for line in data], self, **extra_metadata)

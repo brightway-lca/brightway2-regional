@@ -1,6 +1,6 @@
-import os
+from pathlib import Path
 
-from bw2data.serialization import CompoundJSONDict, PickledDict, SerializedDict
+from bw2data.serialization import CompoundJSONDict, SerializedDict
 
 from .hashing import sha256
 
@@ -26,7 +26,7 @@ class Geocollections(SerializedDict):
         from .utils import get_spatial_dataset_kind
 
         if "filepath" in value:
-            assert os.path.isfile(value["filepath"]), "Can't find file at `{}`".format(
+            assert Path(value["filepath"]).is_file(), "Can't find file at `{}`".format(
                 value["filepath"]
             )
             value["sha256"] = sha256(value["filepath"])

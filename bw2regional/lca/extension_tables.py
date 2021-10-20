@@ -1,13 +1,14 @@
 import itertools
 
 import numpy as np
-from bw2calc.matrices import MatrixBuilder
 from scipy.sparse import diags
+import matrix_utils as mu
+from functools import partial
 
 from ..errors import MissingIntersection
 from ..intersection import Intersection
 from ..meta import extension_tables, intersections
-from ..utils import filter_columns, filter_rows
+from ..utils import filter_columns, filter_rows, dp
 from ..xtables import ExtensionTable
 from .base_class import RegionalizationBase
 
@@ -50,7 +51,7 @@ class ExtensionTablesLCA(RegionalizationBase):
         try:
             xtable = kwargs.pop("xtable")
             limitations = kwargs.pop("limitations", {})
-        except:
+        except KeyError:
             raise ValueError("``xtable`` kwarg required")
         assert xtable in extension_tables
         super(ExtensionTablesLCA, self).__init__(*args, **kwargs)
@@ -121,31 +122,34 @@ If you know these intersections are not needed, you can create empty intersectio
             {x for x in intersections if x[1] == gc},
         )
 
-    def build_distribution_matrix(self):
-        params, _, spatial_dict, matrix = MatrixBuilder.build(
-            paths=[
-                Intersection(name).filepath_processed()
+    def create_distribution_matrix(self):
+        """Get distribution matrix, **D**, which provides the area of inventory spatial units in each extension table spatial unit. Rows are inventory spatial units and columns are extension table spatial units."""
+        self.distribution_mm = mu.MappedMatrix(
+            packages=[
+                dp(Intersection(name).filepath_processed())
                 for name in self.inv_xtable_intersections
             ],
-            data_label="amount",
-            row_id_label="geo_inv",
-            row_index_label="row",
-            col_id_label="geo_ia",
-            col_index_label="col",
-            row_dict=self.inv_spatial_dict,
+            matrix="intersection_matrix",
+            use_arrays=self.use_arrays,
+            use_distributions=self.use_distributions,
+            seed_override=self.seed_override,
+            row_mapper=self.inv_mapping_mm.col_mapper,
         )
-        return (params, spatial_dict, matrix)
+        self.distribution_matrix = self.distribution_mm.matrix
+        self.dicts.xtable_spatial = partial(self.distribution_mm.col_mapper.to_dict)
 
-    def load_xtable_matrix(self):
-        params, _, _, matrix = MatrixBuilder.build(
-            paths=[self.xtable.filepath_processed()],
-            data_label="amount",
-            row_id_label="geo",
-            row_index_label="row",
-            row_dict=self.xtable_spatial_dict,
-            one_d=True,
+    def create_xtable_matrix(self):
+        """Diagonal extension table matrix that indicates the extension table density value in each extension table spatial unit."""
+        self.xtable_mm = mu.MappedMatrix(
+            packages=[dp(self.xtable.filepath_processed())],
+            matrix="xtable_matrix",
+            use_arrays=self.use_arrays,
+            use_distributions=self.use_distributions,
+            seed_override=self.seed_override,
+            diagonal=True,
+            row_mapper=self.distribution_mm.col_mapper,
         )
-        return params, matrix
+        self.xtable_matrix = self.xtable_mm.matrix
 
     def build_distribution_normalization_matrix(self):
         r"""Get normalization matrix for inventory-xtable mapping. Normalizes to
@@ -171,62 +175,46 @@ If you know these intersections are not needed, you can create empty intersectio
         vector[mask] = 1 / vector[mask]
         return diags(vector, [0], format="csr", dtype=np.float32)
 
-    def get_geo_transform_matrix(self, builder=MatrixBuilder):
-        geo_transform_params, _, _, geo_transform_matrix = builder.build(
-            paths=[
-                Intersection(name).filepath_processed()
+    def create_geo_transform_matrix(self):
+        self.geo_transform_mm = mu.MappedMatrix(
+            packages=[
+                dp(Intersection(name).filepath_processed())
                 for name in self.xtable_ia_intersections
             ],
-            data_label="amount",
-            row_id_label="geo_inv",
-            row_index_label="row",
-            col_id_label="geo_ia",
-            col_index_label="col",
-            row_dict=self.xtable_spatial_dict,
-            col_dict=self.ia_spatial_dict,
+            matrix="intersection_matrix",
+            use_arrays=self.use_arrays,
+            use_distributions=self.use_distributions,
+            seed_override=self.seed_override,
+            col_mapper=self.reg_cf_matrix.row_mapper,
+            row_mapper=self.distribution_mm.col_mapper,
         )
-        return geo_transform_params, geo_transform_matrix
+        self.geo_transform_matrix = self.geo_transform_mm.matrix
 
-    def load_lcia_data(self, builder=MatrixBuilder):
-        (
-            self.inv_mapping_params,
-            self.inv_spatial_dict,
-            self.inv_mapping_matrix,
-        ) = self.get_inventory_mapping_matrix()
+    def load_lcia_data(self):
+        self.create_inventory_mapping_matrix()
 
         if "activities" in self.limitations:
-            self.inv_mapping_matrix = filter_rows(
+            self.inv_mapping_matrix = self.inv_mapping_mm.matrix = filter_rows(
                 self.inv_mapping_matrix,
-                [self.activity_dict[x] for x in self.limitations["activities"]],
+                [self.dicts.activity[x] for x in self.limitations["activities"]],
                 exclude=self.limitations.get("activities mode", None) == "exclude",
             )
 
-        (
-            self.distribution_params,
-            self.xtable_spatial_dict,
-            self.distribution_matrix,
-        ) = self.build_distribution_matrix()
-        self.xtable_params, self.xtable_matrix = self.load_xtable_matrix()
+        self.create_distribution_matrix()
+        self.create_xtable_matrix()
         self.distribution_normalization_matrix = (
             self.build_distribution_normalization_matrix()
         )
-        (
-            self.reg_cf_params,
-            self.ia_spatial_dict,
-            self.reg_cf_matrix,
-        ) = self.get_regionalized_characterization_matrix(builder)
+        self.create_regionalized_characterization_matrix()
 
         if "flows" in self.limitations:
-            self.reg_cf_matrix = filter_columns(
+            self.reg_cf_matrix = self.reg_cf_mm.matrix = filter_columns(
                 self.reg_cf_matrix,
-                [self.biosphere_dict[x] for x in self.limitations["flows"]],
+                [self.dicts.biosphere[x] for x in self.limitations["flows"]],
                 exclude=self.limitations.get("flows mode", None) == "exclude",
             )
 
-        (
-            self.geo_transform_params,
-            self.geo_transform_matrix,
-        ) = self.get_geo_transform_matrix(builder)
+        self.create_geo_transform_matrix()
         self.geo_transform_normalization_matrix = (
             self.build_geo_transform_normalization_matrix()
         )
