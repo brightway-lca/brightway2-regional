@@ -5,7 +5,7 @@ from bw2data import geomapping, projects
 from bw2data.data_store import ProcessedDataStore
 
 from .meta import loadings
-from .utils import create_certain_datapackage, get_pandarus_map
+from .utils import create_certain_datapackage
 from .validate import loading_validator
 
 
