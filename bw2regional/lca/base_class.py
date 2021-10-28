@@ -1,11 +1,11 @@
 import itertools
 from functools import partial
 
+import matrix_utils as mu
 import numpy as np
 from bw2calc.lca import LCA
 from bw2data import Database, Method, databases, methods
 from scipy.sparse import csr_matrix
-import matrix_utils as mu
 
 from ..errors import MissingIntersection, SiteGenericMethod, UnprocessedDatabase
 from ..intersection import Intersection

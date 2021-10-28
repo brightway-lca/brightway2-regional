@@ -28,7 +28,7 @@ __all__ = (
     "Topography",
     "TwoSpatialScalesLCA",
     "TwoSpatialScalesWithGenericLoadingLCA",
-    'write_intersection',
+    "write_intersection",
 )
 
 from .version import version as __version__
@@ -60,6 +60,7 @@ from .lca import (
     TwoSpatialScalesLCA,
     TwoSpatialScalesWithGenericLoadingLCA,
 )
+
 # from .pandarus import import_from_pandarus
 # from .pandarus_remote import PandarusRemote, remote
 from .utils import (
@@ -70,7 +71,11 @@ from .utils import (
     reset_all_geo,
     reset_geo_meta,
 )
-from .base_data import create_ecoinvent_collections, create_world_collections, create_restofworlds_collections
+from .base_data import (
+    create_ecoinvent_collections,
+    create_world_collections,
+    create_restofworlds_collections,
+)
 
 config.metadata.extend(
     [extension_tables, geocollections, topocollections, intersections, loadings]

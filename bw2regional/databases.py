@@ -12,9 +12,7 @@ def label_activity_geocollections(name):
 
     ``name`` is the name of an existing LCI database."""
     assert name in databases, "{} not found".format(name)
-    assert (
-        "world" in geocollections
-    ), "Please run `create_world_collections` first"
+    assert "world" in geocollections, "Please run `create_world_collections` first"
 
     ecoinvent = (
         {x[1] for x in Topography("ecoinvent").load()}

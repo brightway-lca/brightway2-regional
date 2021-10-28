@@ -5,7 +5,7 @@ from bw2data import geomapping, projects
 from bw2data.data_store import ProcessedDataStore
 
 from .meta import loadings
-from .utils import get_pandarus_map, create_certain_datapackage
+from .utils import create_certain_datapackage, get_pandarus_map
 from .validate import loading_validator
 
 
@@ -22,7 +22,12 @@ class Loading(ProcessedDataStore):
 
     def process(self, **extra_metadata):
         data = self.load()
-        create_certain_datapackage([(geomapping[line[1]], 0) for line in data], [line[0] for line in data], self, **extra_metadata)
+        create_certain_datapackage(
+            [(geomapping[line[1]], 0) for line in data],
+            [line[0] for line in data],
+            self,
+            **extra_metadata
+        )
 
     @property
     def filename(self):

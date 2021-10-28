@@ -1,14 +1,14 @@
 import itertools
+from functools import partial
 
+import matrix_utils as mu
 import numpy as np
 from scipy.sparse import diags
-import matrix_utils as mu
-from functools import partial
 
 from ..errors import MissingIntersection
 from ..intersection import Intersection
 from ..meta import extension_tables, intersections
-from ..utils import filter_columns, filter_rows, dp
+from ..utils import dp, filter_columns, filter_rows
 from ..xtables import ExtensionTable
 from .base_class import RegionalizationBase
 

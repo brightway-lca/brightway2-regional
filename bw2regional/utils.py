@@ -1,13 +1,19 @@
 import copy
 import os
 import shutil
-from bw_processing import load_datapackage
-from fs.zipfs import ZipFS
 
 import fiona
+import geopandas as gp
 import numpy as np
 import rasterio
 from bw2data import Method, methods, projects
+from bw_processing import (
+    INDICES_DTYPE,
+    clean_datapackage_name,
+    create_datapackage,
+    load_datapackage,
+)
+from fs.zipfs import ZipFS
 from scipy import sparse
 
 from .errors import MissingSpatialSourceData, SiteGenericMethod
@@ -20,10 +26,6 @@ from .meta import (
     topocollections,
 )
 
-from bw_processing import INDICES_DTYPE, clean_datapackage_name, create_datapackage
-from fs.zipfs import ZipFS
-import geopandas as gp
-
 
 def filter_fiona_metadata(dct):
     """Include only valid Fiona keywords for opening a feature collection"""
@@ -31,7 +33,14 @@ def filter_fiona_metadata(dct):
     return {k: v for k, v in dct.items() if k in valid_keys}
 
 
-def import_regionalized_cfs(geocollection, method_tuple, mapping, scaling_factor=1, global_cfs=None, nan_value=None):
+def import_regionalized_cfs(
+    geocollection,
+    method_tuple,
+    mapping,
+    scaling_factor=1,
+    global_cfs=None,
+    nan_value=None,
+):
     """Import data from a vector geospatial dataset into a ``Method``.
 
     A ``Method`` can have both site-generic and regionalized characterization factors.
@@ -53,15 +62,16 @@ def import_regionalized_cfs(geocollection, method_tuple, mapping, scaling_factor
         * *nan_value*: Sentinel value for missing values if ``NaN`` is not used directly.
 
     """
-    assert (geocollection in geocollections
-            and geocollections[geocollection].get('kind') == 'vector'
-            and "field" in geocollections[geocollection]
-           )
-    gdf = gp.read_file(geocollections[geocollection]['filepath'])
+    assert (
+        geocollection in geocollections
+        and geocollections[geocollection].get("kind") == "vector"
+        and "field" in geocollections[geocollection]
+    )
+    gdf = gp.read_file(geocollections[geocollection]["filepath"])
     id_label = geocollections[geocollection]["field"]
 
     method = Method(method_tuple)
-    method.metadata['geocollections'] = [geocollection]
+    method.metadata["geocollections"] = [geocollection]
     methods.flush()
 
     data = []
@@ -75,11 +85,13 @@ def import_regionalized_cfs(geocollection, method_tuple, mapping, scaling_factor
                 continue
             else:
                 for flow in biosphere_flows:
-                    data.append((
-                        flow,
-                        float(value) * scaling_factor,
-                        (geocollection, feature[id_label])
-                    ))
+                    data.append(
+                        (
+                            flow,
+                            float(value) * scaling_factor,
+                            (geocollection, feature[id_label]),
+                        )
+                    )
 
     method.write(data)
 
@@ -154,6 +166,7 @@ def hash_collection(name):
 def create_empty_intersection(name):
     """Shortcut to create Intersection object with no data"""
     from .intersection import Intersection
+
     inter = Intersection(name)
     inter.register()
     inter.write([])

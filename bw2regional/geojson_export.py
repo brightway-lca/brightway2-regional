@@ -11,7 +11,6 @@ from bw2regional import geocollections
 from bw2regional.lca.base_class import RegionalizationBase
 
 
-
 def _generic_exporter(
     lca,
     geocollection,

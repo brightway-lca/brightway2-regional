@@ -1,13 +1,13 @@
 import copy
 import warnings
 
+import geopandas as gp
 from bw2data import geomapping
 from bw2data.ia_data_store import ImpactAssessmentDataStore
-import geopandas as gp
 
-from .meta import intersections, geocollections
-from .validate import intersection_validator
+from .meta import geocollections, intersections
 from .utils import create_certain_datapackage
+from .validate import intersection_validator
 
 
 class Intersection(ImpactAssessmentDataStore):
@@ -39,7 +39,12 @@ class Intersection(ImpactAssessmentDataStore):
 
     def process(self, **extra_metadata):
         data = self.load()
-        create_certain_datapackage([(geomapping[line[0]], geomapping[line[1]]) for line in data], [line[2] for line in data], self, **extra_metadata)
+        create_certain_datapackage(
+            [(geomapping[line[0]], geomapping[line[1]]) for line in data],
+            [line[2] for line in data],
+            self,
+            **extra_metadata
+        )
 
 
 def write_intersection(first, second, overwrite=False):
@@ -48,14 +53,15 @@ def write_intersection(first, second, overwrite=False):
         raise ValueError("Intersection already exists")
 
     for gc in (first, second):
-        assert (gc in geocollections
-            and geocollections[gc].get('kind') == 'vector'
+        assert (
+            gc in geocollections
+            and geocollections[gc].get("kind") == "vector"
             and "field" in geocollections[gc]
-           )
-    assert geocollections[first]['filepath'] != geocollections[second]['filepath']
+        )
+    assert geocollections[first]["filepath"] != geocollections[second]["filepath"]
 
-    df1 = gp.read_file(geocollections[first]['filepath'])
-    df2 = gp.read_file(geocollections[second]['filepath'])
+    df1 = gp.read_file(geocollections[first]["filepath"])
+    df2 = gp.read_file(geocollections[second]["filepath"])
     id1 = geocollections[first]["field"]
     id2 = geocollections[second]["field"]
 
