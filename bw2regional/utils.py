@@ -22,6 +22,7 @@ from .meta import (
 
 from bw_processing import INDICES_DTYPE, clean_datapackage_name, create_datapackage
 from fs.zipfs import ZipFS
+import geopandas as gp
 
 
 def filter_fiona_metadata(dct):
@@ -30,125 +31,100 @@ def filter_fiona_metadata(dct):
     return {k: v for k, v in dct.items() if k in valid_keys}
 
 
-def import_regionalized_cfs(
-    geocollection, method, mapping, overwrite=True, global_cfs=None, scaling_factor=1
-):
-    """Import data from a geospatial dataset (i.e. raster or vector data) into a ``Method``.
+def import_regionalized_cfs(geocollection, method_tuple, mapping, scaling_factor=1, global_cfs=None, nan_value=None):
+    """Import data from a vector geospatial dataset into a ``Method``.
 
     A ``Method`` can have both site-generic and regionalized characterization factors.
 
-    The ``mapping`` defines which field (vector) or band (raster) maps to which biosphere flows. Some geocollections may only define regionalized chracterization factors for a single biosphere flow, but it is much more common to have each field or band map to multiple biosphere flows. Therefore, mapping should be defined as:
+    The ``mapping`` defines which field (vector) maps to which biosphere flows. Some geocollections may only define regionalized chracterization factors for a single biosphere flow, but it is much more common to have each field or band map to multiple biosphere flows. Therefore, mapping should be defined as:
 
     .. code-block:: python
 
         {
-            field name (str) or raster band (int): [list of biosphere flows (tuples)]
+            field name (str): [list of biosphere flows (tuples)]
         }
 
     Args:
         * *geocollection*: A ``geocollection`` name.
-        * *method*: A ``Method`` instance (not the identifying tuple).
+        * *method_tuple*: A method tuple.
         * *mapping*: Mapping from fields or bands to biosphere flows. See above.
-        * *overwrite*: Boolean. Overwrite existing characterization factors. Default is ``True``. Set to ``False`` if ``method`` already has site-generic characterization factors.
-        * *global_cfs*: An optional list of CFs to add when writing the method.
         * *scaling_factor*: Optional. Rescale the values in the spatial data source.
+        * *global_cfs*: An optional list of CFs to add when writing the method.
+        * *nan_value*: Sentinel value for missing values if ``NaN`` is not used directly.
 
     """
-    try:
-        from pandarus import Map
-    except:
-        raise ImportError("`pandarus` is required for this function")
-    if not isinstance(method, Method):
-        raise TypeError(
-            "Must pass bw2data Method instance (got %s: %s" % (type(method), method)
-        )
-    assert geocollection in geocollections
+    assert (geocollection in geocollections
+            and geocollections[geocollection].get('kind') == 'vector'
+            and "field" in geocollections[geocollection]
+           )
+    gdf = gp.read_file(geocollections[geocollection]['filepath'])
+    id_label = geocollections[geocollection]["field"]
 
-    if geocollections[geocollection]["kind"] != "vector":
-        raise ValueError("Geocollection must be a vector")
+    method = Method(method_tuple)
+    method.metadata['geocollections'] = [geocollection]
+    methods.flush()
 
-    if global_cfs is None:
-        global_cfs = []
+    data = []
+    if global_cfs:
+        data.extend(global_cfs)
 
-    metadata = copy.deepcopy(method.metadata)
-    metadata.update(geocollections[geocollection])
+    for index, feature in gdf.iterrows():
+        for field_label, biosphere_flows in mapping.items():
+            value = feature[field_label]
+            if value is None or value == nan_value or np.isnan(value):
+                continue
+            else:
+                for flow in biosphere_flows:
+                    data.append((
+                        flow,
+                        float(value) * scaling_factor,
+                        (geocollection, feature[id_label])
+                    ))
 
-    if overwrite:
-        data = []
-    else:
-        data = method.load()
-
-    map_obj = Map(metadata.pop("filepath"), **filter_fiona_metadata(metadata))
-
-    id_field = geocollections[geocollection].get("field")
-    if not id_field:
-        raise ValueError(
-            "Geocollection must specify ``field`` field name for unique feature ids"
-        )
-
-    for feature in map_obj:
-        for field in mapping:
-            for flow in mapping[field]:
-                data.append(
-                    (
-                        flow,  # Biosphere flow
-                        float(feature["properties"][field])
-                        * scaling_factor,  # CF value
-                        (
-                            geocollection,
-                            feature["properties"][id_field],
-                        ),  # Spatial unit
-                    )
-                )
-
-    method.write(data + global_cfs)
-
-    if overwrite:
-        methods[method.name]["geocollections"] = [geocollection]
-        methods.flush()
+    method.write(data)
 
 
-def get_pandarus_map(geocollection):
-    try:
-        from pandarus import Map
-    except:
-        raise ImportError("`pandarus` is required for this function")
-    if geocollection not in geocollections:
-        raise ValueError("Geocollection %s not registered" % geocollection)
-    geocollection = geocollections[geocollection]
-    if not geocollection.get("filepath"):
-        raise MissingSpatialSourceData("No filepath given for geocollection")
-    metadata = {
-        k: v for k, v in geocollection.items() if v is not None and k != "filepath"
-    }
-    return Map(geocollection["filepath"], **metadata)
+# def get_pandarus_map(geocollection):
+#     try:
+#         from pandarus import Map
+#     except:
+#         raise ImportError("`pandarus` is required for this function")
+#     if geocollection not in geocollections:
+#         raise ValueError("Geocollection %s not registered" % geocollection)
+#     geocollection = geocollections[geocollection]
+#     if not geocollection.get("filepath"):
+#         raise MissingSpatialSourceData("No filepath given for geocollection")
+#     metadata = {
+#         k: v for k, v in geocollection.items() if v is not None and k != "filepath"
+#     }
+#     return Map(geocollection["filepath"], **metadata)
 
 
-def get_pandarus_map_for_method(method, geocollection=None):
-    try:
-        from pandarus import Map
-    except:
-        raise ImportError("`pandarus` is required for this function")
-    if not methods[method].get("geocollections", []):
-        raise SiteGenericMethod
-    elif len(methods[method]["geocollections"]) > 1 and geocollection is None:
-        raise ValueError("Must specify geocollection for this LCIA method")
-    assert method in methods, "Unknown LCIA method"
-    method_data = methods[method]
-    geocollection = geocollections[
-        geocollection or methods[method]["geocollections"][0]
-    ]
-    if not geocollection.get("filepath"):
-        raise MissingSpatialSourceData("No filepath given for geocollection")
-    metadata = {
-        "band": method_data.get("band"),
-        "layer": geocollection.get("layer"),
-        "field": geocollection.get("field"),
-        "vfs": geocollection.get("vfs"),
-        "encoding": geocollection.get("encoding"),
-    }
-    metadata = {k: v for k, v in metadata.items() if v is not None}
-    return Map(geocollection["filepath"], **metadata)
+# def get_pandarus_map_for_method(method, geocollection=None):
+#     try:
+#         from pandarus import Map
+#     except:
+#         raise ImportError("`pandarus` is required for this function")
+#     if not methods[method].get("geocollections", []):
+#         raise SiteGenericMethod
+#     elif len(methods[method]["geocollections"]) > 1 and geocollection is None:
+#         raise ValueError("Must specify geocollection for this LCIA method")
+#     assert method in methods, "Unknown LCIA method"
+#     method_data = methods[method]
+#     geocollection = geocollections[
+#         geocollection or methods[method]["geocollections"][0]
+#     ]
+#     if not geocollection.get("filepath"):
+#         raise MissingSpatialSourceData("No filepath given for geocollection")
+#     metadata = {
+#         "band": method_data.get("band"),
+#         "layer": geocollection.get("layer"),
+#         "field": geocollection.get("field"),
+#         "vfs": geocollection.get("vfs"),
+#         "encoding": geocollection.get("encoding"),
+#     }
+#     metadata = {k: v for k, v in metadata.items() if v is not None}
+#     return Map(geocollection["filepath"], **metadata)
 
 
 def hash_collection(name):

@@ -1,8 +1,7 @@
 bw2calc>=2.0.dev2
 bw2data>=4.0.dev7
-Cython
 numpy>=1.18
-pandarus>=1.0.RC1
+geopandas
 matrix_utils>=0.1.4
 rasterio
 requests

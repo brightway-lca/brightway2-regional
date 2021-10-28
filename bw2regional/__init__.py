@@ -11,7 +11,7 @@ __all__ = (
     "geocollections",
     "get_spatial_dataset_kind",
     "hash_collection",
-    "import_from_pandarus",
+    # "import_from_pandarus",
     "import_regionalized_cfs",
     "Intersection",
     "intersections",
@@ -19,8 +19,8 @@ __all__ = (
     "Loading",
     "loadings",
     "OneSpatialScaleLCA",
-    "PandarusRemote",
-    "remote",
+    # "PandarusRemote",
+    # "remote",
     "reset_all_geo",
     "reset_geo_meta",
     "sha256",
@@ -28,6 +28,7 @@ __all__ = (
     "Topography",
     "TwoSpatialScalesLCA",
     "TwoSpatialScalesWithGenericLoadingLCA",
+    'write_intersection',
 )
 
 from .version import version as __version__
@@ -39,7 +40,6 @@ cg = ConstructiveGeometries()
 from bw2data import config
 
 from .topography import Topography
-from .intersection import Intersection
 from .loading import Loading
 from .meta import (
     extension_tables,
@@ -48,6 +48,7 @@ from .meta import (
     loadings,
     topocollections,
 )
+from .intersection import Intersection, write_intersection
 from .xtables import ExtensionTable
 
 from .databases import label_activity_geocollections
@@ -59,8 +60,8 @@ from .lca import (
     TwoSpatialScalesLCA,
     TwoSpatialScalesWithGenericLoadingLCA,
 )
-from .pandarus import import_from_pandarus
-from .pandarus_remote import PandarusRemote, remote
+# from .pandarus import import_from_pandarus
+# from .pandarus_remote import PandarusRemote, remote
 from .utils import (
     create_empty_intersection,
     get_spatial_dataset_kind,
