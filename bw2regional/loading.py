@@ -1,7 +1,6 @@
 import os
 
-import numpy as np
-from bw2data import geomapping, projects
+from bw2data import geomapping
 from bw2data.data_store import ProcessedDataStore
 
 from .meta import loadings
