@@ -11,7 +11,7 @@ __all__ = (
     "geocollections",
     "get_spatial_dataset_kind",
     "hash_collection",
-    # "import_from_pandarus",
+    "import_from_pandarus",
     "import_regionalized_cfs",
     "Intersection",
     "intersections",
@@ -20,7 +20,7 @@ __all__ = (
     "loadings",
     "OneSpatialScaleLCA",
     # "PandarusRemote",
-    # "remote",
+    "remote",
     "reset_all_geo",
     "reset_geo_meta",
     "sha256",
@@ -61,8 +61,8 @@ from .lca import (
     TwoSpatialScalesWithGenericLoadingLCA,
 )
 
-# from .pandarus import import_from_pandarus
-# from .pandarus_remote import PandarusRemote, remote
+from .pandarus import import_from_pandarus
+from .pandarus_remote import remote
 from .utils import (
     create_empty_intersection,
     get_spatial_dataset_kind,
