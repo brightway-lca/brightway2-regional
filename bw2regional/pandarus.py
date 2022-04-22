@@ -1,9 +1,8 @@
 import os
-import pickle
 
 import numpy as np
 import pandas as pd
-from bw2data import JsonWrapper, geomapping, projects
+from bw2data import JsonWrapper, geomapping
 
 from . import (
     ExtensionTable,

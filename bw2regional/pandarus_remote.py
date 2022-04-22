@@ -57,6 +57,16 @@ class PendingJob(object):
             print("\nJob ended with status '{}'".format(self.status))
 
 
+def run_job(job):
+    """Handler that blocks until job is finished."""
+    job.poll(interval=2)
+    if job.status != "finished":
+        raise ValueError(
+            "Calculation job finished with status '{}'".format(job.status)
+        )
+
+
+
 @wrapt.decorator
 def check_alive(wrapped, instance, args, kwargs):
     if not instance.alive:

@@ -29,6 +29,7 @@ __all__ = (
     "TwoSpatialScalesLCA",
     "TwoSpatialScalesWithGenericLoadingLCA",
     "write_intersection",
+    "raster_as_extension_table",
 )
 
 from .version import version as __version__
@@ -76,6 +77,7 @@ from .base_data import (
     create_world_collections,
     create_restofworlds_collections,
 )
+from .gis_tasks import raster_as_extension_table
 
 config.metadata.extend(
     [extension_tables, geocollections, topocollections, intersections, loadings]
