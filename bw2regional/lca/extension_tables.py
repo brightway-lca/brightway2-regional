@@ -185,7 +185,7 @@ If you know these intersections are not needed, you can create empty intersectio
             use_arrays=self.use_arrays,
             use_distributions=self.use_distributions,
             seed_override=self.seed_override,
-            col_mapper=self.reg_cf_matrix.row_mapper,
+            col_mapper=self.reg_cf_mm.row_mapper,
             row_mapper=self.distribution_mm.col_mapper,
         )
         self.geo_transform_matrix = self.geo_transform_mm.matrix
