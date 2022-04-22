@@ -1,5 +1,6 @@
 import itertools
 from functools import partial
+import warnings
 
 import matrix_utils as mu
 import numpy as np
@@ -194,6 +195,9 @@ If you know these intersections are not needed, you can create empty intersectio
         self.create_inventory_mapping_matrix()
 
         if "activities" in self.limitations:
+            if not self.limitations["activities"]:
+                warnings.warn("Restricting activities, but `limitations['activities']` is empty. Results may be zero.")
+
             self.inv_mapping_matrix = self.inv_mapping_mm.matrix = filter_rows(
                 self.inv_mapping_matrix,
                 [self.dicts.activity[x] for x in self.limitations["activities"]],
@@ -208,6 +212,9 @@ If you know these intersections are not needed, you can create empty intersectio
         self.create_regionalized_characterization_matrix()
 
         if "flows" in self.limitations:
+            if not self.limitations["flows"]:
+                warnings.warn("Restricting flows, but `limitations['flows']` is empty. Results may be zero.")
+
             self.reg_cf_matrix = self.reg_cf_mm.matrix = filter_columns(
                 self.reg_cf_matrix,
                 [self.dicts.biosphere[x] for x in self.limitations["flows"]],
