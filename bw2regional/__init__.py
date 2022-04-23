@@ -34,6 +34,10 @@ __all__ = (
 
 from .version import version as __version__
 
+# ignore future warning from pandas that we can't fix
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 from constructive_geometries import ConstructiveGeometries
 
 cg = ConstructiveGeometries()
