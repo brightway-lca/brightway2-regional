@@ -1,6 +1,11 @@
+## 0.6.DEV3 (2022-04-23)
+
+* Added GeoDataframe exports to all LCA classes
+* Fix matrix reconstruction on iteration
+
 ## 0.6.DEV2 (2022-04-22)
 
-* Add ability to calculate intersections with geopandas instead of pandarus remote server
+* Add ability to calculate intersections with geopandas and pandarus, in addition to pandarus remote server
 * Switch to Brightway 2.5 datapackages
 
 ## 0.6.DEV1 (2021-10-20)
