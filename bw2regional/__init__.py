@@ -14,12 +14,13 @@ __all__ = (
     "import_from_pandarus",
     "import_regionalized_cfs",
     "Intersection",
+    "calculate_intersection",
     "intersections",
     "label_activity_geocollections",
     "Loading",
     "loadings",
     "OneSpatialScaleLCA",
-    # "PandarusRemote",
+    "PandarusRemote",
     "remote",
     "reset_all_geo",
     "reset_geo_meta",
@@ -28,7 +29,6 @@ __all__ = (
     "Topography",
     "TwoSpatialScalesLCA",
     "TwoSpatialScalesWithGenericLoadingLCA",
-    "write_intersection",
     "raster_as_extension_table",
 )
 
@@ -49,7 +49,7 @@ from .meta import (
     loadings,
     topocollections,
 )
-from .intersection import Intersection, write_intersection
+from .intersection import Intersection
 from .xtables import ExtensionTable
 
 from .databases import label_activity_geocollections
@@ -63,7 +63,7 @@ from .lca import (
 )
 
 from .pandarus import import_from_pandarus
-from .pandarus_remote import remote
+from .pandarus_remote import remote, PandarusRemote
 from .utils import (
     create_empty_intersection,
     get_spatial_dataset_kind,
@@ -77,7 +77,7 @@ from .base_data import (
     create_world_collections,
     create_restofworlds_collections,
 )
-from .gis_tasks import raster_as_extension_table
+from .gis_tasks import raster_as_extension_table, calculate_intersection
 
 config.metadata.extend(
     [extension_tables, geocollections, topocollections, intersections, loadings]
