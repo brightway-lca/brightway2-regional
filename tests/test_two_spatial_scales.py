@@ -1,5 +1,5 @@
 import numpy as np
-from bw2data import Database, Method, databases, methods, get_id, geomapping
+from bw2data import Database, Method, databases, geomapping, get_id, methods
 
 from bw2regional.intersection import Intersection
 from bw2regional.lca import TwoSpatialScalesLCA as LCA
@@ -137,13 +137,15 @@ class TwoSpatialScalesLCATestCase(BW2RegionalTest):
         assert lca.geo_transform_matrix.shape == (4, 3)
         assert (
             lca.geo_transform_matrix[
-                lca.dicts.inv_spatial[geomapping["L"]], lca.dicts.ia_spatial[geomapping["A"]]
+                lca.dicts.inv_spatial[geomapping["L"]],
+                lca.dicts.ia_spatial[geomapping["A"]],
             ]
             == 1
         )
         assert (
             lca.geo_transform_matrix[
-                lca.dicts.inv_spatial[geomapping["M"]], lca.dicts.ia_spatial[geomapping["B"]]
+                lca.dicts.inv_spatial[geomapping["M"]],
+                lca.dicts.ia_spatial[geomapping["B"]],
             ]
             == 3
         )
@@ -158,13 +160,15 @@ class TwoSpatialScalesLCATestCase(BW2RegionalTest):
         assert lca.reg_cf_matrix.shape == (3, 2)
         assert (
             lca.reg_cf_matrix[
-                lca.dicts.ia_spatial[geomapping["A"]], lca.dicts.biosphere[get_id(("biosphere", "F"))]
+                lca.dicts.ia_spatial[geomapping["A"]],
+                lca.dicts.biosphere[get_id(("biosphere", "F"))],
             ]
             == 1
         )
         assert (
             lca.reg_cf_matrix[
-                lca.dicts.ia_spatial[geomapping["B"]], lca.dicts.biosphere[get_id(("biosphere", "G"))]
+                lca.dicts.ia_spatial[geomapping["B"]],
+                lca.dicts.biosphere[get_id(("biosphere", "G"))],
             ]
             == 4
         )
@@ -179,13 +183,15 @@ class TwoSpatialScalesLCATestCase(BW2RegionalTest):
         assert lca.inv_mapping_matrix.shape == (5, 4)
         assert (
             lca.inv_mapping_matrix[
-                lca.dicts.activity[get_id(("inventory", "V"))], lca.dicts.inv_spatial[geomapping["M"]]
+                lca.dicts.activity[get_id(("inventory", "V"))],
+                lca.dicts.inv_spatial[geomapping["M"]],
             ]
             == 1
         )
         assert (
             lca.inv_mapping_matrix[
-                lca.dicts.activity[get_id(("inventory", "X"))], lca.dicts.inv_spatial[geomapping["N"]]
+                lca.dicts.activity[get_id(("inventory", "X"))],
+                lca.dicts.inv_spatial[geomapping["N"]],
             ]
             == 1
         )
@@ -200,13 +206,15 @@ class TwoSpatialScalesLCATestCase(BW2RegionalTest):
         assert lca.normalization_matrix.shape == (4, 4)
         assert np.allclose(
             lca.normalization_matrix[
-                lca.dicts.inv_spatial[geomapping["M"]], lca.dicts.inv_spatial[geomapping["M"]]
+                lca.dicts.inv_spatial[geomapping["M"]],
+                lca.dicts.inv_spatial[geomapping["M"]],
             ],
             1 / 5,
         )
         assert np.allclose(
             lca.normalization_matrix[
-                lca.dicts.inv_spatial[geomapping["N"]], lca.dicts.inv_spatial[geomapping["N"]]
+                lca.dicts.inv_spatial[geomapping["N"]],
+                lca.dicts.inv_spatial[geomapping["N"]],
             ],
             1 / 13,
         )

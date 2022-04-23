@@ -1,5 +1,5 @@
 import pytest
-from bw2data import Database, Method, methods, databases
+from bw2data import Database, Method, databases, methods
 from bw2data.tests import bw2test
 
 from bw2regional.errors import MissingIntersection, SiteGenericMethod
@@ -23,10 +23,10 @@ def test_site_generic_method_error():
 def test_missing_intersection_error():
     empty = Database("empty")
     empty.write({("empty", "nothing"): {}})
-    databases['empty']['geocollections'] = ['foo']
+    databases["empty"]["geocollections"] = ["foo"]
     method = Method(("a", "name"))
     method.write([])
-    methods[("a", "name")]['geocollections'] = ["bar"]
+    methods[("a", "name")]["geocollections"] = ["bar"]
     with pytest.raises(MissingIntersection):
         rlca = RegionalizationBase({("empty", "nothing"): 1}, method=("a", "name"))
         rlca.inventory_geocollections = rlca.get_inventory_geocollections()

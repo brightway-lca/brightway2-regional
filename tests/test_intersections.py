@@ -1,28 +1,31 @@
+import pytest
 from bw2data import geomapping
+from bw2data.tests import bw2test
 from voluptuous import Invalid
 
 from bw2regional.intersection import Intersection
-from bw2regional.tests import BW2RegionalTest
 
 
-class IntersectionTestCase(BW2RegionalTest):
-    def test_add_geomappings(self):
-        inter = Intersection(("foo", "bar"))
-        inter.register()
-        self.assertFalse(("foo", "bar") in geomapping)
-        self.assertFalse("baz" in geomapping)
-        inter.write([[("foo", "bar"), "baz", 42]])
-        self.assertTrue(("foo", "bar") in geomapping)
-        self.assertTrue("baz" in geomapping)
+@bw2test
+def test_add_geomappings():
+    inter = Intersection(("foo", "bar"))
+    inter.register()
+    assert ("foo", "bar") not in geomapping
+    assert "baz" not in geomapping
+    inter.write([[("foo", "bar"), "baz", 42]])
+    assert ("foo", "bar") in geomapping
+    assert "baz" in geomapping
 
-    def test_validation(self):
-        inter = Intersection(("foo", "bar"))
-        self.assertTrue(inter.validate([]))
-        self.assertTrue(inter.validate([[1, 2, 3]]))
-        self.assertTrue(inter.validate([["foo", "bar", 3.0]]))
-        with self.assertRaises(Invalid):
-            inter.validate(())
-        with self.assertRaises(Invalid):
-            inter.validate([[1, 2]])
-        with self.assertRaises(Invalid):
-            inter.validate([[1, 2, {"amount": 3.0}]])
+
+@bw2test
+def test_validation():
+    inter = Intersection(("foo", "bar"))
+    assert inter.validate([])
+    assert inter.validate([[1, 2, 3]])
+    assert inter.validate([["foo", "bar", 3.0]])
+    with pytest.raises(Invalid):
+        inter.validate(())
+    with pytest.raises(Invalid):
+        inter.validate([[1, 2]])
+    with pytest.raises(Invalid):
+        inter.validate([[1, 2, {"amount": 3.0}]])

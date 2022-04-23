@@ -1,5 +1,5 @@
 import numpy as np
-from bw2data import Database, Method, databases, geomapping, methods, get_activity
+from bw2data import Database, Method, databases, geomapping, get_activity, methods
 
 from bw2regional.errors import GeocollectionsMismatch
 from bw2regional.lca import OneSpatialScaleLCA as LCA
@@ -112,7 +112,10 @@ class OneSpatialScaleLCATestCase(BW2RegionalTest):
 
         assert lca.supply_array.sum() == 1
         assert lca.supply_array.shape == (5,)
-        assert lca.supply_array[lca.dicts.product[get_activity(("inventory", "U")).id]] == 1
+        assert (
+            lca.supply_array[lca.dicts.product[get_activity(("inventory", "U")).id]]
+            == 1
+        )
 
     def test_characterization_matrix(self):
         lca = self.get_lca()
@@ -123,7 +126,7 @@ class OneSpatialScaleLCATestCase(BW2RegionalTest):
         print(list(lca.dicts.biosphere.items()))
         print(list(geomapping.items()))
         for x in Database("biosphere"):
-            print(x.id, x['code'])
+            print(x.id, x["code"])
 
         matrix = np.zeros((4, 2))
         matrix[1, 1] = 1

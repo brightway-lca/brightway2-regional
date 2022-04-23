@@ -7,6 +7,6 @@ from bw2regional.xtables import ExtensionTable
 
 class XtablesTestCase(BW2RegionalTest):
     def test_filename(self):
-        lg = ExtensionTable(u"some loading with a crazy name")
+        lg = ExtensionTable("some loading with a crazy name")
         self.assertTrue(".xtable" in lg.filename)
         self.assertFalse(".loading" in lg.filename)

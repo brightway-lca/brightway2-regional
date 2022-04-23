@@ -6,9 +6,9 @@ from bw2data.tests import bw2test
 import bw2regional
 from bw2regional.base_data import (
     Topography,
-    create_world_collections,
     create_ecoinvent_collections,
     create_restofworlds_collections,
+    create_world_collections,
     geocollections,
     topocollections,
 )
