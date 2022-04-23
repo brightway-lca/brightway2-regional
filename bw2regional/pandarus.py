@@ -246,6 +246,11 @@ def import_xt_from_rasterstats(fp, name, gc, **kwargs):
     assert "vector" in metadata and "raster" in metadata, "Invalid metadata in file"
 
     vector = get_possible_collections(metadata["vector"])
+
+    # The assumption here is that XTs are only used for the
+    # 3rd (intermediate) spatial scale, and therefore will
+    # only be geocollections, not topocollections.
+
     assert len(vector) == 1, "Must intersect with exactly one geocollection"
 
     vector = list(vector)[0]
