@@ -11,51 +11,62 @@ import bw2data as bd
 from scipy.sparse import coo_matrix
 
 from bw2regional import geocollections
-from bw2regional.lca.base_class import RegionalizationBase
 
 
-def Exporter:
-    @classmethod
-    def add_attributes(cls, dct, func, row_index, col_index):
-        if func is None:
-            return dct
-        else:
-            dct.update(func(row_index, col_index))
-            return dct
+def add_attributes(dct, func, row_index, col_index):
+    if func is None:
+        return dct
+    else:
+        dct.update(func(row_index, col_index))
+        return dct
 
-    @classmethod
-    def create_geodataframe(cls, matrix, geocollections, row_dict, col_dict, spatial_dim='row', attribute_adder=None):
-        if not isinstance(matrix, coo_matrix):
-            matrix = matrix.tocoo()
 
-        geom_mapping = {}
-        for gc in geocollections:
-            field = geocollections['ecoregions']['field']
-            gdf = gp.read_file(geocollections['ecoregions']['filepath'])
+def unplottable(key):
+    return key == 'GLO' or (isinstance(key, tuple) and key[0] == 'RoW')
+
+
+def create_geodataframe(matrix, used_geocollections, row_dict, col_dict, spatial_dim='col', attribute_adder=None):
+    if not isinstance(matrix, coo_matrix):
+        matrix = matrix.tocoo()
+
+    total = matrix.sum()
+
+    geom_mapping = {}
+    for gc in used_geocollections:
+        try:
+            field = geocollections[gc]['field']
+            gdf = gp.read_file(geocollections[gc]['filepath'])
             for _, row in gdf.iterrows():
-                geom_mapping[(gc, row[field])] = row.geometry
+                if gc != 'world':
+                    geom_mapping[(gc, row[field])] = row.geometry
+                else:
+                    geom_mapping[row[field]] = row.geometry
+        except KeyError:
+            pass
 
-        reverse_geomapping = {v: k for k, v in bd.geomapping.items()}
+    reversed_geomapping = {v: k for k, v in bd.geomapping.items()}
 
-        if spatial_dim == 'row':
-            spatial_dict = row_dict
-            spatial_index = lambda x, y: x
-        else:
-            spatial_dict = col_dict
-            spatial_index = lambda x, y: y
+    if spatial_dim == 'row':
+        spatial_dict = row_dict
+        spatial_index = lambda x, y: x
+    else:
+        spatial_dict = col_dict
+        spatial_index = lambda x, y: y
 
-        return gp.GeoDataFrame([
-            cls.add_attributes({
-                'row_id': int(row),
-                'row_index': row_dict.reversed[row],
-                'col_id': int(col),
-                'col_index': col_dict.reversed[col],
-                'value': value,
-                'location_key': str(reverse_geomapping[spatial_dict.reversed[spatial_index(row, col)]]),
-                'geometry': geom_mapping[reverse_geomapping[spatial_dict.reversed[spatial_index(row, col)]]],
-            }, attribute_adder, row_dict.reversed[row], col_dict.reversed[col])
-            for row, col, value in zip(matrix.row, matrix.col, matrix.data)
-        ])
+    return gp.GeoDataFrame([
+        add_attributes({
+            'row_id': int(row),
+            'row_index': row_dict.reversed[row],
+            'col_id': int(col),
+            'col_index': col_dict.reversed[col],
+            'score_abs': value,
+            'score_rel': value / total,
+            'location_key': str(reversed_geomapping[spatial_dict.reversed[spatial_index(row, col)]]),
+            'geometry': geom_mapping[reversed_geomapping[spatial_dict.reversed[spatial_index(row, col)]]],
+        }, attribute_adder, row_dict.reversed[row], col_dict.reversed[col])
+        for row, col, value in zip(matrix.row, matrix.col, matrix.data)
+        if not unplottable(reversed_geomapping[spatial_dict.reversed[spatial_index(row, col)]])
+    ])
 
 
 def _generic_exporter(
@@ -68,6 +79,8 @@ def _generic_exporter(
     score_column_relative="score_rel",
     cutoff=1e-3,
 ):
+    from bw2regional.lca.base_class import RegionalizationBase
+
     assert isinstance(lca, RegionalizationBase)
     assert geocollection in geocollections
     assert hasattr(lca, spatial_dict)
