@@ -5,12 +5,13 @@ import matrix_utils as mu
 import numpy as np
 from bw2calc.lca import LCA
 from bw2data import Database, Method, databases, methods, get_activity
-from scipy.sparse import csr_matrix
+from scipy.sparse import csr_matrix, coo_matrix
 
 from ..errors import MissingIntersection, SiteGenericMethod, UnprocessedDatabase
 from ..intersection import Intersection
 from ..meta import intersections
 from ..utils import dp
+from ..export import create_geodataframe
 
 
 def get_dependent_databases(demand_dict):
@@ -19,6 +20,15 @@ def get_dependent_databases(demand_dict):
     return set.union(
         *[Database(label).find_graph_dependents() for label in db_labels]
     )
+
+
+def annotate_flow(flow_id, _):
+    flow = get_activity(id=flow_id)
+    return {
+        'flow_name': flow.get('name', ''),
+        'flow_unit': flow.get('unit', ''),
+        'flow_categories': str(flow.get('categories', ''))
+    }
 
 
 class RegionalizationBase(LCA):
@@ -194,3 +204,33 @@ class RegionalizationBase(LCA):
 
     def results_inv_spatial_scale(self):
         raise NotImplementedError("Must be defined in subclasses")
+
+    def __geodataframe(self, matrix, sum_flows, annotate_flows, col_dict, used_geocollections):
+        if sum_flows:
+            matrix = coo_matrix(matrix.sum(axis=0))
+            annotate_flows = None
+        elif annotate_flows:
+            annotate_flows = annotate_flow
+
+        return create_geodataframe(
+            matrix=matrix,
+            used_geocollections=used_geocollections,
+            row_dict=self.dicts.biosphere,
+            col_dict=col_dict,
+            attribute_adder=annotate_flows
+        )
+
+    def geodataframe_xtable_spatial_scale(self, sum_flows=True, annotate_flows = None):
+        if not hasattr(self, 'results_xtable_spatial_scale'):
+            raise NotImplementedError
+
+        matrix = self.results_xtable_spatial_scale()
+        return self.__geodataframe(matrix, sum_flows, annotate_flows, self.dicts.xtable_spatial, self.xtable_geocollections)
+
+    def geodataframe_ia_spatial_scale(self, sum_flows=True, annotate_flows = None):
+        matrix = self.results_ia_spatial_scale()
+        return self.__geodataframe(matrix, sum_flows, annotate_flows, self.dicts.ia_spatial, self.ia_geocollections)
+
+    def geodataframe_inv_spatial_scale(self, sum_flows=True, annotate_flows = None):
+        matrix = self.results_inv_spatial_scale()
+        return self.__geodataframe(matrix, sum_flows, annotate_flows, self.dicts.inv_spatial, self.inventory_geocollections)
