@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from scipy.sparse import dok_matrix
 
-from bw2regional.utils import *
+from bw2regional.utils import filter_columns, filter_fiona_metadata, filter_rows
 
 
 @pytest.fixture
