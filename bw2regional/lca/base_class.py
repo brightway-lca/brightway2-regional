@@ -160,28 +160,6 @@ class RegionalizationBase(LCA):
         )
         self.loading_matrix = self.loading_mm.matrix
 
-    # def fix_spatial_dictionaries(self):
-    #     """Fix inventory and IA spatial dictionaries."""
-    #     if not hasattr(self, "inv_spatial_dict"):
-    #         # No LCIA performed yet
-    #         return
-    #     if getattr(self, "_mapped_spatial_dict", False):
-    #         # Already reversed - should be idempotent
-    #         return False
-    #     rev_geomapping = {v: k for k, v in geomapping.items()}
-    #     self.inv_spatial_dict = {
-    #         rev_geomapping[k]: v for k, v in self.inv_spatial_dict.items()
-    #     }
-    #     if hasattr(self, "ia_spatial_dict"):
-    #         self.ia_spatial_dict = {
-    #             rev_geomapping[k]: v for k, v in self.ia_spatial_dict.items()
-    #         }
-    #     if hasattr(self, "xtable_spatial_dict"):
-    #         self.xtable_spatial_dict = {
-    #             rev_geomapping[k]: v for k, v in self.xtable_spatial_dict.items()
-    #         }
-    #     self._mapped_spatial_dict = True
-
     def _results_new_scale(self, matrix, flow):
         # self.fix_spatial_dictionaries()
         if flow is not None:
