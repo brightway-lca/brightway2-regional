@@ -6,9 +6,56 @@ from functools import partial
 import fiona
 import numpy as np
 from shapely.geometry import shape
+import geopandas as gp
+import bw2data as bd
+from scipy.sparse import coo_matrix
 
 from bw2regional import geocollections
 from bw2regional.lca.base_class import RegionalizationBase
+
+
+def Exporter:
+    @classmethod
+    def add_attributes(cls, dct, func, row_index, col_index):
+        if func is None:
+            return dct
+        else:
+            dct.update(func(row_index, col_index))
+            return dct
+
+    @classmethod
+    def create_geodataframe(cls, matrix, geocollections, row_dict, col_dict, spatial_dim='row', attribute_adder=None):
+        if not isinstance(matrix, coo_matrix):
+            matrix = matrix.tocoo()
+
+        geom_mapping = {}
+        for gc in geocollections:
+            field = geocollections['ecoregions']['field']
+            gdf = gp.read_file(geocollections['ecoregions']['filepath'])
+            for _, row in gdf.iterrows():
+                geom_mapping[(gc, row[field])] = row.geometry
+
+        reverse_geomapping = {v: k for k, v in bd.geomapping.items()}
+
+        if spatial_dim == 'row':
+            spatial_dict = row_dict
+            spatial_index = lambda x, y: x
+        else:
+            spatial_dict = col_dict
+            spatial_index = lambda x, y: y
+
+        return gp.GeoDataFrame([
+            cls.add_attributes({
+                'row_id': int(row),
+                'row_index': row_dict.reversed[row],
+                'col_id': int(col),
+                'col_index': col_dict.reversed[col],
+                'value': value,
+                'location_key': str(reverse_geomapping[spatial_dict.reversed[spatial_index(row, col)]]),
+                'geometry': geom_mapping[reverse_geomapping[spatial_dict.reversed[spatial_index(row, col)]]],
+            }, attribute_adder, row_dict.reversed[row], col_dict.reversed[col])
+            for row, col, value in zip(matrix.row, matrix.col, matrix.data)
+        ])
 
 
 def _generic_exporter(
