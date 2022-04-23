@@ -3,13 +3,14 @@ import os
 
 
 requirements = [
-    "bw2calc>=2.0.dev2",
-    "bw2data>=4.0.dev7",
+    "bw2calc>=2.0.dev6",
+    "bw2data>=4.0.dev12",
     "constructive_geometries",
     "fiona",
     "geopandas",
     "rasterio",
     "requests",
+    'rower',
     "shapely",
     "voluptuous",
     "wrapt",
