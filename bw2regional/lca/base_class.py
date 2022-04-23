@@ -4,7 +4,7 @@ from functools import partial
 import matrix_utils as mu
 import numpy as np
 from bw2calc.lca import LCA
-from bw2data import Database, Method, databases, methods
+from bw2data import Database, Method, databases, methods, get_activity
 from scipy.sparse import csr_matrix
 
 from ..errors import MissingIntersection, SiteGenericMethod, UnprocessedDatabase
@@ -13,12 +13,18 @@ from ..meta import intersections
 from ..utils import dp
 
 
+def get_dependent_databases(demand_dict):
+    """Demand can be activitiy ids or tuple keys."""
+    db_labels = [x[0] if isinstance(x, tuple) else get_activity(x)['database'] for x in demand_dict]
+    return set.union(
+        *[Database(label).find_graph_dependents() for label in db_labels]
+    )
+
+
 class RegionalizationBase(LCA):
     def __init__(self, demand, *args, **kwargs):
+        self.databases = get_dependent_databases(demand)
         super(RegionalizationBase, self).__init__(demand, *args, **kwargs)
-        self.databases = set.union(
-            *[Database(key[0]).find_graph_dependents() for key in demand]
-        )
 
     def get_inventory_geocollections(self):
         """Get the set of all needed inventory geocollections.
@@ -38,10 +44,10 @@ class RegionalizationBase(LCA):
 
     def get_ia_geocollections(self):
         """Retrieve the geocollections linked to the impact assessment method"""
-        try:
-            return set(methods[self.method]["geocollections"])
-        except KeyError:
+        ia_gc = set(methods[self.method]["geocollections"])
+        if not ia_gc:
             raise SiteGenericMethod
+        return ia_gc
 
     def create_inventory_mapping_matrix(self):
         """Get inventory mapping matrix, **M**, which maps inventory activities to inventory locations. Rows are inventory activities and columns are inventory spatial units.
