@@ -7,6 +7,15 @@ from .base_class import RegionalizationBase
 
 
 class TwoSpatialScalesWithGenericLoadingLCA(RegionalizationBase):
+    matrix_labels = [
+        "biosphere_mm",
+        "geo_transform_mm",
+        "inv_mapping_mm",
+        "reg_cf_mm",
+        "technosphere_mm",
+        "loading_mm",
+    ]
+
     def __init__(self, *args, **kwargs):
         r"""Perform regionalized LCA calculation, matching the spatial scales of inventory and impact assessment, including generic loading factors applied to all flows.
 
@@ -38,6 +47,9 @@ class TwoSpatialScalesWithGenericLoadingLCA(RegionalizationBase):
         self.create_regionalized_characterization_matrix()
         self.create_geo_transform_matrix()
         self.create_loading_matrix()
+        self.normalization_matrix = self.build_normalization_matrix()
+
+    def after_matrix_iteration(self):
         self.normalization_matrix = self.build_normalization_matrix()
 
     def build_normalization_matrix(self):

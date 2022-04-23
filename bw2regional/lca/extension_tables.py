@@ -15,6 +15,16 @@ from .base_class import RegionalizationBase
 
 
 class ExtensionTablesLCA(RegionalizationBase):
+    matrix_labels = [
+        "biosphere_mm",
+        "distribution_mm",
+        "geo_transform_mm",
+        "inv_mapping_mm",
+        "reg_cf_mm",
+        "technosphere_mm",
+        "xtable_mm ",
+    ]
+
     def __init__(self, *args, **kwargs):
         r"""Perform regionalized LCA calculation, using biosphere flow- and activity-specific extension tables.
 
@@ -191,9 +201,17 @@ If you know these intersections are not needed, you can create empty intersectio
         )
         self.geo_transform_matrix = self.geo_transform_mm.matrix
 
-    def load_lcia_data(self):
-        self.create_inventory_mapping_matrix()
+    def after_matrix_iteration(self):
+        self.distribution_normalization_matrix = (
+            self.build_distribution_normalization_matrix()
+        )
+        self.geo_transform_normalization_matrix = (
+            self.build_geo_transform_normalization_matrix()
+        )
+        self.apply_inv_mappinig_limitations()
+        self.apply_cf_matrix_limitations()
 
+    def apply_inv_mappinig_limitations(self):
         if "activities" in self.limitations:
             if not self.limitations["activities"]:
                 warnings.warn("Restricting activities, but `limitations['activities']` is empty. Results may be zero.")
@@ -204,13 +222,7 @@ If you know these intersections are not needed, you can create empty intersectio
                 exclude=self.limitations.get("activities mode", None) == "exclude",
             )
 
-        self.create_distribution_matrix()
-        self.create_xtable_matrix()
-        self.distribution_normalization_matrix = (
-            self.build_distribution_normalization_matrix()
-        )
-        self.create_regionalized_characterization_matrix()
-
+    def apply_cf_matrix_limitations(self):
         if "flows" in self.limitations:
             if not self.limitations["flows"]:
                 warnings.warn("Restricting flows, but `limitations['flows']` is empty. Results may be zero.")
@@ -220,6 +232,18 @@ If you know these intersections are not needed, you can create empty intersectio
                 [self.dicts.biosphere[x] for x in self.limitations["flows"]],
                 exclude=self.limitations.get("flows mode", None) == "exclude",
             )
+
+    def load_lcia_data(self):
+        self.create_inventory_mapping_matrix()
+        self.apply_inv_mappinig_limitations()
+
+        self.create_distribution_matrix()
+        self.create_xtable_matrix()
+        self.distribution_normalization_matrix = (
+            self.build_distribution_normalization_matrix()
+        )
+        self.create_regionalized_characterization_matrix()
+        self.apply_cf_matrix_limitations()
 
         self.create_geo_transform_matrix()
         self.geo_transform_normalization_matrix = (

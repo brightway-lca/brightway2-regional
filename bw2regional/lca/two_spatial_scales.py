@@ -6,6 +6,14 @@ from .base_class import RegionalizationBase
 
 
 class TwoSpatialScalesLCA(RegionalizationBase):
+    matrix_labels = [
+        "biosphere_mm",
+        "geo_transform_mm",
+        "inv_mapping_mm",
+        "reg_cf_mm",
+        "technosphere_mm",
+    ]
+
     def __init__(self, *args, **kwargs):
         r"""Perform regionalized LCA calculation, matching the spatial scales of inventory and impact assessment.
 
@@ -32,6 +40,9 @@ class TwoSpatialScalesLCA(RegionalizationBase):
         self.create_inventory_mapping_matrix()
         self.create_regionalized_characterization_matrix()
         self.create_geo_transform_matrix()
+        self.normalization_matrix = self.build_normalization_matrix()
+
+    def after_matrix_iteration(self):
         self.normalization_matrix = self.build_normalization_matrix()
 
     def build_normalization_matrix(self):

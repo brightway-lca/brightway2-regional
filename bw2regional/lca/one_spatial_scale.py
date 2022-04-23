@@ -5,6 +5,13 @@ from .base_class import RegionalizationBase
 
 
 class OneSpatialScaleLCA(RegionalizationBase):
+    matrix_labels = [
+        "biosphere_mm",
+        "inv_mapping_mm",
+        "reg_cf_mm",
+        "technosphere_mm",
+    ]
+
     def __init__(self, *args, **kwargs):
         r"""Perform regionalized LCA calculation, where the inventory shares the same spatial scale as impact assessment.
 
