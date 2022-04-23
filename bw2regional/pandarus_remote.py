@@ -234,23 +234,13 @@ class PandarusRemote(object):
         try:
             self.intersection(new_name, collection_one)
         except NotYetCalculated:
-            self.calculate_intersection(new_name, collection_one)
-            print(
-                """Remote is calculating intersection, run the following when done:
-                  remote.intersection("{}", "{}"")""".format(
-                    new_name, collection_one
-                )
-            )
+            print("Remote is calculating intersection")
+            run_job(self.calculate_intersection(new_name, collection_one))
         try:
             self.intersection(new_name, collection_two)
         except NotYetCalculated:
-            self.calculate_intersection(new_name, collection_two)
-            print(
-                """Remote is calculating intersection, run the following when done:
-                  remote.intersection("{}", "{}"")""".format(
-                    new_name, collection_two
-                )
-            )
+            print("Remote is calculating intersection")
+            run_job(self.calculate_intersection(new_name, collection_two))
 
     @check_alive
     def rasterstats_as_xt(self, vector, raster, name):
