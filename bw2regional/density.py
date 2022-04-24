@@ -20,7 +20,7 @@ def get_area(lat1, lat2, width):
         o = np.sin(to_radians(latitude))
         return (
             np.pi
-            * b ** 2
+            * b**2
             * (2 * np.arctanh(e * o) / (2 * e) + o / ((1 + e * o) * (1 - e * o)))
         )
 

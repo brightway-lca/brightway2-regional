@@ -1,6 +1,6 @@
 import itertools
-from functools import partial
 import warnings
+from functools import partial
 
 import matrix_utils as mu
 import numpy as np
@@ -214,7 +214,9 @@ If you know these intersections are not needed, you can create empty intersectio
     def apply_inv_mappinig_limitations(self):
         if "activities" in self.limitations:
             if not self.limitations["activities"]:
-                warnings.warn("Restricting activities, but `limitations['activities']` is empty. Results may be zero.")
+                warnings.warn(
+                    "Restricting activities, but `limitations['activities']` is empty. Results may be zero."
+                )
 
             self.inv_mapping_matrix = self.inv_mapping_mm.matrix = filter_rows(
                 self.inv_mapping_matrix,
@@ -225,7 +227,9 @@ If you know these intersections are not needed, you can create empty intersectio
     def apply_cf_matrix_limitations(self):
         if "flows" in self.limitations:
             if not self.limitations["flows"]:
-                warnings.warn("Restricting flows, but `limitations['flows']` is empty. Results may be zero.")
+                warnings.warn(
+                    "Restricting flows, but `limitations['flows']` is empty. Results may be zero."
+                )
 
             self.reg_cf_matrix = self.reg_cf_mm.matrix = filter_columns(
                 self.reg_cf_matrix,

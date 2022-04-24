@@ -1,23 +1,36 @@
-from .pandarus_remote import remote, PandarusRemote, run_job
-from .pandarus import import_xt_from_rasterstats, import_from_pandarus
-from . import geocollections, intersections, topocollections, Intersection, extension_tables
 import bw2data as bd
+
+from . import (
+    Intersection,
+    extension_tables,
+    geocollections,
+    intersections,
+    topocollections,
+)
+from .pandarus import import_from_pandarus, import_xt_from_rasterstats
+from .pandarus_remote import PandarusRemote, remote, run_job
+
 try:
     import pandarus
 except ImportError:
     pandarus = None
-import geopandas as gp
 import multiprocessing
 import os
+
+import geopandas as gp
 
 CPU_COUNT = multiprocessing.cpu_count()
 
 
-def raster_as_extension_table(vector, raster, name=None, engine=remote, overwrite=False):
+def raster_as_extension_table(
+    vector, raster, name=None, engine=remote, overwrite=False
+):
     if vector not in geocollections or raster not in geocollections:
         raise ValueError("Vector or raster not a valid geocollection")
     if vector in topocollections:
-        raise ValueError('this function only works with geocollections, not topocollections')
+        raise ValueError(
+            "this function only works with geocollections, not topocollections"
+        )
 
     if name is None:
         name = vector + " - " + raster
@@ -35,14 +48,26 @@ def raster_as_extension_table(vector, raster, name=None, engine=remote, overwrit
         print("Creating Extension Table")
         return engine.rasterstats_as_xt(vector, raster, name)
 
-    elif engine == 'pandarus':
+    elif engine == "pandarus":
         if not pandarus:
             raise ImportError("`pandarus` library required for this function")
 
-        vector_fp, vector_field = geocollections[vector]['filepath'], geocollections[vector]["field"]
-        raster_fp, raster_band = geocollections[raster]['filepath'], geocollections[raster].get('band', 1)
+        vector_fp, vector_field = (
+            geocollections[vector]["filepath"],
+            geocollections[vector]["field"],
+        )
+        raster_fp, raster_band = geocollections[raster]["filepath"], geocollections[
+            raster
+        ].get("band", 1)
 
-        fp = pandarus.raster_statistics(vector_fp, vector_field, raster_fp, output=fp, band=raster_band, compress=True)
+        fp = pandarus.raster_statistics(
+            vector_fp,
+            vector_field,
+            raster_fp,
+            output=fp,
+            band=raster_band,
+            compress=True,
+        )
 
         return import_xt_from_rasterstats(fp, name, vector)
 
@@ -55,7 +80,7 @@ def calculate_intersection(first, second, engine=remote, overwrite=False, cpus=N
     if (first, second) in intersections and not overwrite:
         return
 
-    if engine == 'geopandas':
+    if engine == "geopandas":
         for gc in (first, second):
             assert (
                 gc in geocollections
@@ -72,7 +97,9 @@ def calculate_intersection(first, second, engine=remote, overwrite=False, cpus=N
         assert id1 != id2, "Conflicting ID labels"
 
         intersection = gp.overlay(df1, df2)
-        areas = intersection.to_crs("esri:54009").area  # World Mollweidge in square meters
+        areas = intersection.to_crs(
+            "esri:54009"
+        ).area  # World Mollweidge in square meters
 
         data = []
         for index, feature in intersection.iterrows():
@@ -81,7 +108,7 @@ def calculate_intersection(first, second, engine=remote, overwrite=False, cpus=N
         obj = Intersection((first, second))
         obj.write(data)
         obj.create_reversed_intersection()
-    elif engine == 'pandarus':
+    elif engine == "pandarus":
         try:
             first_meta = topocollections[first]
         except KeyError:
@@ -93,7 +120,16 @@ def calculate_intersection(first, second, engine=remote, overwrite=False, cpus=N
 
         dirpath = str(bd.projects.request_directory("regional"))
 
-        fiona_fp, data_fp = pandarus.intersect(first_meta['filepath'], first_meta['field'], second_meta['filepath'], second_meta['field'], dirpath=dirpath, cpus=cpus or CPU_COUNT, driver='GeoJSON', compress=True)
+        fiona_fp, data_fp = pandarus.intersect(
+            first_meta["filepath"],
+            first_meta["field"],
+            second_meta["filepath"],
+            second_meta["field"],
+            dirpath=dirpath,
+            cpus=cpus or CPU_COUNT,
+            driver="GeoJSON",
+            compress=True,
+        )
 
         return import_from_pandarus(data_fp)
     elif isinstance(engine, PandarusRemote):

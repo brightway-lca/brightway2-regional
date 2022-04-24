@@ -61,10 +61,7 @@ def run_job(job):
     """Handler that blocks until job is finished."""
     job.poll(interval=2)
     if job.status != "finished":
-        raise ValueError(
-            "Calculation job finished with status '{}'".format(job.status)
-        )
-
+        raise ValueError("Calculation job finished with status '{}'".format(job.status))
 
 
 @wrapt.decorator

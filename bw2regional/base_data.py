@@ -3,8 +3,8 @@ import json
 import os
 import warnings
 
-from bw2data.utils import download_file
 import rower
+from bw2data.utils import download_file
 
 from . import Topography, cg, geocollections, topocollections
 from .hashing import sha256
@@ -255,9 +255,13 @@ COUNTRIES = {
 def create_world_collections():
     print("Downloading and creating 'world' geocollection with countries")
     geocollections["world"] = {
-        "filepath": str(download_file(
-            "countries.gpkg", "regional", url="https://geography.ecoinvent.org/files/"
-        )),
+        "filepath": str(
+            download_file(
+                "countries.gpkg",
+                "regional",
+                url="https://geography.ecoinvent.org/files/",
+            )
+        ),
         "field": "isotwolettercode",
     }
     topocollections["world"] = {
@@ -274,11 +278,13 @@ def create_ecoinvent_collections():
         "Downloading and creating 'ecoinvent' geocollection with ecoinvent-specific locations"
     )
     geocollections["ecoinvent"] = {
-        "filepath": str(download_file(
-            "all-ecoinvent.gpkg",
-            "regional",
-            url="https://geography.ecoinvent.org/files/",
-        )),
+        "filepath": str(
+            download_file(
+                "all-ecoinvent.gpkg",
+                "regional",
+                url="https://geography.ecoinvent.org/files/",
+            )
+        ),
         "field": "shortname",
     }
     topocollections["ecoinvent"] = {

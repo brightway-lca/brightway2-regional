@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 from bw2data import JsonWrapper, geomapping
+from bw_processing import INDICES_DTYPE
 
 from . import (
     ExtensionTable,
@@ -13,8 +14,6 @@ from . import (
     topocollections,
 )
 from .utils import create_certain_datapackage
-
-from bw_processing import INDICES_DTYPE
 
 
 def relabel(data, first, second):
@@ -230,8 +229,8 @@ def handle_topographical_intersection(
         create_certain_datapackage(indices_arrays, data_arrays, intersection)
 
         flipped_indices = np.zeros_like(indices_arrays, dtype=INDICES_DTYPE)
-        flipped_indices['row'] = indices_arrays['col']
-        flipped_indices['col'] = indices_arrays['row']
+        flipped_indices["row"] = indices_arrays["col"]
+        flipped_indices["col"] = indices_arrays["row"]
 
         other_intersection = Intersection((other_geocollection, name))
         other_intersection.register(filepath=filepath)

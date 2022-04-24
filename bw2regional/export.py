@@ -1,15 +1,15 @@
 import hashlib
 import os
+import warnings
 from collections import defaultdict
 from functools import partial
-import warnings
 
-import fiona
-import numpy as np
-from shapely.geometry import shape
-import geopandas as gp
 import bw2data as bd
+import fiona
+import geopandas as gp
+import numpy as np
 from scipy.sparse import coo_matrix
+from shapely.geometry import shape
 
 from bw2regional import geocollections
 
@@ -23,10 +23,18 @@ def add_attributes(dct, func, row_index, col_index):
 
 
 def unplottable(key):
-    return key == 'GLO' or (isinstance(key, tuple) and key[0] == 'RoW')
+    return key == "GLO" or (isinstance(key, tuple) and key[0] == "RoW")
 
 
-def create_geodataframe(matrix, used_geocollections, row_dict, col_dict, spatial_dim='col', attribute_adder=None, cutoff=None):
+def create_geodataframe(
+    matrix,
+    used_geocollections,
+    row_dict,
+    col_dict,
+    spatial_dim="col",
+    attribute_adder=None,
+    cutoff=None,
+):
     if cutoff is not None and not (0 < cutoff < 1):
         warnings.warn(f"Ignoring invalid cutoff value {cutoff}")
         cutoff = None
@@ -41,10 +49,10 @@ def create_geodataframe(matrix, used_geocollections, row_dict, col_dict, spatial
     geom_mapping = {}
     for gc in used_geocollections:
         try:
-            field = geocollections[gc]['field']
-            gdf = gp.read_file(geocollections[gc]['filepath'])
+            field = geocollections[gc]["field"]
+            gdf = gp.read_file(geocollections[gc]["filepath"])
             for _, row in gdf.iterrows():
-                if gc != 'world':
+                if gc != "world":
                     geom_mapping[(gc, row[field])] = row.geometry
                 else:
                     geom_mapping[row[field]] = row.geometry
@@ -53,28 +61,45 @@ def create_geodataframe(matrix, used_geocollections, row_dict, col_dict, spatial
 
     reversed_geomapping = {v: k for k, v in bd.geomapping.items()}
 
-    if spatial_dim == 'row':
+    if spatial_dim == "row":
         spatial_dict = row_dict
         spatial_index = lambda x, y: x
     else:
         spatial_dict = col_dict
         spatial_index = lambda x, y: y
 
-    return gp.GeoDataFrame([
-        add_attributes({
-            'row_id': int(row),
-            'row_index': row_dict.reversed[row],
-            'col_id': int(col),
-            'col_index': col_dict.reversed[col],
-            'score_abs': value,
-            'score_rel': value / total,
-            'location_key': str(reversed_geomapping[spatial_dict.reversed[spatial_index(row, col)]]),
-            'geometry': geom_mapping[reversed_geomapping[spatial_dict.reversed[spatial_index(row, col)]]],
-        }, attribute_adder, row_dict.reversed[row], col_dict.reversed[col])
-        for row, col, value in zip(matrix.row, matrix.col, matrix.data)
-        if include(value)
-        and not unplottable(reversed_geomapping[spatial_dict.reversed[spatial_index(row, col)]])
-    ])
+    return gp.GeoDataFrame(
+        [
+            add_attributes(
+                {
+                    "row_id": int(row),
+                    "row_index": row_dict.reversed[row],
+                    "col_id": int(col),
+                    "col_index": col_dict.reversed[col],
+                    "score_abs": value,
+                    "score_rel": value / total,
+                    "location_key": str(
+                        reversed_geomapping[
+                            spatial_dict.reversed[spatial_index(row, col)]
+                        ]
+                    ),
+                    "geometry": geom_mapping[
+                        reversed_geomapping[
+                            spatial_dict.reversed[spatial_index(row, col)]
+                        ]
+                    ],
+                },
+                attribute_adder,
+                row_dict.reversed[row],
+                col_dict.reversed[col],
+            )
+            for row, col, value in zip(matrix.row, matrix.col, matrix.data)
+            if include(value)
+            and not unplottable(
+                reversed_geomapping[spatial_dict.reversed[spatial_index(row, col)]]
+            )
+        ]
+    )
 
 
 def _generic_exporter(

@@ -1,3 +1,7 @@
+## 0.5.DEV4 (2022-04-24)
+
+* Include cutoff in geodataframe creation
+
 ## 0.6.DEV3 (2022-04-23)
 
 * Added GeoDataframe exports to all LCA classes
