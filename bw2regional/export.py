@@ -2,6 +2,7 @@ import hashlib
 import os
 from collections import defaultdict
 from functools import partial
+import warnings
 
 import fiona
 import numpy as np
@@ -25,11 +26,17 @@ def unplottable(key):
     return key == 'GLO' or (isinstance(key, tuple) and key[0] == 'RoW')
 
 
-def create_geodataframe(matrix, used_geocollections, row_dict, col_dict, spatial_dim='col', attribute_adder=None):
+def create_geodataframe(matrix, used_geocollections, row_dict, col_dict, spatial_dim='col', attribute_adder=None, cutoff=None):
+    if cutoff is not None and not (0 < cutoff < 1):
+        warnings.warn(f"Ignoring invalid cutoff value {cutoff}")
+        cutoff = None
+
     if not isinstance(matrix, coo_matrix):
         matrix = matrix.tocoo()
 
     total = matrix.sum()
+
+    include = lambda x: x / total >= cutoff if cutoff is not None else True
 
     geom_mapping = {}
     for gc in used_geocollections:
@@ -65,7 +72,8 @@ def create_geodataframe(matrix, used_geocollections, row_dict, col_dict, spatial
             'geometry': geom_mapping[reversed_geomapping[spatial_dict.reversed[spatial_index(row, col)]]],
         }, attribute_adder, row_dict.reversed[row], col_dict.reversed[col])
         for row, col, value in zip(matrix.row, matrix.col, matrix.data)
-        if not unplottable(reversed_geomapping[spatial_dict.reversed[spatial_index(row, col)]])
+        if include(value)
+        and not unplottable(reversed_geomapping[spatial_dict.reversed[spatial_index(row, col)]])
     ])
 
 
