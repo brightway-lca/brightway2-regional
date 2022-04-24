@@ -45,22 +45,7 @@ cg = ConstructiveGeometries()
 
 from bw2data import config
 
-from .base_data import (
-    create_ecoinvent_collections,
-    create_restofworlds_collections,
-    create_world_collections,
-)
-from .databases import label_activity_geocollections
-from .density import divide_by_area
-from .gis_tasks import calculate_intersection, raster_as_extension_table
-from .hashing import sha256
-from .intersection import Intersection
-from .lca import (
-    ExtensionTablesLCA,
-    OneSpatialScaleLCA,
-    TwoSpatialScalesLCA,
-    TwoSpatialScalesWithGenericLoadingLCA,
-)
+from .topography import Topography
 from .loading import Loading
 from .meta import (
     extension_tables,
@@ -69,9 +54,26 @@ from .meta import (
     loadings,
     topocollections,
 )
+from .intersection import Intersection
+from .xtables import ExtensionTable
+from .databases import label_activity_geocollections
+from .density import divide_by_area
+from .lca import (
+    ExtensionTablesLCA,
+    OneSpatialScaleLCA,
+    TwoSpatialScalesLCA,
+    TwoSpatialScalesWithGenericLoadingLCA,
+)
+
+from .base_data import (
+    create_ecoinvent_collections,
+    create_restofworlds_collections,
+    create_world_collections,
+)
+from .gis_tasks import calculate_intersection, raster_as_extension_table
+from .hashing import sha256
 from .pandarus import import_from_pandarus
 from .pandarus_remote import PandarusRemote, remote
-from .topography import Topography
 from .utils import (
     create_empty_intersection,
     get_spatial_dataset_kind,
@@ -80,7 +82,6 @@ from .utils import (
     reset_all_geo,
     reset_geo_meta,
 )
-from .xtables import ExtensionTable
 
 config.metadata.extend(
     [extension_tables, geocollections, topocollections, intersections, loadings]
