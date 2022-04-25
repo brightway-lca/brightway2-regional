@@ -188,7 +188,7 @@ as_xt_spatial_scale = partial(
 def _hash_feature(feature):
     """Calculate SHA256 hash of feature geometry as WKT"""
     geom = shape(feature["geometry"])
-    return hashlib.sha256(geom.to_wkt().encode("utf-8")).hexdigest()
+    return hashlib.sha256(geom.wkt.encode("utf-8")).hexdigest()
 
 
 def add_two_geojson_results(
