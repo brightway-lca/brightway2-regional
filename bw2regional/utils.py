@@ -1,4 +1,3 @@
-import copy
 import os
 import shutil
 
@@ -96,47 +95,47 @@ def import_regionalized_cfs(
     method.write(data)
 
 
-# def get_pandarus_map(geocollection):
-#     try:
-#         from pandarus import Map
-#     except:
-#         raise ImportError("`pandarus` is required for this function")
-#     if geocollection not in geocollections:
-#         raise ValueError("Geocollection %s not registered" % geocollection)
-#     geocollection = geocollections[geocollection]
-#     if not geocollection.get("filepath"):
-#         raise MissingSpatialSourceData("No filepath given for geocollection")
-#     metadata = {
-#         k: v for k, v in geocollection.items() if v is not None and k != "filepath"
-#     }
-#     return Map(geocollection["filepath"], **metadata)
+def get_pandarus_map(geocollection):
+    try:
+        from pandarus import Map
+    except:
+        raise ImportError("`pandarus` is required for this function")
+    if geocollection not in geocollections:
+        raise ValueError("Geocollection %s not registered" % geocollection)
+    geocollection = geocollections[geocollection]
+    if not geocollection.get("filepath"):
+        raise MissingSpatialSourceData("No filepath given for geocollection")
+    metadata = {
+        k: v for k, v in geocollection.items() if v is not None and k != "filepath"
+    }
+    return Map(geocollection["filepath"], **metadata)
 
 
-# def get_pandarus_map_for_method(method, geocollection=None):
-#     try:
-#         from pandarus import Map
-#     except:
-#         raise ImportError("`pandarus` is required for this function")
-#     if not methods[method].get("geocollections", []):
-#         raise SiteGenericMethod
-#     elif len(methods[method]["geocollections"]) > 1 and geocollection is None:
-#         raise ValueError("Must specify geocollection for this LCIA method")
-#     assert method in methods, "Unknown LCIA method"
-#     method_data = methods[method]
-#     geocollection = geocollections[
-#         geocollection or methods[method]["geocollections"][0]
-#     ]
-#     if not geocollection.get("filepath"):
-#         raise MissingSpatialSourceData("No filepath given for geocollection")
-#     metadata = {
-#         "band": method_data.get("band"),
-#         "layer": geocollection.get("layer"),
-#         "field": geocollection.get("field"),
-#         "vfs": geocollection.get("vfs"),
-#         "encoding": geocollection.get("encoding"),
-#     }
-#     metadata = {k: v for k, v in metadata.items() if v is not None}
-#     return Map(geocollection["filepath"], **metadata)
+def get_pandarus_map_for_method(method, geocollection=None):
+    try:
+        from pandarus import Map
+    except:
+        raise ImportError("`pandarus` is required for this function")
+    if not methods[method].get("geocollections", []):
+        raise SiteGenericMethod
+    elif len(methods[method]["geocollections"]) > 1 and geocollection is None:
+        raise ValueError("Must specify geocollection for this LCIA method")
+    assert method in methods, "Unknown LCIA method"
+    method_data = methods[method]
+    geocollection = geocollections[
+        geocollection or methods[method]["geocollections"][0]
+    ]
+    if not geocollection.get("filepath"):
+        raise MissingSpatialSourceData("No filepath given for geocollection")
+    metadata = {
+        "band": method_data.get("band"),
+        "layer": geocollection.get("layer"),
+        "field": geocollection.get("field"),
+        "vfs": geocollection.get("vfs"),
+        "encoding": geocollection.get("encoding"),
+    }
+    metadata = {k: v for k, v in metadata.items() if v is not None}
+    return Map(geocollection["filepath"], **metadata)
 
 
 def hash_collection(name):
