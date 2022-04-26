@@ -1,3 +1,7 @@
+## 0.6.DEV5 (2022-04-26)
+
+* Re-enable some pandarus functionality
+
 ## 0.6.DEV4 (2022-04-24)
 
 * Include cutoff in geodataframe creation
