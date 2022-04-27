@@ -15,13 +15,11 @@ class ExtensionTable(Loading):
     def write_to_map(self, *args, **kwargs):
         raise NotImplementedError
 
-    def import_from_map(self):
+    def import_from_map(self, mask=None):
         from .utils import get_pandarus_map
 
         geocollection = extension_tables[self.name].get("geocollection")
         xt_field = extension_tables[self.name].get("xt_field")
-        # TODO: Handle raster band
-        # band = extension_tables[self.name].get("band")
 
         if not geocollection:
             raise ValueError("No geocollection for this extension table")
@@ -43,6 +41,8 @@ class ExtensionTable(Loading):
         for feature in map_obj:
             label = feature["properties"][id_field]
             value = float(feature["properties"][xt_field])
+            if mask is not None and value == mask:
+                continue
             data.append((value, (geocollection, label)))
 
         self.write(data)
