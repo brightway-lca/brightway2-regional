@@ -1,3 +1,7 @@
+## 0.6.DEV6 (2022-04-27)
+
+* Allow masking when importing maps as extension tables
+
 ## 0.6.DEV5 (2022-04-26)
 
 * Re-enable some pandarus functionality
