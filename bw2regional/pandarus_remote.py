@@ -149,7 +149,8 @@ class PandarusRemote(object):
             collection_hash = hash_collection(collection)
 
         if collection_hash in {obj[1] for obj in self.catalog()["files"]}:
-            raise AlreadyExists
+            print(f"Geocollection {collection} is already uploaded")
+            return
 
         url = self.url + "/upload"
         data = {
@@ -266,7 +267,11 @@ class PandarusRemote(object):
             self.url + "/calculate-rasterstats",
             data={"vector": first, "raster": second},
         )
-        self.handle_errors(resp)
+        try:
+            self.handle_errors(resp)
+        except AlreadyExists:
+            print(f"Rasterstats for {vector} and {raster} already calculated")
+            return
 
         print("Calculation job submitted.")
         return PendingJob(self.url + resp.text)
@@ -281,7 +286,10 @@ class PandarusRemote(object):
             self.url + "/calculate-intersection",
             data={"first": first, "second": second},
         )
-        self.handle_errors(resp)
+        try:
+            self.handle_errors(resp)
+        except:
+            print(f"Intersection for {collection_one} and {collection_two} already calculated")
 
         print("Calculation job submitted.")
         return PendingJob(self.url + resp.text)

@@ -1,3 +1,7 @@
+## DEV
+
+* Don't raise errors for `AlreadyExists`
+
 ## 0.6.DEV6 (2022-04-27)
 
 * Allow masking when importing maps as extension tables
