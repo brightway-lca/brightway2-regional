@@ -1,9 +1,10 @@
 import json
 import os
 
+from bw2data.tests import bw2test
+
 from bw2regional import geocollections, topocollections
 from bw2regional.pandarus import import_from_pandarus, relabel
-from bw2regional.tests import bw2test
 from bw2regional.topography import Topography
 
 data_dir = os.path.join(os.path.dirname(__file__), "data")

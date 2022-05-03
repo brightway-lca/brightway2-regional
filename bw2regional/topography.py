@@ -33,7 +33,6 @@ class Topography(DataStore):
     .. code-block:: python
 
         from bw2regional import Topography, geocollections
-        from bw2regional.tests import data_dir
         import json
 
         geocollections['countries'] = {
