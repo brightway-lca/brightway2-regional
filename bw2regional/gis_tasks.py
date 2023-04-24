@@ -15,7 +15,6 @@ try:
 except ImportError:
     pandarus = None
 import multiprocessing
-import os
 
 import geopandas as gp
 
@@ -36,7 +35,7 @@ def raster_as_extension_table(
         name = vector + " - " + raster
 
     dirpath = bd.projects.request_directory("regional")
-    fp = str(dirpath / name + ".json")
+    fp = str(dirpath / (name + ".json"))
 
     if name in extension_tables and not overwrite:
         return
