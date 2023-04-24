@@ -1,8 +1,9 @@
 # regional Changelog
 
-## DEV
+## 0.6.DEV7 (2023-04-24)
 
 * Don't raise errors for `AlreadyExists`
+* Fix path error
 
 ## 0.6.DEV6 (2022-04-27)
 
