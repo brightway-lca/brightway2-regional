@@ -1,9 +1,10 @@
 bw2calc>=2.0.dev2
 bw2data>=4.0.dev7
-numpy>=1.18
 geopandas
 matrix_utils>=0.1.4
+numpy>=1.18
 rasterio
+rasterstats
 requests
 scipy
 shapely

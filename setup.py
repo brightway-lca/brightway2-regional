@@ -9,11 +9,12 @@ requirements = [
     "fiona",
     "geopandas",
     "rasterio",
+    "rasterstats",
     "requests",
-    'rower',
     "shapely",
     "voluptuous",
     "wrapt",
+    'rower',
 ]
 
 v_temp = {}
