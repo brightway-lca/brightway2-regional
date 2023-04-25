@@ -57,8 +57,11 @@ class PendingJob(object):
             print("\nJob ended with status '{}'".format(self.status))
 
 
-def run_job(job):
+def run_job(job=None):
     """Handler that blocks until job is finished."""
+    if job is None:
+        # Calculated already, job submission skipped
+        return
     job.poll(interval=2)
     if job.status != "finished":
         raise ValueError("Calculation job finished with status '{}'".format(job.status))
