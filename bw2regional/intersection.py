@@ -1,5 +1,6 @@
 import copy
 import warnings
+import itertools
 
 from bw2data import geomapping
 from bw2data.ia_data_store import ImpactAssessmentDataStore
@@ -44,3 +45,27 @@ class Intersection(ImpactAssessmentDataStore):
             self,
             **extra_metadata
         )
+
+
+def calculate_needed_intersections(functional_unit, lcia_method, xtable=None, engine='geopandas'):
+    from . import extension_tables
+    from .gis_tasks import calculate_intersection
+    from .lca.base_class import RegionalizationBase
+
+    RB = RegionalizationBase(demand=functional_unit)
+    RB.method = lcia_method
+    inv_geocollections = RB.get_inventory_geocollections()
+    ia_geocollections = RB.get_ia_geocollections()
+
+    if xtable is None:
+        for (x, y) in itertools.product(inv_geocollections, ia_geocollections):
+            if (x, y) not in intersections:
+                calculate_intersection(x, y, engine=engine)
+    else:
+        xt_geocollections = [extension_tables[xtable]['geocollection']]
+        for (x, y) in itertools.product(inv_geocollections, xt_geocollections):
+            if (x, y) not in intersections:
+                calculate_intersection(x, y, engine=engine)
+        for (x, y) in itertools.product(xt_geocollections, ia_geocollections):
+            if (x, y) not in intersections:
+                calculate_intersection(x, y, engine=engine)

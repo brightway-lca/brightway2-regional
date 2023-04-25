@@ -1,5 +1,6 @@
 __all__ = (
     "cg",
+    "calculate_needed_intersections",
     "create_ecoinvent_collections",
     "create_empty_intersection",
     "create_restofworlds_collections",
@@ -54,7 +55,7 @@ from .meta import (
     loadings,
     topocollections,
 )
-from .intersection import Intersection
+from .intersection import Intersection, calculate_needed_intersections
 from .xtables import ExtensionTable
 from .databases import label_activity_geocollections
 from .density import divide_by_area
