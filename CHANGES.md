@@ -1,5 +1,12 @@
 # regional Changelog
 
+## 0.6.DEV8 (2023-04-24)
+
+* Add `calculate_needed_intersections` function
+* Add `rasterstats` engine to `raster_as_extension_table`
+* Added `rasterstats` dependency
+* Don't error out on jobs which are skipped because already done
+
 ## 0.6.DEV7 (2023-04-24)
 
 * Don't raise errors for `AlreadyExists`

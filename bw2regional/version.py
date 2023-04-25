@@ -1,1 +1,1 @@
-version = (0, 6, "DEV7")
+version = (0, 6, "DEV8")
