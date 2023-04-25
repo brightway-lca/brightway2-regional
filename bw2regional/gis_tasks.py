@@ -1,8 +1,12 @@
 import bw2data as bd
 
+import geopandas as gp
+import rasterstats
+
 from . import (
     Intersection,
     extension_tables,
+    ExtensionTable,
     geocollections,
     intersections,
     topocollections,
@@ -16,13 +20,11 @@ except ImportError:
     pandarus = None
 import multiprocessing
 
-import geopandas as gp
-
 CPU_COUNT = multiprocessing.cpu_count()
 
 
 def raster_as_extension_table(
-    vector, raster, name=None, engine=remote, overwrite=False
+    vector, raster, name=None, engine=remote, overwrite=False, mask_negative=True
 ):
     if vector not in geocollections or raster not in geocollections:
         raise ValueError("Vector or raster not a valid geocollection")
@@ -46,7 +48,36 @@ def raster_as_extension_table(
 
         print("Creating Extension Table")
         return engine.rasterstats_as_xt(vector, raster, name)
+    elif engine == "rasterstats":
+        if mask_negative:
+            func = lambda array: array[array >= 0]
+        else:
+            func = lambda array: array
 
+        stats = rasterstats.zonal_stats(
+            geocollections[vector]['filepath'],
+            geocollections[raster]['filepath'],
+            geojson_out=True,
+            nodata=geocollections[raster].get('nodata', -1),
+            zone_func=func
+        )
+        xt = ExtensionTable(name)
+        md = {
+            "filepath": fp,
+            "vector": geocollections[vector]['filepath'],
+            "raster": geocollections[raster]['filepath'],
+            "geocollection": vector,
+        }
+        xt.register(**md)
+        field = geocollections[vector]['field']
+        xt.write(
+            [
+                (row.properties['mean'], (vector, row.properties[field]))
+                for row in stats
+                if row.properties['mean'] is not None
+            ]
+        )
+        return xt
     elif engine == "pandarus":
         if not pandarus:
             raise ImportError("`pandarus` library required for this function")
