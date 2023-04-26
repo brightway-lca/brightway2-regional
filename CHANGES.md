@@ -1,5 +1,9 @@
 # regional Changelog
 
+## 0.6.DEV9 (2023-04-25)
+
+* Fix bug in calling Geopandas
+
 ## 0.6.DEV8 (2023-04-24)
 
 * Add `calculate_needed_intersections` function
