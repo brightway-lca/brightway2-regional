@@ -35,8 +35,8 @@ def annotate_flow(flow_id, _):
 class RegionalizationBase(LCA):
     def __init__(self, demand, *args, **kwargs):
         self.databases = get_dependent_databases(demand)
-        self.extra_data_objs = kwargs.get("extra_data_objs", [])
-        super().__init__(demand, *args, **kwargs)
+        self.extra_data_objs = kwargs.pop("extra_data_objs", [])
+        super(RegionalizationBase, self).__init__(demand, *args, **kwargs)
 
     def get_inventory_geocollections(self):
         """Get the set of all needed inventory geocollections.
