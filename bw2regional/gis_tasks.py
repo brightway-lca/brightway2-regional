@@ -126,7 +126,7 @@ def calculate_intersection(first, second, engine=remote, overwrite=False, cpus=N
 
         assert id1 != id2, "Conflicting ID labels"
 
-        intersection = gp.overlay(df1, df2)
+        intersection = gp.overlay(df1, df2, keep_geom_type=False)
         areas = intersection.to_crs(
             "esri:54009"
         ).area  # World Mollweidge in square meters
