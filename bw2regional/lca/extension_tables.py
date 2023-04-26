@@ -139,7 +139,7 @@ If you know these intersections are not needed, you can create empty intersectio
             packages=[
                 dp(Intersection(name).filepath_processed())
                 for name in self.inv_xtable_intersections
-            ],
+            ] + self.extra_data_objs,
             matrix="intersection_matrix",
             use_arrays=self.use_arrays,
             use_distributions=self.use_distributions,
@@ -152,7 +152,9 @@ If you know these intersections are not needed, you can create empty intersectio
     def create_xtable_matrix(self):
         """Diagonal extension table matrix that indicates the extension table density value in each extension table spatial unit."""
         self.xtable_mm = mu.MappedMatrix(
-            packages=[dp(self.xtable.filepath_processed())],
+            packages=[
+                dp(self.xtable.filepath_processed())
+            ] + self.extra_data_objs,
             matrix="xtable_matrix",
             use_arrays=self.use_arrays,
             use_distributions=self.use_distributions,
@@ -191,7 +193,7 @@ If you know these intersections are not needed, you can create empty intersectio
             packages=[
                 dp(Intersection(name).filepath_processed())
                 for name in self.xtable_ia_intersections
-            ],
+            ] + self.extra_data_objs,
             matrix="intersection_matrix",
             use_arrays=self.use_arrays,
             use_distributions=self.use_distributions,

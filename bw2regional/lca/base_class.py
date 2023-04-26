@@ -35,7 +35,8 @@ def annotate_flow(flow_id, _):
 class RegionalizationBase(LCA):
     def __init__(self, demand, *args, **kwargs):
         self.databases = get_dependent_databases(demand)
-        super(RegionalizationBase, self).__init__(demand, *args, **kwargs)
+        self.extra_data_objs = kwargs.get("extra_data_objs", [])
+        super().__init__(demand, *args, **kwargs)
 
     def get_inventory_geocollections(self):
         """Get the set of all needed inventory geocollections.
@@ -69,7 +70,9 @@ class RegionalizationBase(LCA):
 
         """
         self.inv_mapping_mm = mu.MappedMatrix(
-            packages=[dp(Database(x).filepath_processed()) for x in self.databases],
+            packages=[
+                dp(Database(x).filepath_processed()) for x in self.databases
+            ] + self.extra_data_objs,
             matrix="inv_geomapping_matrix",
             use_arrays=self.use_arrays,
             use_distributions=self.use_distributions,
@@ -107,7 +110,7 @@ class RegionalizationBase(LCA):
             packages=[
                 dp(Intersection(name).filepath_processed())
                 for name in self.needed_intersections()
-            ],
+            ] + self.extra_data_objs,
             matrix="intersection_matrix",
             use_arrays=self.use_arrays,
             use_distributions=self.use_distributions,
@@ -131,7 +134,9 @@ class RegionalizationBase(LCA):
 
         """
         self.reg_cf_mm = mu.MappedMatrix(
-            packages=[dp(Method(self.method).filepath_processed())],
+            packages=[
+                dp(Method(self.method).filepath_processed())
+            ] + self.extra_data_objs,
             matrix="characterization_matrix",
             use_arrays=self.use_arrays,
             use_distributions=self.use_distributions,
@@ -151,7 +156,9 @@ class RegionalizationBase(LCA):
 
         """
         self.loading_mm = mu.MappedMatrix(
-            packages=[dp(self.loading.filepath_processed())],
+            packages=[
+                dp(self.loading.filepath_processed())
+            ] + self.extra_data_objs,
             matrix="loading_matrix",
             use_arrays=self.use_arrays,
             use_distributions=self.use_distributions,
