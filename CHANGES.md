@@ -1,5 +1,9 @@
 # regional Changelog
 
+## 0.6.DEV10 (2023-04-26)
+
+* Add `extra_data_objs` parameter to regionalized LCA classes
+
 ## 0.6.DEV9 (2023-04-25)
 
 * Fix bug in calling Geopandas
