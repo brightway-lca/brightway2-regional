@@ -127,10 +127,13 @@ If you know these intersections are not needed, you can create empty intersectio
             raise MissingIntersection(error_text)
 
     def get_xtable_geodata(self):
-        gc = self.xtable_meta["geocollection"]
+        if "geocollection" in self.xtable_meta:
+            gcs = [self.xtable_meta["geocollection"]]
+        else:
+            gcs = self.xtable_meta["geocollections"]
         return (
-            [gc],  # Only one geocollection per extension table, but need list
-            {x for x in intersections if x[1] == gc},
+            gcs,  # Only one geocollection per extension table, but need list
+            {x for x in intersections if x[1] in gcs},
         )
 
     def create_distribution_matrix(self):
