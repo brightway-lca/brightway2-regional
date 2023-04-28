@@ -1,5 +1,13 @@
 # regional Changelog
 
+## 0.7.DEV2 (2024-04-28)
+
+* Bugfix from DEV1
+
+## 0.7.DEV1 (2024-04-28)
+
+* Allow extension tables to reference more than one geocollection
+
 ## 0.6.DEV10 (2023-04-26)
 
 * Add `extra_data_objs` parameter to regionalized LCA classes
