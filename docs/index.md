@@ -11,7 +11,7 @@
 `bw2regional` is a separate library that extends the [Brightway LCA
 framework](https://brightway.dev) to do regionalized LCA calculations.
 
-![image](_images/mnglr.png)
+![image](content/_images/mnglr.png)
 
 It is easy to do regionalized LCA incorrectly. This package tries to
 make it at least a bit easier to do regionalization correctly, for at
