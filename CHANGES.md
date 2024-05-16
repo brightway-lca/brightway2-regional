@@ -1,4 +1,4 @@
-# regional Changelog
+# `bw_regional` Changelog
 
 ## 0.7.DEV2 (2024-04-28)
 
@@ -68,7 +68,7 @@
 * Everything other than inputs to rasterstats must be vector files
 * Small bug fixes and simplifications
 
-# 0.5 (2017-06-15)
+## 0.5 (2017-06-15)
 
 * Add compatibility with [rower](https://github.com/PascalLesage/RoWer) and rewrote ecoinvent/RoW handling
 * Add utility to divide rasters by their cell area (`density/divide_by_area`)
